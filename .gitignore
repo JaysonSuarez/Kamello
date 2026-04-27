@@ -1,0 +1,31 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno (¡Crítico!)
+.env
+.env.local
+.env.*
+!.env.example
+
+# Build de producción
+dist/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Editores / IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
