@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "./lib/supabase";
 import ProviderDashboard from "./ProviderDashboard";
 import ClientDashboard from "./ClientDashboard";
+import AdminDashboard from "./AdminDashboard";
 
 export default function DashboardWrapper() {
   const [user, setUser] = useState(null);
