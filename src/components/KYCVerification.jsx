@@ -60,32 +60,6 @@ export default function KYCVerification({ user, profile, onVerified }) {
     }
   };
 
-  // BOTÓN DE DESARROLLO: Para simular que un admin aprobó el KYC y probar la notificación
-  const simulateAdminApproval = async () => {
-    setLoading(true);
-    try {
-      // 1. Aprobar en BD
-      await supabase.from('profiles').update({ verification_status: 'verified' }).eq('id', user.id);
-      
-      // 2. Enviar notificación Push al Kamellador
-      await fetch('/api/v1/push/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          title: "✅ ¡Identidad Verificada!",
-          body: "Tu perfil ha sido aprobado. Ya puedes empezar a recibir ofertas en Kamello.",
-          data: { url: "/dashboard" }
-        })
-      });
-
-      onVerified(); // Actualiza el estado global para dejarlo entrar al dashboard
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const videoRef = React.useRef(null);
   const canvasRef = React.useRef(null);
@@ -270,13 +244,6 @@ export default function KYCVerification({ user, profile, onVerified }) {
               <strong> Te notificaremos cuando estés listo.</strong>
             </p>
 
-            {/* Simulación para Testing */}
-            <div style={{ padding: 16, background: '#f7f3f1', borderRadius: 16, border: '1px dashed #a4b1c6' }}>
-              <p style={{ fontSize: '0.8rem', color: '#5f6a79', marginBottom: 10, fontWeight: 700, textTransform: 'uppercase' }}>🔧 Herramienta de Prueba</p>
-              <button onClick={simulateAdminApproval} disabled={loading} className="btn-primary" style={{ background: '#1f2c45', padding: '10px' }}>
-                {loading ? "Aprobando..." : "Simular Aprobación Admin"}
-              </button>
-            </div>
 
           </div>
         )}

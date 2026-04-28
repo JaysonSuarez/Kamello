@@ -81,7 +81,8 @@ export default function Onboarding() {
         specialty, 
         phone, 
         role: 'kamellador', 
-        is_active: true
+        is_active: false, // BLOQUEADO hasta aprobación admin
+        verification_status: null // Para que inicie flujo KYC
       }).eq('id', user.id);
       if (error) throw error;
       navigate("/dashboard");
@@ -98,7 +99,8 @@ export default function Onboarding() {
     try {
       const { error } = await supabase.from('profiles').update({
         role: 'client', 
-        is_active: true, 
+        is_active: true, // CLIENTES entran directo
+        verification_status: 'verified', // No requieren KYC manual
         phone,
         address
       }).eq('id', user.id);
