@@ -55,31 +55,42 @@ export default function AdminDashboard() {
   };
 
   const handleAction = async (userId, action) => {
-    const confirmMsg = action === 'approve' 
+    const isApprove = action === 'approve';
+    const confirmMsg = isApprove 
       ? "¿Deseas APROBAR este perfil? Podrá empezar a trabajar de inmediato." 
-      : "¿Deseas RECHAZAR este perfil? Deberá subir los documentos nuevamente.";
+      : "¿Deseas RECHAZAR este perfil? Se le pedirá al técnico subir documentos nuevos.";
     
     if (!window.confirm(confirmMsg)) return;
 
     setLoading(true);
     try {
-      const newStatus = action === 'approve' ? 'verified' : 'rejected';
-      const isActive = action === 'approve';
+      const updateData = isApprove ? {
+        verification_status: 'verified',
+        is_active: true
+      } : {
+        verification_status: 'rejected',
+        is_active: false,
+        id_document_url: null, // Limpiamos para re-subida
+        selfie_url: null
+      };
       
       const { error } = await supabase
         .from("profiles")
-        .update({ 
-          verification_status: newStatus,
-          is_active: isActive 
-        })
+        .update(updateData)
         .eq("id", userId);
 
       if (error) throw error;
 
-      // Refrescar lista
-      fetchPendingUsers();
+      // ELIMINACIÓN INSTANTÁNEA: Lo quitamos de la lista local de inmediato
+      setPendingUsers(prev => prev.filter(u => u.id !== userId));
+
+      alert(isApprove ? "✅ Perfil aprobado con éxito." : "❌ Perfil rechazado.");
+      
+      // No hace falta llamar a fetchPendingUsers() porque ya lo quitamos localmente
     } catch (err) {
-      alert("Error: " + err.message);
+      alert("Error al procesar la acción: " + err.message);
+      // Si hay error, podríamos refrescar la lista para recuperar el estado real
+      fetchPendingUsers();
     } finally {
       setLoading(false);
     }
