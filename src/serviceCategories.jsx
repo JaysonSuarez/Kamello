@@ -23,6 +23,7 @@ export const SERVICE_CATEGORIES = [
     color: "text-cyan-600",
     bg: "bg-cyan-50 border-cyan-200",
     chip: "bg-cyan-100 text-cyan-700",
+    basePrice: 40000,
   },
   {
     id: "Hardware",
@@ -33,6 +34,7 @@ export const SERVICE_CATEGORIES = [
     color: "text-indigo-600",
     bg: "bg-indigo-50 border-indigo-200",
     chip: "bg-indigo-100 text-indigo-700",
+    basePrice: 40000,
   },
   {
     id: "Moviles",
@@ -43,6 +45,7 @@ export const SERVICE_CATEGORIES = [
     color: "text-rose-600",
     bg: "bg-rose-50 border-rose-200",
     chip: "bg-rose-100 text-rose-700",
+    basePrice: 30000,
   },
   {
     id: "Soporte tecnico y ciberseguridad",
@@ -53,6 +56,7 @@ export const SERVICE_CATEGORIES = [
     color: "text-red-600",
     bg: "bg-red-50 border-red-200",
     chip: "bg-red-100 text-red-700",
+    basePrice: 40000,
   },
   {
     id: "Domotica y seguridad",
@@ -63,6 +67,7 @@ export const SERVICE_CATEGORIES = [
     color: "text-emerald-600",
     bg: "bg-emerald-50 border-emerald-200",
     chip: "bg-emerald-100 text-emerald-700",
+    basePrice: 35000,
   },
   {
     id: "Climatizacion",
@@ -73,6 +78,7 @@ export const SERVICE_CATEGORIES = [
     color: "text-sky-600",
     bg: "bg-sky-50 border-sky-200",
     chip: "bg-sky-100 text-sky-700",
+    basePrice: 40000,
   },
   {
     id: "Electricista",
@@ -83,6 +89,7 @@ export const SERVICE_CATEGORIES = [
     color: "text-amber-500",
     bg: "bg-amber-50 border-amber-200",
     chip: "bg-amber-100 text-amber-700",
+    basePrice: 35000,
   },
   {
     id: "Fontanero",
@@ -93,6 +100,7 @@ export const SERVICE_CATEGORIES = [
     color: "text-blue-500",
     bg: "bg-blue-50 border-blue-200",
     chip: "bg-blue-100 text-blue-700",
+    basePrice: 35000,
   },
   {
     id: "Albanil",
@@ -104,6 +112,7 @@ export const SERVICE_CATEGORIES = [
     color: "text-orange-500",
     bg: "bg-orange-50 border-orange-200",
     chip: "bg-orange-100 text-orange-700",
+    basePrice: 30000,
   },
   {
     id: "Pintor",
@@ -114,6 +123,7 @@ export const SERVICE_CATEGORIES = [
     color: "text-purple-500",
     bg: "bg-purple-50 border-purple-200",
     chip: "bg-purple-100 text-purple-700",
+    basePrice: 30000,
   },
   {
     id: "General",
@@ -124,6 +134,7 @@ export const SERVICE_CATEGORIES = [
     color: "text-slate-600",
     bg: "bg-slate-50 border-slate-200",
     chip: "bg-slate-100 text-slate-700",
+    basePrice: 20000,
   },
 ];
 

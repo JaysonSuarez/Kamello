@@ -58,6 +58,8 @@ export default function ProviderDashboard() {
   const [walkthroughStep, setWalkthroughStep] = useState(0);
   const messagesEndRef = useRef(null);
   const pinRefs = [useRef(), useRef(), useRef(), useRef()];
+  const [offeringSvc, setOfferingSvc] = useState(null);
+  const [counterPrice, setCounterPrice] = useState("");
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
   const isPremium = Boolean(profile?.is_premium);
@@ -252,6 +254,28 @@ export default function ProviderDashboard() {
     } catch (err) {
       alert("Error inesperado al aceptar.");
     }
+  };
+
+  const handleCounterOffer = async (e) => {
+    e.preventDefault();
+    if (!offeringSvc || !counterPrice) return;
+    const price = Number(counterPrice);
+    if (price <= offeringSvc.proposed_price) return alert("La contra-oferta debe ser mayor al precio propuesto.");
+    
+    setLoadingById(prev => ({ ...prev, [offeringSvc.id]: true }));
+    const { error } = await supabase.from("operation_offers").insert({
+      operation_id: offeringSvc.id,
+      kamellador_id: user.id,
+      price: price
+    });
+    
+    if (error) alert("Error al enviar oferta: " + error.message);
+    else {
+      alert("¡Contra-oferta enviada! Te avisaremos si el cliente la acepta.");
+      setOfferingSvc(null);
+      setCounterPrice("");
+    }
+    setLoadingById(prev => ({ ...prev, [offeringSvc.id]: false }));
   };
 
   const handlePinChange = (value, index) => {
@@ -526,10 +550,32 @@ export default function ProviderDashboard() {
                     </div>
                     <span style={{ background: "#00cba9", color: "white", fontWeight: 800, fontSize: "0.9rem", padding: "4px 12px", borderRadius: 100 }}>${formatPrice(svc.proposed_price)}</span>
                   </div>
-                  <button onClick={() => handleAcceptService(svc)} className="btn-primary btn-primary--accent" style={{ borderRadius: 100 }}>Aceptar solicitud</button>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={() => handleAcceptService(svc)} className="btn-primary btn-primary--accent" style={{ flex: 2, borderRadius: 100, fontSize: "0.8rem", padding: "8px 0" }}>Aceptar</button>
+                    <button onClick={() => { setOfferingSvc(svc); setCounterPrice((svc.proposed_price + 5000).toString()); }} className="btn-secondary" style={{ flex: 1, borderRadius: 100, fontSize: "0.8rem", padding: "8px 0", borderColor: "#1f2c45", color: "#1f2c45" }}>Negociar</button>
+                  </div>
                 </div>
               );
             })}
+
+            {offeringSvc && (
+              <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000, padding: 20 }}>
+                <div className="animate-fade-in-up" style={{ background: "white", borderRadius: 24, padding: 24, width: "100%", maxWidth: 350 }}>
+                  <h3 style={{ fontWeight: 800, margin: "0 0 8px" }}>Contra-oferta</h3>
+                  <p style={{ fontSize: 13, color: "#5f6a79", marginBottom: 20 }}>Propón un precio justo por la distancia o complejidad.</p>
+                  <form onSubmit={handleCounterOffer}>
+                    <div style={{ position: "relative", marginBottom: 16 }}>
+                      <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontWeight: 800, color: "#1f2c45" }}>$</span>
+                      <input type="number" value={counterPrice} onChange={e => setCounterPrice(e.target.value)} className="sheet-input" style={{ paddingLeft: 30, fontWeight: 800, fontSize: "1.2rem" }} autoFocus required />
+                    </div>
+                    <div style={{ display: "flex", gap: 10 }}>
+                      <button type="button" onClick={() => setOfferingSvc(null)} className="btn-secondary" style={{ flex: 1 }}>Cancelar</button>
+                      <button type="submit" disabled={loadingById[offeringSvc.id]} className="btn-primary" style={{ flex: 1 }}>Enviar</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
 
             <button onClick={() => setIsOnline(false)} className="cta-connect cta-connect--stop" style={{ marginTop: 12 }}>Desconectarse</button>
           </div>

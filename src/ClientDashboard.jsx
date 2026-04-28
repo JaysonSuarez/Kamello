@@ -73,6 +73,7 @@ export default function ClientDashboard({ user }) {
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [budget, setBudget] = useState("");
+  const [minBudget, setMinBudget] = useState(20000);
   const [activeRequest, setActiveRequest] = useState(null);
   const [history, setHistory] = useState([]);
   const [chatOpen, setChatOpen] = useState(false);
@@ -83,6 +84,7 @@ export default function ClientDashboard({ user }) {
   const [ratingValue, setRatingValue] = useState(5);
   const [ratingComment, setRatingComment] = useState("");
   const [ratingTags, setRatingTags] = useState([]);
+  const [offers, setOffers] = useState([]);
   const [activeTab, setActiveTab] = useState("home");
   const [sheetSnap, setSheetSnap] = useState(1);
   const [route, setRoute] = useState([]); // State for the real route
@@ -95,6 +97,24 @@ export default function ClientDashboard({ user }) {
   const canRate = activeRequest?.status === "completed";
 
   const refreshHistory = async () => { setHistory(await fetchHistory(user.id, "client")); };
+
+  useEffect(() => {
+    if (category) {
+      const cat = getServiceCategory(category);
+      let base = cat?.basePrice || 20000;
+      
+      const hour = new Date().getHours();
+      const day = new Date().getDay();
+      
+      let surcharge = 0;
+      if (hour < 6 || hour >= 20) surcharge += 0.25; // 25% night
+      if (day === 0 || day === 6) surcharge += 0.15; // 15% weekend
+      
+      const minimum = Math.floor(base * (1 + surcharge));
+      setMinBudget(minimum);
+      setBudget(minimum.toString());
+    }
+  }, [category]);
 
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -186,6 +206,38 @@ export default function ClientDashboard({ user }) {
     return () => supabase.removeChannel(channel);
   }, [activeRequest?.id, chatOpen]);
 
+  // Offers listener
+  useEffect(() => {
+    if (activeRequest?.status !== "pending") {
+      setOffers([]);
+      return;
+    }
+
+    const fetchOffers = async () => {
+      const { data } = await supabase
+        .from("operation_offers")
+        .select("*, kamellador:profiles(*)")
+        .eq("operation_id", activeRequest.id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+      if (data) setOffers(data);
+    };
+
+    fetchOffers();
+
+    const channel = supabase.channel(`offers_${activeRequest.id}`)
+      .on("postgres_changes", { 
+        event: "*", 
+        schema: "public", 
+        table: "operation_offers", 
+        filter: `operation_id=eq.${activeRequest.id}` 
+      }, () => {
+        fetchOffers();
+      }).subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, [activeRequest?.id, activeRequest?.status]);
+
   // Clear unread when chat opens
   useEffect(() => {
     if (chatOpen) setUnreadCount(0);
@@ -196,16 +248,46 @@ export default function ClientDashboard({ user }) {
   const handleSubmitRequest = async (e) => {
     e.preventDefault();
     if (!category || !description || !budget || !position) return alert("Completa todos los campos.");
+    const finalBudget = Number(budget.replace(/[^0-9]/g, ""));
+    if (finalBudget < minBudget) return alert("El presupuesto no puede ser menor al mínimo sugerido de $" + formatPrice(minBudget));
     setLoading(true);
     const { data, error } = await supabase.from("operations").insert({
       client_id: user.id, category, description,
-      proposed_price: Number(budget.replace(/[^0-9]/g, "")),
+      proposed_price: finalBudget,
       client_lat: position[0], client_lng: position[1],
       status: "pending", expires_at: new Date(Date.now() + 20 * 60 * 1000).toISOString(),
     }).select(OPERATION_SELECT).single();
     if (error) alert("Error: " + error.message);
     else { setActiveRequest(data); await refreshHistory(); }
     setLoading(false);
+  };
+
+  const handleAcceptOffer = async (offer) => {
+    setLoading(true);
+    try {
+      // 1. Marcar la oferta como aceptada
+      await supabase.from("operation_offers").update({ status: "accepted" }).eq("id", offer.id);
+      
+      // 2. Actualizar la operación
+      const { data, error } = await supabase.from("operations")
+        .update({ 
+          status: "accepted", 
+          kamellador_id: offer.kamellador_id,
+          agreed_price: offer.price 
+        })
+        .eq("id", activeRequest.id)
+        .select(OPERATION_SELECT)
+        .single();
+      
+      if (error) throw error;
+      setActiveRequest(data);
+      await refreshHistory();
+    } catch (err) {
+      alert("Error al aceptar oferta: " + err.message);
+    } finally {
+      setLoading(true);
+      setLoading(false);
+    }
   };
 
   const cancelRequest = async () => {
@@ -416,8 +498,11 @@ export default function ClientDashboard({ user }) {
                 <label style={{ display: "block", fontWeight: 700, fontSize: "0.8rem", marginBottom: 6 }}>Presupuesto (COP)</label>
                 <div style={{ position: "relative" }}>
                   <CreditCard className="w-4 h-4" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#a4b1c6" }} />
-                  <input type="text" value={budget} onChange={e => setBudget(e.target.value)} placeholder="50000" className="sheet-input" style={{ paddingLeft: 40, fontWeight: 700 }} required />
+                  <input type="text" value={budget} onChange={e => setBudget(e.target.value.replace(/[^0-9]/g, ""))} onBlur={() => { if (Number(budget) < minBudget) setBudget(minBudget.toString()); }} placeholder={minBudget.toString()} className="sheet-input" style={{ paddingLeft: 40, fontWeight: 700 }} required />
                 </div>
+                <p style={{ fontSize: 11, color: "#a4b1c6", marginTop: 4, lineHeight: 1.3 }}>
+                  Mínimo calculado: <b>${formatPrice(minBudget)}</b> (tarifa base + recargos). Ofrece más si tienes urgencia.
+                </p>
               </div>
               <button type="submit" disabled={loading || !position} className="btn-primary" style={{ marginTop: 4 }}>
                 <Search className="w-5 h-5" /> Buscar Kamellador
@@ -439,9 +524,32 @@ export default function ClientDashboard({ user }) {
               </div>
             </div>
             <h3 style={{ fontSize: "1.2rem", fontWeight: 800, marginBottom: 4 }}>Buscando experto...</h3>
-            <p style={{ color: "#5f6a79", fontSize: "0.8rem", marginBottom: 8 }}>
+            <p style={{ color: "#5f6a79", fontSize: "0.8rem", marginBottom: 20 }}>
               Notificando profesionales de <b>{activeCategory?.shortName || activeRequest.category}</b>
             </p>
+
+            {offers.length > 0 && (
+              <div style={{ textAlign: "left", marginBottom: 20 }}>
+                <p style={{ fontSize: 12, fontWeight: 800, color: "#a4b1c6", textTransform: "uppercase", marginBottom: 12 }}>{offers.length} Profesionales interesados:</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {offers.map(offer => (
+                    <div key={offer.id} style={{ background: "white", borderRadius: 16, padding: 12, border: "1px solid #efe7e2", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#1f2c45", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12, border: offer.kamellador?.is_premium ? "1px solid #ffd700" : "none" }}>
+                          {offer.kamellador?.full_name?.[0] || "K"}
+                        </div>
+                        <div>
+                          <p style={{ fontWeight: 700, fontSize: 13, margin: 0, color: offer.kamellador?.is_premium ? "#d4af37" : "inherit" }}>{offer.kamellador?.full_name}</p>
+                          <p style={{ fontSize: 14, fontWeight: 800, margin: 0 }}>${formatPrice(offer.price)}</p>
+                        </div>
+                      </div>
+                      <button onClick={() => handleAcceptOffer(offer)} className="btn-primary" style={{ padding: "6px 12px", fontSize: 12, borderRadius: 100, width: "auto" }}>Aceptar</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {activeRequest.expires_at && <CountdownTimer expiresAt={activeRequest.expires_at} />}
             <button onClick={cancelRequest} style={{ marginTop: 20, background: "none", border: "none", color: "#ff7665", fontWeight: 700, cursor: "pointer", fontSize: "0.875rem" }}>
               Cancelar solicitud
