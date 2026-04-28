@@ -1,5 +1,5 @@
 import React from "react";
-import { Home, Search, BarChart3, MessageSquare, Menu, ClipboardList, User } from "lucide-react";
+import { Home, Search, BarChart3, MessageSquare, Menu, ClipboardList, User, Zap } from "lucide-react";
 
 const CLIENT_TABS = [
   { id: "home", label: "Inicio", icon: Home },
@@ -11,6 +11,7 @@ const CLIENT_TABS = [
 const PROVIDER_TABS = [
   { id: "home", label: "Inicio", icon: Home },
   { id: "earnings", label: "Ganancias", icon: BarChart3 },
+  { id: "premium", label: "Premium", icon: Zap },
   { id: "messages", label: "Mensajes", icon: MessageSquare },
   { id: "menu", label: "Menú", icon: Menu },
 ];

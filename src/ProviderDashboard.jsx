@@ -381,6 +381,72 @@ export default function ProviderDashboard() {
       </div>
     );
   }
+  if (activeTab === "premium") {
+    return (
+      <div className="app-shell">
+        <div className="view-container">
+          <div className="view-container__content" style={{ paddingBottom: 100 }}>
+            <div style={{ textAlign: "center", marginBottom: 24 }}>
+              <Zap className="w-10 h-10" style={{ color: "#ff7665", margin: "0 auto 12px" }} />
+              <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "1.75rem", margin: "0 0 8px" }}>Sube de nivel</h2>
+              <p style={{ fontSize: 13, color: "#5f6a79", margin: 0 }}>Gana más, llega más lejos y destaca ante los clientes.</p>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {/* Subs */}
+              <div style={{ background: "white", borderRadius: 24, padding: 20, border: "2px solid #ffd700", position: "relative", boxShadow: "0 10px 25px rgba(212,175,55,0.1)" }}>
+                <div style={{ position: "absolute", top: -12, right: 20, background: "#ffd700", color: "#1f2c45", fontSize: 10, fontWeight: 800, padding: "4px 10px", borderRadius: 100 }}>POPULAR</div>
+                <h3 style={{ fontWeight: 800, margin: "0 0 4px" }}>Plan PRO</h3>
+                <p style={{ fontSize: 24, fontWeight: 900, margin: "0 0 12px" }}>$49.000 <span style={{ fontSize: 12, fontWeight: 600, opacity: 0.6 }}>COP / mes</span></p>
+                <ul style={{ listStyle: "none", padding: 0, margin: "0 0 20px", fontSize: 12, color: "#5f6a79" }}>
+                  <li style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}><Check className="w-3.5 h-3.5 text-[#00cba9]" /> OPS Ilimitadas</li>
+                  <li style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}><Check className="w-3.5 h-3.5 text-[#00cba9]" /> Nombre Dorado en Chat</li>
+                  <li style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}><Check className="w-3.5 h-3.5 text-[#00cba9]" /> Badge 'PRO' Verificado</li>
+                </ul>
+                <button className="btn-primary" style={{ background: "#1f2c45", borderRadius: 12, fontSize: 14 }}>Activar Plan</button>
+              </div>
+
+              <div style={{ background: "white", borderRadius: 24, padding: 20, border: "2px solid #ff7665", boxShadow: "0 10px 25px rgba(255,118,101,0.1)" }}>
+                <h3 style={{ fontWeight: 800, margin: "0 0 4px" }}>Plan ULTRA</h3>
+                <p style={{ fontSize: 24, fontWeight: 900, margin: "0 0 12px" }}>$89.000 <span style={{ fontSize: 12, fontWeight: 600, opacity: 0.6 }}>COP / mes</span></p>
+                <ul style={{ listStyle: "none", padding: 0, margin: "0 0 20px", fontSize: 12, color: "#5f6a79" }}>
+                  <li style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}><Check className="w-3.5 h-3.5 text-[#00cba9]" /> Todo lo de PRO</li>
+                  <li style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}><Check className="w-3.5 h-3.5 text-[#00cba9]" /> Alcance de 15km</li>
+                  <li style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}><Check className="w-3.5 h-3.5 text-[#00cba9]" /> Aparece primero en la lista</li>
+                </ul>
+                <button className="btn-primary" style={{ borderRadius: 12, fontSize: 14 }}>Activar Plan</button>
+              </div>
+
+              {/* OPS */}
+              <div style={{ marginTop: 10 }}>
+                <p style={{ fontSize: 12, fontWeight: 800, color: "#a4b1c6", textTransform: "uppercase", marginBottom: 12 }}>Compra créditos OPS</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div style={{ background: "#f8fafc", padding: 16, borderRadius: 20, border: "1px solid #efe7e2" }}>
+                    <p style={{ fontWeight: 800, fontSize: 14, margin: 0 }}>5 OPS</p>
+                    <p style={{ fontSize: 16, fontWeight: 900, color: "#ff7665", margin: "4px 0 10px" }}>$15.000</p>
+                    <button style={{ width: "100%", background: "white", border: "1px solid #efe7e2", borderRadius: 10, padding: "6px 0", fontSize: 11, fontWeight: 700 }}>Comprar</button>
+                  </div>
+                  <div style={{ background: "#f8fafc", padding: 16, borderRadius: 20, border: "1px solid #efe7e2" }}>
+                    <p style={{ fontWeight: 800, fontSize: 14, margin: 0 }}>15 OPS</p>
+                    <p style={{ fontSize: 16, fontWeight: 900, color: "#ff7665", margin: "4px 0 10px" }}>$35.000</p>
+                    <button style={{ width: "100%", background: "white", border: "1px solid #efe7e2", borderRadius: 10, padding: "6px 0", fontSize: 11, fontWeight: 700 }}>Comprar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 32, padding: 16, background: "#1f2c45", borderRadius: 24, color: "white", textAlign: "center" }}>
+              <p style={{ fontSize: 12, lineHeight: 1.5, margin: 0 }}>
+                Recuerda: <b>Kamello no cobra comisión.</b> El 100% de lo que acuerdes con el cliente es tuyo. Los planes y OPS solo financian la plataforma.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="top-bar"><div className="top-bar__left"><img src="/images/K-Editado.png" alt="K" className="top-bar__logo" /><span className="top-bar__title">Kamello</span></div><div className="top-bar__right"><button onClick={() => supabase.auth.signOut().then(() => navigate("/"))} className="top-bar__btn"><LogOut className="w-4 h-4" /></button></div></div>
+        <BottomNav role="kamellador" activeTab={activeTab} onTabChange={setActiveTab} unreadMessages={unreadCount} />
+      </div>
+    );
+  }
   if (activeTab === "menu") {
     return (
       <div className="app-shell">

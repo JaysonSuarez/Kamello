@@ -54,8 +54,8 @@ export default function SiteDesign() {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8 font-medium">
             <a href="#beneficios" className="text-[#4e5969] hover:text-[#ff7665] transition-colors">Beneficios</a>
+            <Link to="/precios" className="text-[#4e5969] hover:text-[#ff7665] transition-colors">Planes & OPS</Link>
             <a href="#testimonios" className="text-[#4e5969] hover:text-[#ff7665] transition-colors">Testimonios</a>
-            <a href="#empresas" className="text-[#4e5969] hover:text-[#ff7665] transition-colors">Para Empresas</a>
           </nav>
 
           <div className="hidden md:flex items-center gap-4">
@@ -90,8 +90,8 @@ export default function SiteDesign() {
           <div className="md:hidden absolute top-[72px] left-0 right-0 bg-[#f7f3f1] border-b border-[#efe7e2] shadow-xl p-6 flex flex-col gap-6 animate-in slide-in-from-top-4">
             <nav className="flex flex-col gap-4 font-medium">
               <a href="#beneficios" onClick={() => setIsMenuOpen(false)} className="text-[#4e5969] hover:text-[#ff7665] text-lg">Beneficios</a>
+              <Link to="/precios" onClick={() => setIsMenuOpen(false)} className="text-[#4e5969] hover:text-[#ff7665] text-lg">Planes & OPS</Link>
               <a href="#testimonios" onClick={() => setIsMenuOpen(false)} className="text-[#4e5969] hover:text-[#ff7665] text-lg">Testimonios</a>
-              <a href="#empresas" onClick={() => setIsMenuOpen(false)} className="text-[#4e5969] hover:text-[#ff7665] text-lg">Para Empresas</a>
             </nav>
             <div className="flex flex-col gap-4 pt-4 border-t border-[#efe7e2]">
               <Link to="/login" className="font-bold text-[#1f2c45] text-center py-3 border-2 border-[#1f2c45] rounded-xl hover:bg-[#1f2c45] hover:text-white transition-colors">
@@ -111,13 +111,13 @@ export default function SiteDesign() {
           <div className="z-10 flex flex-1 flex-col items-start text-left">
             <div className="mb-6 inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#f5c49f] bg-[#fff8f4] px-4 py-2 text-xs font-semibold text-[#4f5b6f] shadow-sm transition-transform hover:-translate-y-1 hover:shadow-md sm:text-sm">
               <span className="animate-pulse text-[#ff8b40]">★</span>
-              Tu próximo trabajo está más cerca de lo que pienses
+              Soluciones rápidas para tu hogar o negocio
             </div>
 
             <h1 className="max-w-[16ch] font-serif text-5xl leading-[1.05] tracking-[-0.03em] text-[#1f2c45] sm:text-6xl md:text-[64px] lg:text-[76px]">
-              Conecta con oportunidades que impulsan{" "}
+              Expertos técnicos listos para{" "}
               <span className="relative inline-block text-[#ff7665]">
-                tu futuro
+                ayudarte
                 <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M2 10C50 2 150 2 198 10" stroke="#ff7665" strokeWidth="4" strokeLinecap="round" />
                 </svg>
@@ -125,8 +125,8 @@ export default function SiteDesign() {
             </h1>
 
             <p className="mt-8 max-w-[32ch] text-lg leading-[1.6] text-[#4e5969] sm:text-xl md:text-2xl">
-              Kamello es la plataforma que te ayuda a encontrar el trabajo ideal de
-              forma fácil, rápida y personalizada.
+              Kamello es la red de servicios técnicos más rápida y justa de Colombia. 
+              Sin comisiones, solo soluciones a tu alcance.
             </p>
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -165,12 +165,48 @@ export default function SiteDesign() {
           </div>
         </section>
 
+        {/* COMISION CERO - MARKETING SECTION */}
+        <section className="px-6 py-12 md:px-10 lg:px-16">
+          <div className="relative overflow-hidden rounded-[40px] bg-[#1f2c45] p-8 md:p-16 lg:p-20 text-center">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#ff7665] rounded-full blur-[120px] opacity-20 -mr-32 -mt-32"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#ffd700] rounded-full blur-[120px] opacity-10 -ml-32 -mb-32"></div>
+            
+            <div className="relative z-10 max-w-4xl mx-auto">
+              <span className="inline-block px-4 py-1.5 rounded-full bg-[#ff7665]/10 text-[#ff7665] text-sm font-bold tracking-wider uppercase mb-6">
+                Tu trabajo, tu dinero
+              </span>
+              <h2 className="font-serif text-4xl md:text-6xl text-white leading-tight mb-8">
+                Pactas $100.000,<br />
+                <span className="text-[#ffd700]">cobras $100.000.</span>
+              </h2>
+              <p className="text-xl text-[#a4b1c6] leading-relaxed mb-12 max-w-2xl mx-auto">
+                En Kamello <span className="text-white font-bold">no cobramos comisión</span> por tus servicios. El 100% de lo que acuerdes con el cliente va directo a tu bolsillo. Nosotros solo te cobramos el OPS de conexión.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="bg-white/5 backdrop-blur-sm p-6 rounded-3xl border border-white/10">
+                  <h3 className="text-[#00cba9] text-3xl font-bold mb-1">0%</h3>
+                  <p className="text-sm text-white/70">Comisión de plataforma</p>
+                </div>
+                <div className="bg-white/5 backdrop-blur-sm p-6 rounded-3xl border border-white/10">
+                  <h3 className="text-[#ffd700] text-3xl font-bold mb-1">100%</h3>
+                  <p className="text-sm text-white/70">Para el Kamellador</p>
+                </div>
+                <div className="bg-white/5 backdrop-blur-sm p-6 rounded-3xl border border-white/10">
+                  <h3 className="text-[#ff7665] text-3xl font-bold mb-1">Seguro</h3>
+                  <p className="text-sm text-white/70">Pagos protegidos</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* BENEFICIOS */}
         <section id="beneficios" className="mt-12 rounded-[40px] bg-white px-6 py-16 shadow-sm md:px-10 lg:px-16 lg:py-24">
           <div className="text-center">
             <h2 className="mx-auto max-w-[24ch] font-serif text-4xl leading-[1.1] tracking-[-0.02em] text-[#1f2c45] md:text-5xl lg:text-6xl">
-              Todo lo que necesitas para conseguir{" "}
-              <span className="text-[#ff7665]">tu próximo trabajo</span>
+              La plataforma diseñada para el{" "}
+              <span className="text-[#ff7665]">técnico moderno</span>
             </h2>
           </div>
 
@@ -178,24 +214,24 @@ export default function SiteDesign() {
             {[
               {
                 iconBg: "bg-[#fee4db]",
-                icon: <Search className="w-6 h-6" />,
+                icon: <Zap className="w-6 h-6" />,
                 iconColor: "text-[#ff7f61]",
-                title: "Encuentra oportunidades adaptadas",
-                text: "Filtra por tus habilidades, intereses y ubicación con nuestro motor inteligente.",
+                title: "Solicitudes en tiempo real",
+                text: "Recibe notificaciones instantáneas de clientes a menos de 5km que necesitan tu ayuda ya mismo.",
               },
               {
                 iconBg: "bg-[#fff2d8]",
-                icon: <FileText className="w-6 h-6" />,
+                icon: <DollarSign className="w-6 h-6" />,
                 iconColor: "text-[#f3af2f]",
-                title: "Destaca tu perfil profesional",
-                text: "Crea un CV increíble en minutos y llama la atención de los mejores reclutadores.",
+                title: "Tú pones el precio",
+                text: "Acepta la oferta del cliente o envía tu contra-oferta si el trabajo requiere más esfuerzo.",
               },
               {
                 iconBg: "bg-[#dff3ea]",
-                icon: <Handshake className="w-6 h-6" />,
+                icon: <CheckCircle2 className="w-6 h-6" />,
                 iconColor: "text-[#3e9b76]",
-                title: "Conecta y avanza rápidamente",
-                text: "Postúlate con un clic y comunícate directamente con empresas interesantes.",
+                title: "Seguridad y Confianza",
+                text: "Verificamos a cada cliente y profesional para que trabajes con total tranquilidad y respaldo.",
               },
             ].map((item, i) => (
               <article 
@@ -225,28 +261,24 @@ export default function SiteDesign() {
               <div className="relative">
                 <span className="absolute -left-4 -top-6 text-6xl text-[#ff7665]/20 font-serif">"</span>
                 <p className="relative z-10 text-2xl font-medium leading-[1.5] text-[#3a4557] md:text-3xl lg:text-[34px]">
-                  Gracias a Kamello encontré el trabajo que cambió mi carrera profesional por completo.
+                  Antes perdía horas buscando clientes. Con Kamello, los trabajos me llegan al celular mientras estoy en la calle.
                 </p>
                 <div className="mt-8 flex items-center gap-5">
-                  <div className="relative h-16 w-16 overflow-hidden rounded-full border-2 border-white shadow-md">
-                    <img
-                      src={landingImageUrl}
-                      alt="Laura G."
-                      className="h-full w-full object-cover object-[32%_88%]"
-                    />
+                  <div className="relative h-16 w-16 overflow-hidden rounded-full border-2 border-white shadow-md bg-slate-200 flex items-center justify-center">
+                    <span className="text-2xl">👷‍♂️</span>
                   </div>
                   <div>
-                    <span className="block text-xl font-bold text-[#1f2c45]">Laura G.</span>
-                    <span className="text-[#5f6a79]">Diseñadora UX/UI</span>
+                    <span className="block text-xl font-bold text-[#1f2c45]">Ricardo M.</span>
+                    <span className="text-[#5f6a79]">Electricista Certificado</span>
                   </div>
                 </div>
               </div>
 
               <div className="flex flex-col gap-8 md:border-l md:border-[#ecd7ca]/60 md:pl-12 lg:pl-16">
                 {[
-                  { number: "+10K", label: "Personas contratadas" },
-                  { number: "+5K", label: "Empresas activas" },
-                  { number: "+20K", label: "Ofertas disponibles" },
+                  { number: "+2K", label: "Servicios completados" },
+                  { number: "+1K", label: "Kamelladores activos" },
+                  { number: "0%", label: "Comisión por servicio" },
                 ].map((stat, idx) => (
                   <div key={idx} className="group flex flex-col">
                     <span className="text-5xl font-extrabold tracking-tight text-[#ff7665] transition-transform group-hover:translate-x-2 md:text-6xl">
@@ -355,20 +387,20 @@ export default function SiteDesign() {
             </div>
 
             <div>
-              <h4 className="text-xl font-bold text-white">Para candidatos</h4>
+              <h4 className="text-xl font-bold text-white">Para Kamelladores</h4>
               <ul className="mt-6 flex flex-col gap-4 text-lg text-[#a4b1c6]">
-                <li><Link to="/buscar-trabajos" className="hover:text-[#ff7665] transition-colors">Buscar trabajos</Link></li>
-                <li><Link to="/crear-perfil" className="hover:text-[#ff7665] transition-colors">Crear perfil</Link></li>
-                <li><Link to="/consejos-profesionales" className="hover:text-[#ff7665] transition-colors">Consejos profesionales</Link></li>
+                <li><Link to="/dashboard" className="hover:text-[#ff7665] transition-colors">Ver solicitudes</Link></li>
+                <li><Link to="/register" className="hover:text-[#ff7665] transition-colors">Registro técnico</Link></li>
+                <li><Link to="/precios" className="hover:text-[#ff7665] transition-colors">Planes y OPS</Link></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="text-xl font-bold text-white">Para empresas</h4>
+              <h4 className="text-xl font-bold text-white">Para Clientes</h4>
               <ul className="mt-6 flex flex-col gap-4 text-lg text-[#a4b1c6]">
-                <li><a href="#" className="hover:text-[#ff7665] transition-colors">Publicar ofertas</a></li>
-                <li><a href="#" className="hover:text-[#ff7665] transition-colors">Buscar talento</a></li>
-                <li><Link to="/precios" className="hover:text-[#ff7665] transition-colors">Planes y precios</Link></li>
+                <li><Link to="/register" className="hover:text-[#ff7665] transition-colors">Pedir un servicio</Link></li>
+                <li><Link to="/seguridad" className="hover:text-[#ff7665] transition-colors">Seguridad</Link></li>
+                <li><Link to="/ayuda" className="hover:text-[#ff7665] transition-colors">Centro de ayuda</Link></li>
               </ul>
             </div>
           </div>
