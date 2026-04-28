@@ -14,7 +14,7 @@
     "lint": "eslint src/"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "20"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.4",

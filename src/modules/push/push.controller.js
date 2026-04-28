@@ -5,7 +5,7 @@ import { AppError } from '../../utils/errors.js';
 // Configurar Web Push
 webpush.setVapidDetails(
   'mailto:soporte@kamello.com',
-  process.env.VAPID_PUBLIC_KEY,
+  process.env.VAPID_PUBLIC_KEY || process.env.VITE_VAPID_PUBLIC_KEY,
   process.env.VAPID_PRIVATE_KEY
 );
 

@@ -38,7 +38,15 @@ app.use(express.static(publicDir));
 app.use(requestLogger);
 
 // ── CORS (solo se aplica a las rutas de la API) ───────────────────────────────
-app.use('/api', cors());
+const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS 
+  ? process.env.CORS_ALLOWED_ORIGINS.split(',') 
+  : '*';
+
+app.use('/api', cors({
+  origin: allowedOrigins,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // ── Parseo del body ───────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10kb' }));
