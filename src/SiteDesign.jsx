@@ -20,7 +20,16 @@ export default function SiteDesign() {
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    // Solicitar permiso de ubicación proactivamente para precargar en el Dashboard
+    // 1. Verificación de Sesión Activa (Persistencia PWA)
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate("/dashboard");
+      }
+    };
+    checkSession();
+
+    // 2. Solicitar permiso de ubicación proactivamente
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
