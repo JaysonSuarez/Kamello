@@ -45,6 +45,10 @@ export default function DashboardWrapper() {
   }
 
   // Render Dashboard based on Role
+  if (role === 'admin') {
+    return <AdminDashboard />;
+  }
+
   if (role === 'client' || role === 'cliente') {
     return <ClientDashboard user={user} />;
   }

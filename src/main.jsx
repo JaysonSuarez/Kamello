@@ -1,6 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import SiteDesign from "./SiteDesign";
 import Login from "./Login";
 import Register from "./Register";
@@ -37,6 +37,7 @@ createRoot(document.getElementById("root")).render(
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/perfil" element={<Profile />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/chat/:id" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

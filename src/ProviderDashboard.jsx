@@ -60,7 +60,7 @@ export default function ProviderDashboard() {
   const pinRefs = [useRef(), useRef(), useRef(), useRef()];
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
-  const isPremium = user?.email === 'mieduvan@gmail.com' || profile?.is_premium;
+  const isPremium = Boolean(profile?.is_premium);
   const profileCategory = getServiceCategory(profile?.specialty);
 
   const refreshHistory = async (pid = user?.id) => { if (pid) setHistory(await fetchHistory(pid, "kamellador")); };

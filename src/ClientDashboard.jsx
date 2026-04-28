@@ -461,11 +461,19 @@ export default function ClientDashboard({ user }) {
 
             {/* Provider info */}
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16, background: "#f8fafc", borderRadius: 16, padding: 14 }}>
-              <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#1f2c45", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, flexShrink: 0, overflow: "hidden" }}>
+              <div style={{ 
+                width: 48, height: 48, borderRadius: "50%", background: "#1f2c45", color: "white", 
+                display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, flexShrink: 0, overflow: "hidden",
+                border: activeKamellador?.is_premium ? "2px solid #ffd700" : "none",
+                boxShadow: activeKamellador?.is_premium ? "0 0 10px rgba(255, 215, 0, 0.4)" : "none"
+              }}>
                 {activeKamellador?.avatar_url ? <img src={activeKamellador.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (activeKamellador?.full_name?.[0]?.toUpperCase() || "K")}
               </div>
               <div style={{ minWidth: 0 }}>
-                <p style={{ fontWeight: 700, margin: 0, fontSize: "0.95rem" }}>{activeKamellador?.full_name || "Tu Kamellador"}</p>
+                <p style={{ fontWeight: 700, margin: 0, fontSize: "0.95rem", color: activeKamellador?.is_premium ? "#d4af37" : "inherit" }}>
+                  {activeKamellador?.full_name || "Tu Kamellador"}
+                  {activeKamellador?.is_premium && <span style={{fontSize: "0.65rem", verticalAlign: "middle", marginLeft: 6, background: "#ffd700", color: "#1f2c45", padding: "2px 6px", borderRadius: 8, fontWeight: 900}}>PRO</span>}
+                </p>
                 <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#5f6a79" }}>
                   <Star className="w-3 h-3" style={{ fill: "#f59e0b", color: "#f59e0b" }} /> {activeKamellador?.rating_avg || 0} ({activeKamellador?.rating_count || 0})
                 </div>
@@ -517,11 +525,14 @@ export default function ClientDashboard({ user }) {
         <div className="chat-screen">
           <div className="chat-screen__header">
             <button onClick={() => setChatOpen(false)} style={{ background: "none", border: "none", color: "white", cursor: "pointer", padding: 4 }}><X className="w-5 h-5" /></button>
-            <div className="chat-screen__avatar">
+            <div className="chat-screen__avatar" style={{ border: activeKamellador?.is_premium ? "2px solid #ffd700" : "none" }}>
               {activeKamellador?.avatar_url ? <img src={activeKamellador.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (activeKamellador?.full_name?.[0]?.toUpperCase() || "K")}
             </div>
             <div style={{ minWidth: 0 }}>
-              <p style={{ fontWeight: 700, margin: 0, fontSize: "0.9rem" }}>{activeKamellador?.full_name || "Kamellador"}</p>
+              <p style={{ fontWeight: 700, margin: 0, fontSize: "0.9rem", color: activeKamellador?.is_premium ? "#d4af37" : "inherit" }}>
+                {activeKamellador?.full_name || "Kamellador"}
+                {activeKamellador?.is_premium && <span style={{fontSize: "0.6rem", verticalAlign: "middle", marginLeft: 6, background: "#ffd700", color: "#1f2c45", padding: "2px 4px", borderRadius: 8, fontWeight: 900}}>PRO</span>}
+              </p>
               <p style={{ fontSize: 10, color: "#00cba9", fontWeight: 800, textTransform: "uppercase", margin: 0 }}>{activeCategory?.shortName}</p>
             </div>
           </div>
