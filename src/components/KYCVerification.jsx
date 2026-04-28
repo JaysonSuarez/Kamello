@@ -4,6 +4,7 @@ import { Camera, CheckCircle2, FileText, Loader2, ShieldCheck, Upload, UserCheck
 import '../styles.css';
 
 export default function KYCVerification({ user, profile, onVerified }) {
+  const isRejected = profile?.verification_status === 'rejected';
   const [step, setStep] = useState(profile?.verification_status === 'in_review' ? 4 : 1);
   const [loading, setLoading] = useState(false);
   const [idFile, setIdFile] = useState(null); // Archivo PDF real
@@ -105,6 +106,18 @@ export default function KYCVerification({ user, profile, onVerified }) {
         
         {step === 1 && (
           <div className="animate-fade-in-up">
+            {isRejected && (
+              <div style={{ background: '#fff5f5', border: '1px solid #feb2b2', borderRadius: 16, padding: 16, marginBottom: 20 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#c53030', marginBottom: 8 }}>
+                  <ShieldCheck className="w-5 h-5" />
+                  <span style={{ fontWeight: 800, fontSize: '0.9rem' }}>DOCUMENTOS RECHAZADOS</span>
+                </div>
+                <p style={{ fontSize: '0.85rem', color: '#742a2a', margin: 0, lineHeight: 1.4 }}>
+                  Tu verificación previa no fue aprobada. Por favor, asegúrate de que el PDF de la cédula sea legible y la selfie tenga buena iluminación.
+                </p>
+              </div>
+            )}
+            
             <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: 20 }}>Documentos Requeridos</h2>
             <div style={{ background: '#f7f3f1', padding: 16, borderRadius: 16, marginBottom: 16 }}>
               <p style={{ fontWeight: 700, margin: '0 0 4px' }}>1. Cédula en PDF</p>
@@ -114,7 +127,9 @@ export default function KYCVerification({ user, profile, onVerified }) {
               <p style={{ fontWeight: 700, margin: '0 0 4px' }}>2. Selfie Biometríca</p>
               <p style={{ fontSize: '0.85rem', color: '#5f6a79' }}>Foto actual de tu rostro.</p>
             </div>
-            <button onClick={() => setStep(2)} className="btn-primary btn-primary--accent">Comenzar</button>
+            <button onClick={() => setStep(2)} className="btn-primary btn-primary--accent">
+              {isRejected ? "Enviar nuevamente documentos" : "Comenzar Verificación"}
+            </button>
           </div>
         )}
 
