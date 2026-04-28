@@ -14,6 +14,7 @@ import BottomSheet from "./components/BottomSheet";
 import BottomNav from "./components/BottomNav";
 import ProfileView from "./components/ProfileView";
 import { getRoute } from "./utils/geo";
+import { usePushNotifications } from "./hooks/usePushNotifications";
 
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
@@ -64,6 +65,7 @@ export default function ClientDashboard({ user }) {
   if (!user) return <div className="app-shell" style={{ justifyContent: "center", alignItems: "center" }}><Loader2 className="h-8 w-8 animate-spin text-[#ff7665]" /></div>;
   
   const navigate = useNavigate();
+  const { subscribeToPush } = usePushNotifications();
   const { fetchOperation, fetchActiveOperation, fetchHistory, rateOperation, completeOperation, loadingById } = useOperations();
 
   const [loading, setLoading] = useState(true);
@@ -110,6 +112,8 @@ export default function ClientDashboard({ user }) {
         console.error("Error initializing ClientDashboard:", err);
       } finally {
         setLoading(false);
+        // Solicitar notificaciones al cliente
+        setTimeout(() => subscribeToPush(user.id), 2000);
       }
     })();
   }, [user.id]);
