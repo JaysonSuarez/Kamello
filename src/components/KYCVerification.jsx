@@ -88,6 +88,14 @@ export default function KYCVerification({ user, profile, onVerified }) {
     stopCamera();
   };
 
+  // EFECTO CRÍTICO: Si el admin rechaza mientras el usuario está viendo la pantalla,
+  // forzamos el regreso al paso 1 para que vea el mensaje de error.
+  React.useEffect(() => {
+    if (profile?.verification_status === 'rejected') {
+      setStep(1);
+    }
+  }, [profile?.verification_status]);
+
   React.useEffect(() => {
     if (videoRef.current && stream) videoRef.current.srcObject = stream;
   }, [stream]);
