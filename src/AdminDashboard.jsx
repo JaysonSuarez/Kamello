@@ -20,11 +20,11 @@ export default function AdminDashboard() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("is_admin")
+        .select("role, is_admin")
         .eq("id", user.id)
         .single();
 
-      if (!profile?.is_admin) {
+      if (profile?.role !== 'admin' && !profile?.is_admin) {
         alert("Acceso denegado. Esta sección es solo para administradores.");
         return navigate("/dashboard");
       }
