@@ -16,6 +16,22 @@ export default function Register() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  React.useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        // Redirigir según el rol guardado en los metadatos
+        const userRole = session.user.user_metadata?.role;
+        if (userRole === "kamellador") {
+          navigate("/onboarding");
+        } else {
+          navigate("/dashboard");
+        }
+      }
+    };
+    checkSession();
+  }, [navigate]);
+
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);

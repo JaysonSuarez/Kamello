@@ -69,9 +69,11 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [pendingUsers, setPendingUsers] = useState([]);
+  const [notifStatus, setNotifStatus] = useState('idle'); // 'idle' | 'active' | 'denied'
   const [modal, setModal] = useState({ open: false, title: "", message: "", onConfirm: null, type: "confirm", icon: Info, confirmColor: "#1f2c45" });
   const navigate = useNavigate();
   const { subscribeToPush } = usePushNotifications();
+  const adminUserIdRef = React.useRef(null);
 
   useEffect(() => {
     checkAdmin();
@@ -81,6 +83,7 @@ export default function AdminDashboard() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return navigate("/login");
+      adminUserIdRef.current = user.id;
 
       const { data: profile } = await supabase
         .from("profiles")
@@ -104,8 +107,17 @@ export default function AdminDashboard() {
       setIsAdmin(true);
       fetchPendingUsers();
       
-      // Suscribir al Admin a notificaciones proactivamente
-      setTimeout(() => subscribeToPush(user.id), 2000);
+      // Check if already subscribed
+      const existingPermission = Notification?.permission;
+      if (existingPermission === 'granted') {
+        setNotifStatus('active');
+        // Re-subscribe silently to ensure subscription is fresh
+        setTimeout(() => subscribeToPush(user.id), 1500);
+      } else if (existingPermission === 'denied') {
+        setNotifStatus('denied');
+      } else {
+        setNotifStatus('idle');
+      }
 
       // --- TIEMPO REAL: Escuchar nuevos registros ---
       const adminChannel = supabase.channel('admin_realtime')
@@ -210,7 +222,18 @@ export default function AdminDashboard() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => subscribeToPush()} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', padding: 10, borderRadius: 12 }}>
+          <button 
+            onClick={async () => {
+              const result = await subscribeToPush(adminUserIdRef.current);
+              setNotifStatus(result ? 'active' : 'denied');
+            }} 
+            title={notifStatus === 'active' ? 'Notificaciones activas' : 'Activar notificaciones'}
+            style={{ 
+              background: notifStatus === 'active' ? 'rgba(0,203,169,0.25)' : 'rgba(255,255,255,0.1)', 
+              border: notifStatus === 'active' ? '1px solid rgba(0,203,169,0.5)' : 'none',
+              color: notifStatus === 'active' ? '#00cba9' : 'white', 
+              padding: 10, borderRadius: 12 
+            }}>
             <Bell className="w-5 h-5" />
           </button>
           <button onClick={handleLogout} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', padding: 10, borderRadius: 12 }}>
@@ -220,6 +243,41 @@ export default function AdminDashboard() {
       </div>
 
       <div style={{ padding: 20 }}>
+        {notifStatus !== 'active' && (
+          <div style={{
+            background: notifStatus === 'denied' ? '#fff5f5' : '#fffbeb',
+            border: `1px solid ${notifStatus === 'denied' ? '#fca5a5' : '#fcd34d'}`,
+            borderRadius: 20,
+            padding: '16px 20px',
+            marginBottom: 20,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 14
+          }}>
+            <Bell className="w-6 h-6 flex-shrink-0" style={{ color: notifStatus === 'denied' ? '#ef4444' : '#f59e0b' }} />
+            <div style={{ flex: 1 }}>
+              <p style={{ fontWeight: 800, margin: '0 0 2px', fontSize: '0.9rem', color: '#1f2c45' }}>
+                {notifStatus === 'denied' ? '⚠️ Notificaciones bloqueadas' : '🔔 Activa las notificaciones push'}
+              </p>
+              <p style={{ margin: 0, fontSize: '0.78rem', color: '#5f6a79', lineHeight: 1.4 }}>
+                {notifStatus === 'denied'
+                  ? 'Desbloqueala desde la configuración del navegador para recibir alertas cuando lleguen documentos.'
+                  : 'Recibe alertas inmediatas en tu dispositivo cuando un Kamellador envíe documentos.'}
+              </p>
+            </div>
+            {notifStatus !== 'denied' && (
+              <button
+                onClick={async () => {
+                  const result = await subscribeToPush(adminUserIdRef.current);
+                  setNotifStatus(result ? 'active' : 'denied');
+                }}
+                style={{ background: '#1f2c45', color: 'white', border: 'none', borderRadius: 12, padding: '8px 16px', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer', whiteSpace: 'nowrap' }}
+              >
+                Activar
+              </button>
+            )}
+          </div>
+        )}
         {pendingUsers.length === 0 && !loading && (
           <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 32, border: '1px solid #efe7e2' }}>
             <CheckCircle2 className="w-16 h-16 mx-auto text-[#00cba9] mb-4" />
@@ -237,6 +295,7 @@ export default function AdminDashboard() {
               <div>
                 <p style={{ fontWeight: 900, margin: 0, fontSize: '1.25rem', color: '#1f2c45' }}>{user.full_name}</p>
                 <p style={{ color: '#ff7665', margin: 0, fontSize: '0.85rem', fontWeight: 800 }}>{user.specialty?.toUpperCase()}</p>
+                {user.cedula && <p style={{ color: '#a4b1c6', margin: '2px 0 0', fontSize: '0.78rem', fontWeight: 700 }}>Céd: {user.cedula}</p>}
               </div>
             </div>
 

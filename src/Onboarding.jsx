@@ -40,6 +40,7 @@ export default function Onboarding() {
   const [phone, setPhone] = useState("");
   const [fullName, setFullName] = useState("");
   const [age, setAge] = useState("");
+  const [cedula, setCedula] = useState("");
 
   // Estados Cliente
   const [address, setAddress] = useState("");
@@ -104,15 +105,28 @@ export default function Onboarding() {
   };
 
   const handleFinishKamellador = async () => {
-    if (!specialty || !phone || !fullName || !age) return alert("Por favor completa todos los campos.");
+    if (!specialty || !phone || !fullName || !age || !cedula) return alert("Por favor completa todos los campos, incluyendo tu número de cédula.");
     setLoading(true);
     try {
+      // Verificar que la cédula no esté ya registrada
+      const { data: existing } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('cedula', cedula.trim())
+        .neq('id', user.id)
+        .maybeSingle();
+      if (existing) {
+        alert("Ese número de cédula ya está registrado. Si crees que es un error, contacta a soporte.");
+        setLoading(false);
+        return;
+      }
       const { error } = await supabase.from('profiles').update({
         role: 'kamellador',
         specialty,
         phone,
         full_name: fullName,
         age: parseInt(age),
+        cedula: cedula.trim(),
         is_active: false // Inactivo hasta que lo aprueben
       }).eq('id', user.id);
       if (error) throw error;
@@ -256,6 +270,12 @@ export default function Onboarding() {
                       <input type="text" placeholder="Tu nombre" value={fullName} onChange={(e) => setFullName(e.target.value)}
                         className="w-full px-6 py-4 rounded-[24px] bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none font-bold text-[#1f2c45]" />
                     </div>
+                    <div>
+                      <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">Número de Cédula <span className="text-[#ff7665]">(requerido)</span></label>
+                      <input type="text" placeholder="Ej: 1234567890" value={cedula} onChange={(e) => setCedula(e.target.value.replace(/\D/g, ''))}
+                        className="w-full px-6 py-4 rounded-[24px] bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none font-bold text-[#1f2c45]" />
+                      <p className="text-xs text-[#a4b1c6] mt-1 pl-2">Solo números, sin puntos ni guiones. Único por persona.</p>
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">Celular</label>
@@ -269,9 +289,9 @@ export default function Onboarding() {
                       </div>
                     </div>
                   </div>
-                  <button onClick={handleFinishKamellador} disabled={loading || !phone || !fullName || !age}
+                  <button onClick={handleFinishKamellador} disabled={loading || !phone || !fullName || !age || !cedula}
                     className="w-full mt-10 bg-[#ff7665] text-white py-5 rounded-[24px] font-bold text-lg shadow-lg shadow-[#ff7665]/30 hover:bg-[#ff5a45] transition-all">
-                    {loading ? "Cargando..." : "Siguiente: Documentos"}
+                    {loading ? "Verificando cédula..." : "Siguiente: Documentos"}
                   </button>
                 </div>
               )}

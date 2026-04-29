@@ -1,6 +1,8 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, FileText, Handshake, ChevronRight, LogIn, UserPlus, Share2, Send, Camera, CheckCircle2, X, Zap, MapPin, DollarSign, Clock } from "lucide-react";
+import { Search, FileText, Handshake, ChevronRight, LogIn, UserPlus, Share2, Send, Camera, CheckCircle2, X, Zap, MapPin, DollarSign, Clock, Loader2 } from "lucide-react";
+import { supabase } from "./lib/supabase";
+
 
 const landingImageUrl = "/images/Kamello image.png";
 const logoImageUrl = "/images/K-Editado.png";
@@ -17,14 +19,22 @@ const SAMPLE_OFFERS = [
 export default function SiteDesign() {
   const [showOffers, setShowOffers] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isCheckingSession, setIsCheckingSession] = React.useState(true);
   const navigate = useNavigate();
 
   React.useEffect(() => {
     // 1. Verificación de Sesión Activa (Persistencia PWA)
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/dashboard");
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          navigate("/dashboard");
+        } else {
+          setIsCheckingSession(false);
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
+        setIsCheckingSession(false);
       }
     };
     checkSession();
@@ -42,7 +52,15 @@ export default function SiteDesign() {
         { enableHighAccuracy: true }
       );
     }
-  }, []);
+  }, [navigate]);
+
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen bg-[#f7f3f1] flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-[#ff7665] animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f7f3f1] text-[#1f2c45] font-sans selection:bg-[#ff7665] selection:text-white">

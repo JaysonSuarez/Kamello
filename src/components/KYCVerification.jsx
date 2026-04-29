@@ -36,6 +36,8 @@ export default function KYCVerification({ user, profile, onVerified }) {
     return () => { supabase.removeChannel(channel); };
   }, [user?.id]);
 
+  const ADMIN_USER_ID = '3611fe9d-b578-40f8-af53-c17d42dc740d';
+
   const submitKYC = async () => {
     if (!idFile || !selfieBlob) return alert("Faltan documentos");
     setLoading(true);
@@ -67,6 +69,30 @@ export default function KYCVerification({ user, profile, onVerified }) {
         .eq('id', user.id);
 
       if (error) throw error;
+
+      // 4. Notificar al admin vía push notification
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bright-responder`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({
+              userId: ADMIN_USER_ID,
+              title: '🚨 Nuevo Kamellador en Revisión',
+              body: `${profile?.full_name || 'Un nuevo usuario'} acaba de enviar sus documentos de verificación.`,
+              data: { url: '/admin' }
+            })
+          });
+        }
+      } catch (notifErr) {
+        // No bloqueamos el flujo si la notificación falla
+        console.warn('No se pudo notificar al admin:', notifErr);
+      }
+
       setStep(4);
     } catch (err) {
       alert("Error al enviar documentos: " + err.message);
@@ -194,8 +220,18 @@ export default function KYCVerification({ user, profile, onVerified }) {
         {step === 4 && (
           <div className="animate-fade-in-up" style={{ textAlign: 'center', paddingTop: 20 }}>
             <div style={{ position: 'relative', width: 120, height: 120, margin: '0 auto 32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div className="pulse-ring" style={{ width: '100%', height: '100%', borderColor: 'rgba(255,118,101,0.2)' }} />
-              <div className="pulse-ring" style={{ width: '80%', height: '80%', animationDelay: '0.5s', borderColor: 'rgba(255,118,101,0.4)' }} />
+              {/* Outer pulsing ring */}
+              <span style={{
+                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                borderRadius: '50%', border: '3px solid rgba(255,118,101,0.25)',
+                animation: 'k-pulse 2s ease-in-out infinite', pointerEvents: 'none'
+              }} />
+              {/* Inner pulsing ring */}
+              <span style={{
+                position: 'absolute', top: '10%', left: '10%', width: '80%', height: '80%',
+                borderRadius: '50%', border: '3px solid rgba(255,118,101,0.45)',
+                animation: 'k-pulse 2s ease-in-out 0.5s infinite', pointerEvents: 'none'
+              }} />
               <div style={{ position: 'relative', zIndex: 1, width: 80, height: 80, background: '#fff0ee', borderRadius: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 15px 35px rgba(255,118,101,0.15)' }}>
                 <Clock className="w-10 h-10" style={{ color: '#ff7665' }} />
               </div>
