@@ -153,6 +153,31 @@ export default function ProviderDashboard() {
         if (!localStorage.getItem("kamello_walkthrough_seen")) {
           setTimeout(() => setShowWalkthrough(true), 3000);
         }
+
+        // --- Wompi Payment Processor ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const transactionId = urlParams.get('id');
+        const pack = urlParams.get('pack');
+        
+        if (transactionId && pack) {
+          const { data, error } = await supabase.rpc('process_wompi_payment', {
+            p_transaction_id: transactionId,
+            p_user_id: au.id,
+            p_pack: pack
+          });
+          
+          if (!error) {
+            showAlert("¡Pago Exitoso! 🎉", `Has recibido ${data.ops_added} OPS correctamente.`, "success");
+            const { data: updatedProfile } = await supabase.from("profiles").select("*").eq("id", au.id).single();
+            if (updatedProfile) setProfile(updatedProfile);
+          } else if (!error.message.includes('TRANSACTION_ALREADY_PROCESSED')) {
+            showAlert("Atención", "Hubo un problema verificando tu pago. Contacta a soporte.", "error");
+          }
+          // Clean URL to prevent re-processing
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        // -------------------------------
+
       } catch (err) {
         console.error("Error initializing ProviderDashboard:", err);
       } finally {
@@ -818,7 +843,13 @@ export default function ProviderDashboard() {
                   <h4 style={{ margin: 0, fontWeight: 800 }}>Pack Básico</h4>
                   <div style={{ fontSize: '1.25rem', fontWeight: 900, margin: '4px 0' }}>$15.000</div>
                   <p style={{ fontSize: '0.75rem', color: '#00cba9', fontWeight: 800, margin: '0 0 12px' }}>5 OPS</p>
-                  <button className="btn-primary" style={{ padding: '10px', fontSize: '0.8rem' }}>Comprar</button>
+                  <button 
+                    onClick={() => window.location.href = "https://checkout.wompi.co/l/9sDgew"}
+                    className="btn-primary" 
+                    style={{ padding: '10px', fontSize: '0.8rem' }}
+                  >
+                    Comprar
+                  </button>
                 </div>
                 <div style={{ background: 'white', borderRadius: 24, padding: 20, border: '2px solid #ff7665' }}>
                   <div style={{ background: '#fff0ee', width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
@@ -827,7 +858,13 @@ export default function ProviderDashboard() {
                   <h4 style={{ margin: 0, fontWeight: 800 }}>Pack Pro</h4>
                   <div style={{ fontSize: '1.25rem', fontWeight: 900, margin: '4px 0' }}>$35.000</div>
                   <p style={{ fontSize: '0.75rem', color: '#00cba9', fontWeight: 800, margin: '0 0 12px' }}>15 OPS</p>
-                  <button className="btn-primary btn-primary--accent" style={{ padding: '10px', fontSize: '0.8rem' }}>Comprar</button>
+                  <button 
+                    onClick={() => window.location.href = "https://checkout.wompi.co/l/TT69P0"}
+                    className="btn-primary btn-primary--accent" 
+                    style={{ padding: '10px', fontSize: '0.8rem' }}
+                  >
+                    Comprar
+                  </button>
                 </div>
               </div>
 
