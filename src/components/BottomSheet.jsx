@@ -47,21 +47,38 @@ export default function BottomSheet({
   );
 
   const handleDragStart = useCallback(
-    (clientY) => {
+    (e) => {
       if (disableDrag) return;
+      
+      // Check if touching a scrollable area that is not at the top
+      const scrollable = e.target.closest('.bottom-sheet__content');
+      if (scrollable && scrollable.scrollTop > 0) {
+        dragRef.current.ignore = true;
+        return;
+      }
+      
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
       dragRef.current = {
         startY: clientY,
         startHeight: currentHeight,
         dragging: true,
+        ignore: false,
       };
     },
     [currentHeight, disableDrag]
   );
 
   const handleDragMove = useCallback(
-    (clientY) => {
-      if (!dragRef.current.dragging || disableDrag) return;
+    (e) => {
+      if (!dragRef.current.dragging || dragRef.current.ignore || disableDrag) return;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
       const dy = dragRef.current.startY - clientY;
+      
+      // If pulling down and we're at the top of a scroll container, prevent default to avoid overscroll bounce
+      if (dy < 0 && e.cancelable) {
+        e.preventDefault();
+      }
+
       const dvh = (dy / window.innerHeight) * 100;
       const newHeight = Math.max(
         snapPoints[0],
@@ -76,9 +93,13 @@ export default function BottomSheet({
   );
 
   const handleDragEnd = useCallback(
-    (clientY) => {
-      if (!dragRef.current.dragging || disableDrag) return;
+    (e) => {
+      if (!dragRef.current.dragging || dragRef.current.ignore || disableDrag) {
+        dragRef.current.ignore = false;
+        return;
+      }
       dragRef.current.dragging = false;
+      const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
       const dy = dragRef.current.startY - clientY;
       const dvh = (dy / window.innerHeight) * 100;
       const finalHeight = dragRef.current.startHeight + dvh;
@@ -93,17 +114,12 @@ export default function BottomSheet({
     [disableDrag, findClosestSnap, onSnapChange]
   );
 
-  // Touch handlers
-  const onTouchStart = (e) => handleDragStart(e.touches[0].clientY);
-  const onTouchMove = (e) => handleDragMove(e.touches[0].clientY);
-  const onTouchEnd = (e) => handleDragEnd(e.changedTouches[0].clientY);
-
   // Mouse handlers (for desktop testing)
   const onMouseDown = (e) => {
-    handleDragStart(e.clientY);
-    const onMove = (me) => handleDragMove(me.clientY);
+    handleDragStart(e);
+    const onMove = (me) => handleDragMove(me);
     const onUp = (me) => {
-      handleDragEnd(me.clientY);
+      handleDragEnd(me);
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
     };
@@ -111,20 +127,34 @@ export default function BottomSheet({
     window.addEventListener("mouseup", onUp);
   };
 
+  // Prevent default touchmove on the sheet if we are actively dragging it
+  useEffect(() => {
+    const sheet = sheetRef.current;
+    if (!sheet) return;
+    
+    const onTouchMoveNative = (e) => {
+      if (dragRef.current.dragging && !dragRef.current.ignore) {
+        // Only prevent default if we are actually dragging the sheet (e.g. pulling down)
+        // to stop the browser's pull-to-refresh or bounce.
+      }
+    };
+    
+    sheet.addEventListener('touchmove', onTouchMoveNative, { passive: false });
+    return () => sheet.removeEventListener('touchmove', onTouchMoveNative);
+  }, []);
+
   return (
     <div
       ref={sheetRef}
       className={`bottom-sheet ${className}`}
       style={{ height: `${currentHeight}vh` }}
+      onTouchStart={handleDragStart}
+      onTouchMove={handleDragMove}
+      onTouchEnd={handleDragEnd}
+      onMouseDown={onMouseDown}
     >
       {/* Drag handle */}
-      <div
-        className="bottom-sheet__handle"
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-        onMouseDown={onMouseDown}
-      >
+      <div className="bottom-sheet__handle">
         <div className="bottom-sheet__handle-bar" />
       </div>
 

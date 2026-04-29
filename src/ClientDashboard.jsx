@@ -201,7 +201,34 @@ export default function ClientDashboard({ user }) {
       status: "pending", expires_at: new Date(Date.now() + 3 * 60 * 1000).toISOString(),
     }).select(OPERATION_SELECT).single();
     if (error) alert("Error: " + error.message);
-    else { setActiveRequest(data); await refreshHistory(); }
+    else { 
+      setActiveRequest(data); 
+      await refreshHistory(); 
+
+      // Send Push Notification to Online Kamelladors
+      try {
+        const { data: kamelladors } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("role", "kamellador")
+          .eq("is_online", true);
+
+        if (kamelladors && kamelladors.length > 0) {
+          kamelladors.forEach(k => {
+            supabase.functions.invoke("bright-responder", {
+              body: {
+                userId: k.id,
+                title: "Nueva Solicitud Cercana 🚀",
+                body: `Un cliente busca: ${category} por $${formatPrice(finalBudget)}`,
+                data: { url: "/" }
+              }
+            });
+          });
+        }
+      } catch (err) {
+        console.error("Error sending push to kamelladors", err);
+      }
+    }
     setLoading(false);
   };
 

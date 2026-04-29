@@ -460,23 +460,17 @@ export default function ProviderDashboard() {
   const handleVerifyCode = async () => {
     if (securityCode.length !== 4) return;
     setIsVerifyingCode(true);
+    setPinError("");
     try {
-      if (securityCode === String(activeOperation.service_code)) {
-        const { data, error } = await supabase.from("operations")
-          .update({ status: 'in_progress' })
-          .eq("id", activeOperation.id)
-          .select(OPERATION_SELECT)
-          .single();
-        if (error) throw error;
+      const data = await startOperation(activeOperation.id, securityCode);
+      if (data) {
         setActiveOperation(data);
         setSecurityCode("");
-        // Credits will be automatically updated via DB trigger and real-time sync
-      } else {
-        setToast("Código incorrecto. Verifica con el cliente.");
-        setTimeout(() => setToast(null), 3000);
+        setToast(null);
       }
     } catch (err) {
-      alert("Error al verificar código: " + err.message);
+      setToast(err.message || "Código incorrecto");
+      setTimeout(() => setToast(null), 3000);
     } finally {
       setIsVerifyingCode(false);
     }

@@ -43,20 +43,25 @@ export function useOperations() {
   const fetchActiveOperation = useCallback(async (userId, role) => {
     const column = role === "client" || role === "cliente" ? "client_id" : "kamellador_id";
 
+    // Priorizamos 'in_progress' y 'accepted' sobre 'pending' y 'completed'
+    // Una forma sencilla es hacer dos consultas o usar un ordenamiento que ponga accepted/in_progress primero.
     const { data, error } = await supabase
       .from("operations")
       .select(OPERATION_SELECT)
       .eq(column, userId)
       .in("status", ACTIVE_OPERATION_STATUSES)
-      .order("updated_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .order("status", { ascending: true }) // 'accepted' < 'in_progress' < 'pending'? No, alfabéticamente no sirve.
+      .order("updated_at", { ascending: false });
 
     if (error) {
       throw new Error(getErrorMessage(error, "No se pudo cargar la operacion activa."));
     }
 
-    return data;
+    // Filtramos manualmente para priorizar
+    const priorityOrder = ["in_progress", "accepted", "pending", "completed"];
+    const sorted = (data || []).sort((a, b) => priorityOrder.indexOf(a.status) - priorityOrder.indexOf(b.status));
+
+    return sorted[0] || null;
   }, []);
 
   const fetchHistory = useCallback(async (userId, role, limit = 8) => {
