@@ -3,11 +3,73 @@ import { supabase } from "./lib/supabase";
 import { Loader2, CheckCircle2, XCircle, FileText, UserCheck, ShieldAlert, LogOut, ExternalLink, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { usePushNotifications } from "./hooks/usePushNotifications";
+import { Clock, Info } from "lucide-react";
+
+function AppModal({ isOpen, title, message, onConfirm, onCancel, type = "confirm", icon: Icon = Info, confirmText = "Aceptar", confirmColor = "#1f2c45" }) {
+  if (!isOpen) return null;
+  return (
+    <div className="animate-fade-in" style={{ position: 'fixed', inset: 0, background: 'rgba(31,44,69,0.85)', backdropFilter: 'blur(10px)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div className="animate-scale-in" style={{ background: 'white', borderRadius: 40, padding: '40px 32px', maxWidth: 420, width: '100%', textAlign: 'center', boxShadow: '0 25px 60px rgba(0,0,0,0.3)' }}>
+        <div style={{ width: 80, height: 80, background: `${confirmColor}15`, borderRadius: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+          <Icon className="w-10 h-10" style={{ color: confirmColor }} />
+        </div>
+        <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', color: '#1f2c45', marginBottom: 12, fontWeight: 900 }}>{title}</h3>
+        <p style={{ color: "#5f6a79", fontSize: "1rem", marginBottom: 32, lineHeight: 1.5 }}>{message}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <button onClick={onConfirm} className="btn-primary" style={{ background: confirmColor, height: 56, borderRadius: 18 }}>{confirmText}</button>
+          {type === "confirm" && (
+            <button onClick={onCancel} style={{ background: 'none', border: 'none', color: '#a4b1c6', fontWeight: 700, padding: 12 }}>Cancelar</button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SecureFileLink({ path, label, isImage = false }) {
+  const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!path) return;
+    const fetchUrl = async () => {
+      try {
+        // Extraer el path relativo del bucket si la URL es absoluta
+        const relativePath = path.split('/kyc_documents/')[1] || path;
+        const { data, error } = await supabase.storage
+          .from('kyc_documents')
+          .createSignedUrl(relativePath, 3600); // URL válida por 1 hora
+        
+        if (error) throw error;
+        setUrl(data.signedUrl);
+      } catch (err) {
+        console.error("Error signing URL:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUrl();
+  }, [path]);
+
+  if (loading) return <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.8rem', color: '#a4b1c6' }}><Loader2 className="w-3 h-3 animate-spin" /> Cargando archivo seguro...</div>;
+  if (!url) return <div style={{ fontSize: '0.8rem', color: '#ef4444' }}>Error al cargar archivo</div>;
+
+  if (isImage) {
+    return <img src={url} alt={label} style={{ width: '100%', height: 250, objectFit: 'cover', borderRadius: 16 }} />;
+  }
+
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer" style={{ background: '#1f2c45', color: 'white', padding: '6px 12px', borderRadius: 10, fontSize: '0.7rem', fontWeight: 800, textDecoration: 'none' }}>
+      ABRIR {label}
+    </a>
+  );
+}
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [pendingUsers, setPendingUsers] = useState([]);
+  const [modal, setModal] = useState({ open: false, title: "", message: "", onConfirm: null, type: "confirm", icon: Info, confirmColor: "#1f2c45" });
   const navigate = useNavigate();
   const { subscribeToPush } = usePushNotifications();
 
@@ -27,8 +89,16 @@ export default function AdminDashboard() {
         .single();
 
       if (profile?.role !== 'admin' && !profile?.is_admin) {
-        alert("Acceso denegado.");
-        return navigate("/dashboard");
+        setModal({
+          open: true,
+          title: "Acceso Denegado",
+          message: "No tienes permisos de administrador para entrar aquí.",
+          onConfirm: () => navigate("/dashboard"),
+          type: "alert",
+          icon: ShieldAlert,
+          confirmColor: "#ef4444"
+        });
+        return;
       }
 
       setIsAdmin(true);
@@ -78,7 +148,26 @@ export default function AdminDashboard() {
 
   const handleAction = async (userId, action) => {
     const isApprove = action === 'approve';
-    if (!window.confirm(isApprove ? "¿Aprobar perfil?" : "¿Rechazar perfil?")) return;
+    
+    setModal({
+      open: true,
+      title: isApprove ? "¿Aprobar perfil?" : "¿Rechazar perfil?",
+      message: isApprove 
+        ? "El técnico podrá empezar a recibir solicitudes de inmediato." 
+        : "Se eliminarán sus documentos y el acceso será denegado.",
+      icon: isApprove ? UserCheck : XCircle,
+      confirmColor: isApprove ? "#00cba9" : "#ef4444",
+      confirmText: isApprove ? "Sí, Aprobar" : "Sí, Rechazar",
+      type: "confirm",
+      onConfirm: async () => {
+        setModal(prev => ({ ...prev, open: false }));
+        await executeAction(userId, action);
+      }
+    });
+  };
+
+  const executeAction = async (userId, action) => {
+    const isApprove = action === 'approve';
 
     try {
       const updateData = isApprove ? {
@@ -96,7 +185,15 @@ export default function AdminDashboard() {
 
       setPendingUsers(prev => prev.filter(u => u.id !== userId));
     } catch (err) {
-      alert("Error: " + err.message);
+      setModal({
+        open: true,
+        title: "Error",
+        message: err.message,
+        onConfirm: () => setModal(prev => ({ ...prev, open: false })),
+        type: "alert",
+        icon: ShieldAlert,
+        confirmColor: "#ef4444"
+      });
     }
   };
 
@@ -150,7 +247,7 @@ export default function AdminDashboard() {
                     <FileText className="w-5 h-5 text-[#ff7665]" />
                     <span style={{ fontWeight: 800, fontSize: '0.9rem' }}>Cédula (PDF)</span>
                   </div>
-                  <a href={user.id_document_url} target="_blank" rel="noopener noreferrer" style={{ background: '#1f2c45', color: 'white', padding: '6px 12px', borderRadius: 10, fontSize: '0.7rem', fontWeight: 800, textDecoration: 'none' }}>ABRIR PDF</a>
+                  <SecureFileLink path={user.id_document_url} label="PDF" />
                 </div>
               </div>
 
@@ -159,7 +256,7 @@ export default function AdminDashboard() {
                   <UserCheck className="w-5 h-5 text-[#ff7665]" />
                   <span style={{ fontWeight: 800, fontSize: '0.9rem' }}>Selfie Biométrica</span>
                 </div>
-                <img src={user.selfie_url} alt="Selfie" style={{ width: '100%', height: 250, objectFit: 'cover', borderRadius: 16 }} />
+                <SecureFileLink path={user.selfie_url} label="Selfie" isImage={true} />
               </div>
             </div>
 
@@ -170,6 +267,18 @@ export default function AdminDashboard() {
           </div>
         ))}
       </div>
+
+      <AppModal 
+        isOpen={modal.open}
+        title={modal.title}
+        message={modal.message}
+        onConfirm={modal.onConfirm}
+        onCancel={() => setModal(prev => ({ ...prev, open: false }))}
+        type={modal.type}
+        icon={modal.icon}
+        confirmColor={modal.confirmColor}
+        confirmText={modal.confirmText}
+      />
     </div>
   );
 }

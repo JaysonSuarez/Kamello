@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { 
   User, Settings, MapPin, Phone, Briefcase, ShieldCheck, 
-  Camera, Award, Star, Save, Loader2, Trash2, X, LogOut 
+  Camera, Award, Star, Save, Loader2, Trash2, X, LogOut, Zap 
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { SERVICE_CATEGORIES } from "../serviceCategories";
@@ -17,7 +17,8 @@ export default function ProfileView({ user, onLogout }) {
     specialty: "",
     phone: "",
     age: "",
-    avatar_url: ""
+    avatar_url: "",
+    address: ""
   });
 
   useEffect(() => {
@@ -39,7 +40,8 @@ export default function ProfileView({ user, onLogout }) {
         specialty: data.specialty || "",
         phone: data.phone || "",
         age: data.age || "",
-        avatar_url: data.avatar_url || ""
+        avatar_url: data.avatar_url || "",
+        address: data.address || ""
       });
     }
     setLoading(false);
@@ -53,10 +55,11 @@ export default function ProfileView({ user, onLogout }) {
         .from('profiles')
         .update({
           full_name: formData.full_name,
-          specialty: formData.specialty,
+          specialty: profile.role === 'kamellador' ? formData.specialty : null,
           phone: formData.phone,
           age: parseInt(formData.age) || null,
-          avatar_url: formData.avatar_url
+          avatar_url: formData.avatar_url,
+          address: profile.role === 'client' ? formData.address : null
         })
         .eq('id', user.id);
 
@@ -152,7 +155,7 @@ export default function ProfileView({ user, onLogout }) {
               </div>
               <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)' }} />
               <div style={{ textAlign: 'center' }}>
-                <span style={{ display: 'block', fontSize: '1rem', fontWeight: 800 }}>{profile?.rating_count || '0'}</span>
+                <span style={{ display: 'block', fontSize: '1rem', fontWeight: 800 }}>{profile?.services_count || '0'}</span>
                 <span style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', opacity: 0.5 }}>Servicios</span>
               </div>
             </div>
@@ -173,12 +176,19 @@ export default function ProfileView({ user, onLogout }) {
             <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>Nombre Completo</label>
             <input type="text" value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} className="sheet-input" required />
           </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>Especialidad / Rol</label>
-            <select value={formData.specialty} onChange={e => setFormData({...formData, specialty: e.target.value})} className="sheet-input">
-              {SERVICE_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
+          {profile?.role === 'kamellador' ? (
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>Especialidad / Rol</label>
+              <select value={formData.specialty} onChange={e => setFormData({...formData, specialty: e.target.value})} className="sheet-input">
+                {SERVICE_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+          ) : (
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>Dirección de Servicio</label>
+              <input type="text" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="sheet-input" placeholder="Ej: Calle 100 #15-20" />
+            </div>
+          )}
           <div style={{ display: 'flex', gap: '12px' }}>
             <div style={{ flex: 1 }}>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>Teléfono</label>
@@ -195,6 +205,61 @@ export default function ProfileView({ user, onLogout }) {
         </form>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {profile?.role === 'kamellador' && (
+            <div style={{ background: 'linear-gradient(135deg, #1f2c45 0%, #2c3e50 100%)', borderRadius: '24px', padding: '24px', color: 'white', border: '1px solid rgba(255,118,101,0.2)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: '-10px', right: '-10px', width: '80px', height: '80px', background: 'rgba(255,118,101,0.1)', borderRadius: '50%', blur: '40px' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <Award className="w-6 h-6 text-[#ff7665]" />
+                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800 }}>Nivel de Lealtad</h3>
+              </div>
+              
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, opacity: 0.8 }}>Total OPS invertidos</span>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#ff7665' }}>{profile?.total_ops_spent || 0}</span>
+                </div>
+                <div style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                  {/* Calculate progress to next milestone */}
+                  {(() => {
+                    const spent = profile?.total_ops_spent || 0;
+                    let next = 10;
+                    if (spent >= 10 && spent < 50) next = 50;
+                    else if (spent >= 50 && spent < 100) next = 100;
+                    else if (spent >= 100 && spent < 200) next = 200;
+                    else if (spent >= 200) next = Math.ceil((spent + 1) / 100) * 100;
+                    const progress = Math.min((spent / next) * 100, 100);
+                    return <div style={{ width: `${progress}%`, height: '100%', background: '#ff7665', borderRadius: '4px', transition: 'width 1s ease-out' }} />;
+                  })()}
+                </div>
+                <p style={{ fontSize: '0.7rem', marginTop: '8px', opacity: 0.6, fontWeight: 600 }}>
+                  {(() => {
+                    const spent = profile?.total_ops_spent || 0;
+                    if (spent < 10) return `Te faltan ${10 - spent} OPS para tu primer regalo de +1 OPS.`;
+                    if (spent < 50) return `Te faltan ${50 - spent} OPS para un regalo de +5 OPS.`;
+                    if (spent < 100) return `Te faltan ${100 - spent} OPS para un regalo de +8 OPS.`;
+                    if (spent < 200) return `Te faltan ${200 - spent} OPS para un regalo de +10 OPS.`;
+                    const next = Math.ceil((spent + 1) / 100) * 100;
+                    return `Próximo regalo de +15 OPS al llegar a ${next} OPS invertidos.`;
+                  })()}
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {[{v:10, b:1}, {v:50, b:5}, {v:100, b:8}, {v:200, b:10}].map(m => (
+                  <div key={m.v} style={{ 
+                    padding: '8px 12px', borderRadius: '12px', 
+                    background: (profile?.total_ops_spent || 0) >= m.v ? 'rgba(255,118,101,0.2)' : 'rgba(255,255,255,0.05)',
+                    border: (profile?.total_ops_spent || 0) >= m.v ? '1px solid #ff7665' : '1px solid transparent',
+                    display: 'flex', alignItems: 'center', gap: '6px', opacity: (profile?.total_ops_spent || 0) >= m.v ? 1 : 0.4
+                  }}>
+                    <Zap className="w-3 h-3 text-[#ff7665]" />
+                    <span style={{ fontSize: '10px', fontWeight: 800 }}>{m.v} → +{m.b}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div style={{ background: 'white', borderRadius: '20px', padding: '20px', border: '1px solid #efe7e2' }}>
             <h3 style={{ margin: '0 0 16px', fontSize: '0.9rem', fontWeight: 800, color: '#a4b1c6', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Información</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -207,15 +272,27 @@ export default function ProfileView({ user, onLogout }) {
                   <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{profile?.phone || 'No registrado'}</span>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f7f3f1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1f2c45' }}>
-                  <Briefcase className="w-5 h-5" />
+              {profile?.role === 'kamellador' ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f7f3f1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1f2c45' }}>
+                    <Briefcase className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span style={{ display: 'block', fontSize: '10px', color: '#5f6a79', fontWeight: 700 }}>Especialidad</span>
+                    <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{profile?.specialty || 'General'}</span>
+                  </div>
                 </div>
-                <div>
-                  <span style={{ display: 'block', fontSize: '10px', color: '#5f6a79', fontWeight: 700 }}>Especialidad</span>
-                  <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{profile?.specialty || 'General'}</span>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f7f3f1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1f2c45' }}>
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span style={{ display: 'block', fontSize: '10px', color: '#5f6a79', fontWeight: 700 }}>Mi Dirección</span>
+                    <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{profile?.address || 'No registrada'}</span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 

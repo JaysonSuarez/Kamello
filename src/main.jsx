@@ -1,4 +1,17 @@
 import React from "react";
+// Filtro global para silenciar errores de extensiones del navegador
+if (typeof window !== 'undefined') {
+  window.addEventListener('error', (e) => {
+    if (e.filename && (e.filename.includes('webextension') || e.filename.includes('extension'))) {
+      e.stopImmediatePropagation();
+    }
+  }, true);
+  window.addEventListener('unhandledrejection', (e) => {
+    if (e.reason && e.reason.stack && (e.reason.stack.includes('webextension') || e.reason.stack.includes('extension'))) {
+      e.stopImmediatePropagation();
+    }
+  }, true);
+}
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import SiteDesign from "./SiteDesign";

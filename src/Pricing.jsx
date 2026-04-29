@@ -15,11 +15,11 @@ export default function Pricing() {
       name: "Plan PRO", 
       price: "49.000", 
       features: [
-        "OPS Ilimitadas", 
-        "Nombre Dorado en Chat", 
-        "Borde Dorado en Perfil", 
-        "Badge 'PRO' Verificado",
-        "Alcance de 5km"
+        "🚀 100 Oportunidades de Oro", 
+        "📍 Radar Expandido (15km a la redonda)",
+        "⚡ Primicia Total: Ves servicios antes que el resto", 
+        "✨ Identidad de Élite (Nombre Dorado)",
+        "🏆 Badge de Confianza 'PRO'"
       ], 
       icon: <Award className="w-8 h-8 text-[#ffd700]" />,
       color: "border-[#ffd700]"
@@ -28,11 +28,11 @@ export default function Pricing() {
       name: "Plan ULTRA", 
       price: "89.000", 
       features: [
-        "Todo lo del Plan PRO", 
-        "Alcance extendido a 15km", 
-        "Soporte 24/7 Prioritario", 
-        "Aparece primero en búsquedas",
-        "Estadísticas de perfil"
+        "♾️ Conexiones Infinitas (Sin Límites)", 
+        "📍 Cobertura Total en tu Ciudad", 
+        "🔝 Posicionamiento VIP: Sé siempre el #1",
+        "🔥 Mapa de Calor: Mira dónde hay más clientes",
+        "💎 Perfil Diamante (Exclusividad Total)"
       ], 
       icon: <Zap className="w-8 h-8 text-[#ff7665]" />,
       color: "border-[#ff7665]",

@@ -14,10 +14,16 @@ import {
   Star,
   ShoppingCart,
   Briefcase,
-  Loader2
+  Loader2,
+  Upload,
+  Camera,
+  UserCheck,
+  FileText,
+  Clock
 } from "lucide-react";
 import { supabase } from "./lib/supabase";
 import { SERVICE_CATEGORIES } from "./serviceCategories";
+import KYCVerification from "./components/KYCVerification";
 
 const logoImageUrl = "/images/K-Editado.png";
 
@@ -32,36 +38,60 @@ export default function Onboarding() {
   // Estados Kamellador
   const [specialty, setSpecialty] = useState("");
   const [phone, setPhone] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [age, setAge] = useState("");
 
   // Estados Cliente
   const [address, setAddress] = useState("");
 
   useEffect(() => {
     const checkUserAndRole = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      let { data: { user } } = await supabase.auth.getUser();
+      
+      // Manejo de redirect de OAuth (esperar si hay hash)
+      if (!user) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) user = session.user;
+      }
+
       if (!user) {
         navigate("/login");
         return;
       }
       setUser(user);
 
-      // Verificar si ya tiene un perfil con rol
+      // Verificar si ya tiene un perfil con datos completos
       const { data: profile } = await supabase
         .from('profiles')
-        .select('role, is_active')
+        .select('role, is_active, phone, specialty, verification_status, is_admin, address')
         .eq('id', user.id)
         .single();
 
-      if (profile?.role) {
-        if (profile.is_active) {
-          navigate("/dashboard"); // Ya terminó onboarding
-        } else {
-          setRole(profile.role);
-          setStep(1); // Ya tiene rol, ir a paso 1
-        }
+      const isAdmin = profile?.role === 'admin' || profile?.is_admin;
+      const isVerified = (profile?.role === 'client' && profile?.address) || 
+                        (profile?.role === 'kamellador' && profile?.specialty && profile?.verification_status === 'verified');
+
+      if (isAdmin || (profile?.phone && isVerified)) {
+        // Si ya tiene todo según su rol, al dashboard
+        navigate("/dashboard"); 
       } else {
-        // No tiene rol (Login con Google por primera vez)
-        setStep(0);
+        // Pre-llenar nombre desde metadatos si está disponible
+        if (user.user_metadata?.full_name) {
+          setFullName(user.user_metadata.full_name);
+        }
+        
+        // No ha completado el onboarding o no está verificado
+        if (profile?.verification_status === 'in_review' || profile?.verification_status === 'rejected') {
+          setRole(profile.role);
+          setStep(4);
+        } else if (profile?.phone) {
+          // Si tiene teléfono pero está aquí, es porque le falta algo más (especialidad en técnicos)
+          setRole(profile.role);
+          setStep(1); 
+        } else {
+          // Si no tiene teléfono, es nuevo: siempre preguntar el rol (Step 0)
+          setStep(0);
+        }
       }
       setCheckingRole(false);
     };
@@ -74,18 +104,19 @@ export default function Onboarding() {
   };
 
   const handleFinishKamellador = async () => {
-    if (!specialty || !phone) return alert("Por favor completa todos los campos.");
+    if (!specialty || !phone || !fullName || !age) return alert("Por favor completa todos los campos.");
     setLoading(true);
     try {
       const { error } = await supabase.from('profiles').update({
-        specialty, 
-        phone, 
-        role: 'kamellador', 
-        is_active: false, // BLOQUEADO hasta aprobación admin
-        verification_status: null // Para que inicie flujo KYC
+        role: 'kamellador',
+        specialty,
+        phone,
+        full_name: fullName,
+        age: parseInt(age),
+        is_active: false // Inactivo hasta que lo aprueben
       }).eq('id', user.id);
       if (error) throw error;
-      navigate("/dashboard");
+      setStep(4); // Ir a documentos
     } catch (err) {
       alert("Error: " + err.message);
     } finally {
@@ -99,8 +130,8 @@ export default function Onboarding() {
     try {
       const { error } = await supabase.from('profiles').update({
         role: 'client', 
-        is_active: true, // CLIENTES entran directo
-        verification_status: 'verified', // No requieren KYC manual
+        is_active: true, 
+        verification_status: 'verified', // Clientes no necesitan KYC
         phone,
         address
       }).eq('id', user.id);
@@ -218,18 +249,40 @@ export default function Onboarding() {
 
               {step === 3 && (
                 <div className="animate-in fade-in slide-in-from-right-4">
-                  <h2 className="font-serif text-3xl text-[#1f2c45] text-center mb-6 italic">Contacto Final</h2>
-                  <div className="space-y-6">
+                  <h2 className="font-serif text-3xl text-[#1f2c45] text-center mb-6 italic">Tus Datos</h2>
+                  <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-bold text-[#1f2c45] mb-2 pl-1">Celular</label>
-                      <input type="tel" placeholder="+57 3..." value={phone} onChange={(e) => setPhone(e.target.value)}
-                        className="w-full px-6 py-5 rounded-[24px] bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none font-bold text-[#1f2c45]" />
+                      <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">Nombre Completo</label>
+                      <input type="text" placeholder="Tu nombre" value={fullName} onChange={(e) => setFullName(e.target.value)}
+                        className="w-full px-6 py-4 rounded-[24px] bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none font-bold text-[#1f2c45]" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">Celular</label>
+                        <input type="tel" placeholder="+57 3..." value={phone} onChange={(e) => setPhone(e.target.value)}
+                          className="w-full px-6 py-4 rounded-[24px] bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none font-bold text-[#1f2c45]" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">Edad</label>
+                        <input type="number" placeholder="25" value={age} onChange={(e) => setAge(e.target.value)}
+                          className="w-full px-6 py-4 rounded-[24px] bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none font-bold text-[#1f2c45]" />
+                      </div>
                     </div>
                   </div>
-                  <button onClick={handleFinishKamellador} disabled={loading || !phone}
+                  <button onClick={handleFinishKamellador} disabled={loading || !phone || !fullName || !age}
                     className="w-full mt-10 bg-[#ff7665] text-white py-5 rounded-[24px] font-bold text-lg shadow-lg shadow-[#ff7665]/30 hover:bg-[#ff5a45] transition-all">
-                    {loading ? "Cargando..." : "¡Empezar a Kamellar!"}
+                    {loading ? "Cargando..." : "Siguiente: Documentos"}
                   </button>
+                </div>
+              )}
+
+              {step === 4 && (
+                <div className="animate-in fade-in slide-in-from-right-4 -mx-10 md:-mx-14 -mb-10 md:-mb-14">
+                  <KYCVerification 
+                    user={user} 
+                    profile={{ role, phone, specialty, full_name: fullName }} 
+                    onVerified={() => navigate("/dashboard")} 
+                  />
                 </div>
               )}
             </>
@@ -287,6 +340,16 @@ export default function Onboarding() {
                   </button>
                 </div>
               )}
+
+              {step === 4 && (
+                <div className="animate-in fade-in slide-in-from-right-4 -mx-10 md:-mx-14 -mb-10 md:-mb-14">
+                  <KYCVerification 
+                    user={user} 
+                    profile={{ role, phone, address, full_name: fullName }} 
+                    onVerified={() => navigate("/dashboard")} 
+                  />
+                </div>
+              )}
             </>
           )}
         </div>
@@ -294,7 +357,7 @@ export default function Onboarding() {
 
       <footer className="p-8 text-center">
         <p className="text-xs text-[#a4b1c6] font-black uppercase tracking-widest">
-          {step === 0 ? "Selección de rol" : `Paso ${step} de 3`}
+          {step === 0 ? "Selección de rol" : (step === 4 && role === 'kamellador') ? "Verificación de Identidad" : `Paso ${step} de ${role === 'kamellador' ? 4 : 3}`}
         </p>
       </footer>
     </div>

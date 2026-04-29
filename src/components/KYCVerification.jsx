@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Camera, CheckCircle2, FileText, Loader2, ShieldCheck, Upload, UserCheck } from 'lucide-react';
+import { Camera, CheckCircle2, FileText, Loader2, ShieldCheck, Upload, UserCheck, Clock } from 'lucide-react';
 import '../styles.css';
 
 export default function KYCVerification({ user, profile, onVerified }) {
@@ -10,6 +11,30 @@ export default function KYCVerification({ user, profile, onVerified }) {
   const [idFile, setIdFile] = useState(null); // Archivo PDF real
   const [selfieBlob, setSelfieBlob] = useState(null); // Blob de la selfie
   const [selfiePreview, setSelfiePreview] = useState(null); // URL para vista previa
+  const [showCongratz, setShowCongratz] = useState(false);
+
+  const navigate = useNavigate();
+
+  // Realtime: Escuchar cuando el admin nos apruebe
+  React.useEffect(() => {
+    if (!user?.id) return;
+    const channel = supabase.channel('kyc_realtime')
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'profiles',
+        filter: `id=eq.${user.id}`
+      }, payload => {
+        if (payload.new.verification_status === 'verified') {
+          // Auto-conectar al ser aprobado para que el dashboard no sea "inútil"
+          supabase.from('profiles').update({ is_online: true }).eq('id', user.id).then(() => {
+            setShowCongratz(true);
+          });
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user?.id]);
 
   const submitKYC = async () => {
     if (!idFile || !selfieBlob) return alert("Faltan documentos");
@@ -168,12 +193,49 @@ export default function KYCVerification({ user, profile, onVerified }) {
 
         {step === 4 && (
           <div className="animate-fade-in-up" style={{ textAlign: 'center', paddingTop: 20 }}>
-            <CheckCircle2 className="w-16 h-16 text-[#00cba9] mx-auto mb-6" />
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: 12 }}>Documentos en Revisión</h2>
-            <p style={{ color: '#5f6a79', fontSize: '0.95rem', lineHeight: 1.5 }}>Estamos verificando tu identidad. Te notificaremos cuando tu perfil sea aprobado para empezar a kamellar.</p>
+            <div style={{ position: 'relative', width: 120, height: 120, margin: '0 auto 32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="pulse-ring" style={{ width: '100%', height: '100%', borderColor: 'rgba(255,118,101,0.2)' }} />
+              <div className="pulse-ring" style={{ width: '80%', height: '80%', animationDelay: '0.5s', borderColor: 'rgba(255,118,101,0.4)' }} />
+              <div style={{ position: 'relative', zIndex: 1, width: 80, height: 80, background: '#fff0ee', borderRadius: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 15px 35px rgba(255,118,101,0.15)' }}>
+                <Clock className="w-10 h-10" style={{ color: '#ff7665' }} />
+              </div>
+            </div>
+            <h2 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: 12, color: '#1f2c45' }}>Documentos en Revisión</h2>
+            <p style={{ color: '#5f6a79', fontSize: '1rem', lineHeight: 1.6, marginBottom: 40 }}>
+              Estamos verificando tu identidad para garantizar la seguridad de la comunidad Kamello.
+            </p>
+            <div style={{ background: '#f7f3f1', padding: 20, borderRadius: 24, textAlign: 'left', marginBottom: 40 }}>
+              <p style={{ margin: 0, fontSize: '0.85rem', color: '#1f2c45', fontWeight: 800 }}>Tiempo estimado: <b>5 a 15 minutos</b></p>
+            </div>
+            <button onClick={() => supabase.auth.signOut().then(() => navigate("/"))} style={{ color: '#ff7665', fontWeight: 800, fontSize: '0.9rem', background: 'none', border: 'none' }}>Cerrar Sesión</button>
           </div>
         )}
       </div>
+
+      {/* Congratulations Modal */}
+      {showCongratz && (
+        <div className="animate-fade-in" style={{ position: 'fixed', inset: 0, background: 'rgba(31,44,69,0.9)', backdropFilter: 'blur(12px)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div className="animate-scale-in" style={{ background: 'white', borderRadius: 44, padding: '48px 32px', maxWidth: 420, width: '100%', textAlign: 'center', boxShadow: '0 30px 70px rgba(0,0,0,0.4)' }}>
+            <div style={{ width: 100, height: 100, background: '#e6fffb', borderRadius: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 32px', border: '4px solid #00cba9' }}>
+              <CheckCircle2 className="w-12 h-12" style={{ color: '#00cba9' }} />
+            </div>
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem', color: '#1f2c45', marginBottom: 16, fontWeight: 900 }}>¡Perfil Aprobado!</h2>
+            <p style={{ color: '#5f6a79', fontSize: '1.1rem', lineHeight: 1.6, marginBottom: 40 }}>
+              ¡Felicidades! Ya eres parte oficial de los <b>Kamelladores</b>. Prepárate para recibir tus primeras ofertas.
+            </p>
+            <button 
+              onClick={() => {
+                setShowCongratz(false);
+                if (onVerified) onVerified();
+              }} 
+              className="btn-primary"
+              style={{ background: '#00cba9', height: 64, borderRadius: 24, fontSize: '1.2rem', boxShadow: '0 12px 30px rgba(0,203,169,0.3)' }}
+            >
+              ¡Empezar ahora!
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

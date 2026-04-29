@@ -7,7 +7,7 @@ export const HISTORY_OPERATION_STATUSES = ["accepted", "in_progress", "completed
 export const OPERATION_SELECT = `
   *,
   client:profiles!operations_client_id_fkey(id, full_name, phone, avatar_url),
-  kamellador:profiles!operations_kamellador_id_fkey(id, full_name, phone, avatar_url, specialty, rating_avg, rating_count, current_lat, current_lng),
+  kamellador:profiles!operations_kamellador_id_fkey(id, full_name, phone, avatar_url, specialty, rating_avg, rating_count, services_count, current_lat, current_lng),
   operation_ratings!operation_ratings_operation_id_fkey(id, rating, comment, reviewer_id, reviewed_id, created_at)
 `;
 

@@ -3,7 +3,6 @@ import { Home, Search, BarChart3, MessageSquare, Menu, ClipboardList, User, Zap 
 
 const CLIENT_TABS = [
   { id: "home", label: "Inicio", icon: Home },
-  { id: "services", label: "Servicios", icon: Search },
   { id: "activity", label: "Actividad", icon: ClipboardList },
   { id: "account", label: "Cuenta", icon: User },
 ];
