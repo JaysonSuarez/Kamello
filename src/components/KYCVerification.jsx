@@ -70,26 +70,24 @@ export default function KYCVerification({ user, profile, onVerified }) {
 
       if (error) throw error;
 
-      // 4. Notificar al admin vía push notification
+      // 4. Notificar al admin vía push (usamos la anon key para máxima confiabilidad)
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bright-responder`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({
-              userId: ADMIN_USER_ID,
-              title: '🚨 Nuevo Kamellador en Revisión',
-              body: `${profile?.full_name || 'Un nuevo usuario'} acaba de enviar sus documentos de verificación.`,
-              data: { url: '/admin' }
-            })
-          });
-        }
+        const notifRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bright-responder`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({
+            userId: ADMIN_USER_ID,
+            title: '🚨 Nuevo Kamellador en Revisión',
+            body: `${profile?.full_name || 'Un nuevo usuario'} acaba de enviar sus documentos de verificación. Entra a revisar.`,
+            data: { url: '/admin' }
+          })
+        });
+        const notifJson = await notifRes.json();
+        console.log('Admin notificado:', notifJson);
       } catch (notifErr) {
-        // No bloqueamos el flujo si la notificación falla
         console.warn('No se pudo notificar al admin:', notifErr);
       }
 
@@ -219,20 +217,20 @@ export default function KYCVerification({ user, profile, onVerified }) {
 
         {step === 4 && (
           <div className="animate-fade-in-up" style={{ textAlign: 'center', paddingTop: 20 }}>
-            <div style={{ position: 'relative', width: 120, height: 120, margin: '0 auto 32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {/* Outer pulsing ring */}
+            <div style={{ position: 'relative', width: 200, height: 200, margin: '0 auto 32px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
               <span style={{
-                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-                borderRadius: '50%', border: '3px solid rgba(255,118,101,0.25)',
-                animation: 'k-pulse 2s ease-in-out infinite', pointerEvents: 'none'
+                position: 'absolute', top: '50%', left: '50%',
+                width: 120, height: 120, marginTop: -60, marginLeft: -60,
+                borderRadius: '50%', border: '2px solid rgba(255,118,101,0.25)',
+                animation: 'k-pulse 2.4s ease-in-out infinite', pointerEvents: 'none'
               }} />
-              {/* Inner pulsing ring */}
               <span style={{
-                position: 'absolute', top: '10%', left: '10%', width: '80%', height: '80%',
-                borderRadius: '50%', border: '3px solid rgba(255,118,101,0.45)',
-                animation: 'k-pulse 2s ease-in-out 0.5s infinite', pointerEvents: 'none'
+                position: 'absolute', top: '50%', left: '50%',
+                width: 96, height: 96, marginTop: -48, marginLeft: -48,
+                borderRadius: '50%', border: '2px solid rgba(255,118,101,0.40)',
+                animation: 'k-pulse 2.4s ease-in-out 0.8s infinite', pointerEvents: 'none'
               }} />
-              <div style={{ position: 'relative', zIndex: 1, width: 80, height: 80, background: '#fff0ee', borderRadius: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 15px 35px rgba(255,118,101,0.15)' }}>
+              <div style={{ position: 'relative', zIndex: 1, width: 80, height: 80, background: '#fff0ee', borderRadius: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 15px 35px rgba(255,118,101,0.20)' }}>
                 <Clock className="w-10 h-10" style={{ color: '#ff7665' }} />
               </div>
             </div>
