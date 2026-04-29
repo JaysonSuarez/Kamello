@@ -150,8 +150,13 @@ export default function KYCVerification({ user, profile, onVerified }) {
   }, [stream]);
 
   return (
-    <div className="app-shell" style={{ background: '#1f2c45', color: 'white', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ padding: '20px', textAlign: 'center', flexShrink: 0 }}>
+    <div className="app-shell" style={{ background: '#1f2c45', color: 'white', display: 'flex', flexDirection: 'column', height: '100dvh' }}>
+      <div style={{ 
+        padding: '20px', 
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 20px)',
+        textAlign: 'center', 
+        flexShrink: 0 
+      }}>
         <ShieldCheck className="w-12 h-12" style={{ color: '#00cba9', margin: '0 auto 12px' }} />
         <h1 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 8px' }}>Seguridad Kamello</h1>
         <p style={{ color: '#a4b1c6', fontSize: '0.9rem' }}>Verificación de identidad requerida.</p>
@@ -159,7 +164,16 @@ export default function KYCVerification({ user, profile, onVerified }) {
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 
-      <div style={{ flex: 1, background: 'white', borderRadius: '32px 32px 0 0', padding: '30px 20px', color: '#1f2c45', overflowY: 'auto' }}>
+      <div style={{ 
+        flex: 1, 
+        background: 'white', 
+        borderRadius: '32px 32px 0 0', 
+        padding: '30px 20px', 
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 30px)',
+        color: '#1f2c45', 
+        overflowY: 'auto',
+        overflowX: 'hidden'
+      }}>
         
         {step === 1 && (
           <div className="animate-fade-in-up">

@@ -169,8 +169,8 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f3f1] flex flex-col font-sans">
-      <header className="p-8 flex justify-center">
+    <div className="min-h-screen bg-[#f7f3f1] flex flex-col font-sans" style={{ minHeight: '100dvh' }}>
+      <header className="p-8 flex justify-center" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 20px)' }}>
         <div className="flex items-center gap-3">
           <img src={logoImageUrl} alt="Kamello" className="h-8 w-auto" />
           <span className="text-2xl font-bold tracking-tight text-[#1f2c45]">Kamello</span>
@@ -375,7 +375,7 @@ export default function Onboarding() {
         </div>
       </main>
 
-      <footer className="p-8 text-center">
+      <footer className="p-8 text-center" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)' }}>
         <p className="text-xs text-[#a4b1c6] font-black uppercase tracking-widest">
           {step === 0 ? "Selección de rol" : (step === 4 && role === 'kamellador') ? "Verificación de Identidad" : `Paso ${step} de ${role === 'kamellador' ? 4 : 3}`}
         </p>

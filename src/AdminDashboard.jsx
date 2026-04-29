@@ -212,8 +212,19 @@ export default function AdminDashboard() {
   if (!isAdmin && loading) return <div className="app-shell" style={{ justifyContent: "center", alignItems: "center" }}><Loader2 className="h-8 w-8 animate-spin text-[#ff7665]" /></div>;
 
   return (
-    <div className="app-shell" style={{ background: '#f7f3f1', overflowY: 'auto' }}>
-      <div style={{ background: '#1f2c45', padding: '24px 20px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
+    <div className="app-shell" style={{ background: '#f7f3f1', overflowY: 'auto', height: '100dvh' }}>
+      <div style={{ 
+        background: '#1f2c45', 
+        padding: '24px 20px', 
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 24px)',
+        color: 'white', 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        position: 'sticky', 
+        top: 0, 
+        zIndex: 100 
+      }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <ShieldAlert className="w-8 h-8 text-[#ff7665]" />
           <div>
