@@ -90,8 +90,18 @@ export default function Onboarding() {
           setRole(profile.role);
           setStep(1); 
         } else {
-          // Si no tiene teléfono, es nuevo: siempre preguntar el rol (Step 0)
-          setStep(0);
+          // Si no tiene teléfono, es nuevo
+          const intendedRole = localStorage.getItem('kamello_intended_role');
+          
+          if (intendedRole === 'client' || intendedRole === 'kamellador') {
+            // El usuario seleccionó su rol antes de ir a Google
+            setRole(intendedRole);
+            setStep(1);
+            localStorage.removeItem('kamello_intended_role'); // Limpiamos para el futuro
+          } else {
+            // No hay rol previo, o viene de Login con Google directo: siempre preguntar (Step 0)
+            setStep(0);
+          }
         }
       }
       setCheckingRole(false);

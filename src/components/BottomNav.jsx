@@ -1,16 +1,18 @@
 import React from "react";
-import { Home, Search, BarChart3, MessageSquare, Menu, ClipboardList, User, Zap } from "lucide-react";
+import { Home, BarChart3, MessageSquare, Menu, ClipboardList, User, History, Newspaper } from "lucide-react";
 
 const CLIENT_TABS = [
   { id: "home", label: "Inicio", icon: Home },
+  { id: "feed", label: "Feed", icon: Newspaper },
   { id: "activity", label: "Actividad", icon: ClipboardList },
   { id: "account", label: "Cuenta", icon: User },
 ];
 
 const PROVIDER_TABS = [
   { id: "home", label: "Inicio", icon: Home },
+  { id: "feed", label: "Feed", icon: Newspaper },
+  { id: "opportunities", label: "Oportunidades", icon: History },
   { id: "earnings", label: "Ganancias", icon: BarChart3 },
-  { id: "premium", label: "Premium", icon: Zap },
   { id: "messages", label: "Mensajes", icon: MessageSquare },
   { id: "menu", label: "Menú", icon: Menu },
 ];

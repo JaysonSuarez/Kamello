@@ -12,6 +12,8 @@ import BottomNav from "./components/BottomNav";
 import ProfileView from "./components/ProfileView";
 import { usePushNotifications } from "./hooks/usePushNotifications";
 import { getRoute } from "./utils/geo";
+import FeedView from "./components/FeedView";
+import OPSDocument from "./components/OPSDocument";
 
 // Modular Components
 import MapView from "./components/client/MapView";
@@ -64,6 +66,9 @@ export default function ClientDashboard({ user }) {
   const [bargainingOfferId, setBargainingOfferId] = useState(null);
   const [bargainPrice, setBargainPrice] = useState("");
   const [route, setRoute] = useState([]);
+  const [showOPSDoc, setShowOPSDoc] = useState(false);
+  const [pendingOPSOperation, setPendingOPSOperation] = useState(null);
+  const [selectedHistoryOp, setSelectedHistoryOp] = useState(null);
   const messagesEndRef = useRef(null);
 
   const activeCategory = getServiceCategory(activeRequest?.category);
@@ -126,6 +131,30 @@ export default function ClientDashboard({ user }) {
       }).subscribe();
     return () => supabase.removeChannel(channel);
   }, [activeRequest?.id]);
+  
+  // Listen for reactivated operations (Option A)
+  useEffect(() => {
+    if (!user?.id || activeRequest) return;
+    
+    const channel = supabase.channel(`client_ops_rescue_${user.id}`)
+      .on("postgres_changes", { 
+        event: "UPDATE", 
+        schema: "public", 
+        table: "operations", 
+        filter: `client_id=eq.${user.id}` 
+      }, async (payload) => {
+        if (payload.new.status === "pending" && !activeRequest) {
+          const updated = await fetchOperation(payload.new.id);
+          if (updated) {
+            setActiveRequest(updated);
+            setShowExpiredView(false);
+          }
+        }
+      })
+      .subscribe();
+      
+    return () => supabase.removeChannel(channel);
+  }, [user?.id, activeRequest, fetchOperation]);
 
   useEffect(() => {
     if (!activeRequest?.id) {
@@ -240,6 +269,9 @@ export default function ClientDashboard({ user }) {
       if (error) throw error;
       setActiveRequest(data);
       await refreshHistory();
+      // Mostrar el documento de OPS antes del PIN
+      setPendingOPSOperation(data);
+      setShowOPSDoc(true);
     } finally { setLoading(false); }
   };
 
@@ -316,6 +348,17 @@ export default function ClientDashboard({ user }) {
     return [30, 55, 85];
   };
 
+  if (activeTab === "feed") {
+    return (
+      <div className="app-shell">
+        <div style={{ paddingBottom: 80, overflowY: "auto", height: "100%" }}>
+          <FeedView user={user} role="client" onOpenChat={null} />
+        </div>
+        <BottomNav role="client" activeTab={activeTab} onTabChange={setActiveTab} unreadMessages={unreadCount} />
+      </div>
+    );
+  }
+
   if (activeTab === "activity") {
     return (
       <div className="app-shell">
@@ -323,13 +366,14 @@ export default function ClientDashboard({ user }) {
           <div className="view-container__content">
             <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "1.75rem", marginBottom: 16 }}>Actividad</h2>
             {history.length === 0 ? <p style={{ color: "#5f6a79", fontSize: "0.875rem" }}>Aún no tienes servicios en historial.</p> : history.map(op => (
-              <div key={op.id} className="history-item">
+              <div key={op.id} className="history-item" onClick={() => setSelectedHistoryOp(op)} style={{ cursor: "pointer" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                  <p style={{ fontWeight: 700, fontSize: "0.875rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{op.description}</p>
+                  <p style={{ fontWeight: 700, fontSize: "0.875rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{op.description || op.category}</p>
                   <span style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "#ff7665", flexShrink: 0 }}>{getStatusLabel(op.status)}</span>
                 </div>
                 <p style={{ fontSize: 11, color: "#5f6a79", marginTop: 4 }}>{formatDate(op.updated_at)}</p>
                 {op.operation_ratings?.[0] && <p style={{ fontSize: 12, marginTop: 6, display: "flex", alignItems: "center", gap: 4 }}><Star className="w-3 h-3" style={{ fill: "#f59e0b", color: "#f59e0b" }} /> {op.operation_ratings[0].rating}/5</p>}
+                {op.ops_accepted_at && <p style={{ fontSize: 11, color: "#16a34a", marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}><Shield className="w-3 h-3" /> Documento OPS firmado</p>}
               </div>
             ))}
           </div>
@@ -339,6 +383,30 @@ export default function ClientDashboard({ user }) {
           <div className="top-bar__right"><button onClick={() => supabase.auth.signOut().then(() => navigate("/"))} className="top-bar__btn"><LogOut className="w-4 h-4" /></button></div>
         </div>
         <BottomNav role="client" activeTab={activeTab} onTabChange={setActiveTab} unreadMessages={unreadCount} />
+        
+        {/* Modal de detalle de historial */}
+        {selectedHistoryOp && selectedHistoryOp.ops_accepted_at && (
+          <OPSDocument
+            operation={selectedHistoryOp}
+            readOnly={true}
+            acceptedAt={selectedHistoryOp.ops_accepted_at}
+            onClose={() => setSelectedHistoryOp(null)}
+          />
+        )}
+        {selectedHistoryOp && !selectedHistoryOp.ops_accepted_at && (
+          <div className="animate-fade-in" style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(31,44,69,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+            <div style={{ background: "white", borderRadius: 24, padding: "24px", width: "100%", maxWidth: 360 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 900 }}>Detalle del Servicio</h3>
+                <button onClick={() => setSelectedHistoryOp(null)} style={{ background: "none", border: "none", cursor: "pointer" }}><X className="w-5 h-5 text-[#a4b1c6]" /></button>
+              </div>
+              <p style={{ fontWeight: 800, margin: "0 0 8px" }}>{selectedHistoryOp.category}</p>
+              <p style={{ color: "#5f6a79", margin: "0 0 16px", fontSize: "0.9rem" }}>{selectedHistoryOp.description}</p>
+              <p style={{ fontSize: "0.85rem", color: "#a4b1c6" }}>Estado: {getStatusLabel(selectedHistoryOp.status)}</p>
+              <p style={{ fontSize: "0.85rem", color: "#a4b1c6" }}>Sin documento OPS firmado (Servicio antiguo o cancelado).</p>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -403,6 +471,21 @@ export default function ClientDashboard({ user }) {
       </BottomSheet>
 
       <BottomNav role="client" activeTab={activeTab} onTabChange={setActiveTab} unreadMessages={unreadCount} />
+
+      {/* OPS Document — se muestra al aceptar una oferta, antes del PIN */}
+      {showOPSDoc && pendingOPSOperation && (
+        <OPSDocument
+          operation={pendingOPSOperation}
+          onAccept={async () => {
+            const now = new Date().toISOString();
+            await supabase.from("operations").update({ ops_accepted_at: now }).eq("id", pendingOPSOperation.id);
+            setShowOPSDoc(false);
+            setPendingOPSOperation(null);
+            // El estado del activeRequest ya está en 'accepted', el PIN modal se abrirá normalmente
+          }}
+          onClose={() => { setShowOPSDoc(false); setPendingOPSOperation(null); }}
+        />
+      )}
 
       {/* Overlays / Modals */}
       {showExpiredView && (

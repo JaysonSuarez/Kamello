@@ -52,11 +52,9 @@ export default function Register() {
       if (authError) throw authError;
 
       if (data.user) {
-        if (role === "kamellador") {
-          navigate("/onboarding");
-        } else {
-          navigate("/dashboard"); 
-        }
+        // Save the intended role so Onboarding doesn't ask again
+        localStorage.setItem('kamello_intended_role', role);
+        navigate("/dashboard");
       }
     } catch (err) {
       setError(err.message || "Error al crear la cuenta");
@@ -68,10 +66,11 @@ export default function Register() {
   const handleGoogleLogin = async () => {
     setSocialLoading(true);
     try {
+      localStorage.setItem('kamello_intended_role', role);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin + "/onboarding",
+          redirectTo: window.location.origin + "/dashboard",
         },
       });
       if (error) throw error;

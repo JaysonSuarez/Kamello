@@ -18,6 +18,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
+import FeedView from "./components/FeedView";
 
 const DefaultIcon = L.icon({ iconUrl: markerIcon, shadowUrl: markerShadow, iconSize: [25, 41], iconAnchor: [12, 41] });
 L.Marker.prototype.options.icon = DefaultIcon;
@@ -94,7 +95,7 @@ export default function ProviderDashboard() {
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
-  
+  const [pastOpportunities, setPastOpportunities] = useState([]);
   const showAlert = (title, message, type = 'info', onConfirm = null) => {
     setModal({ title, message, type, onConfirm });
   };
@@ -289,6 +290,28 @@ export default function ProviderDashboard() {
     return () => supabase.removeChannel(channel);
   }, [isOnline, user, profile?.specialty, activeOperation, myLocation]);
 
+  // Fetch past opportunities
+  useEffect(() => {
+    if (!user || !profile?.specialty) return;
+    const fetchPast = async () => {
+      const sc = getServiceCategory(profile.specialty);
+      const vals = Array.from(new Set([profile.specialty, sc?.id, ...(sc?.aliases || [])].filter(Boolean)));
+      const now = new Date().toISOString();
+      
+      const { data } = await supabase.from("operations")
+        .select(OPERATION_SELECT)
+        .in("status", ["pending", "expired"])
+        .lt("expires_at", now)
+        .in("category", vals)
+        .order("created_at", { ascending: false })
+        .limit(20);
+        
+      if (data) setPastOpportunities(data);
+    };
+    fetchPast();
+  }, [user, profile?.specialty]);
+
+
   // Fetch and listen to MY offers (Postgres changes)
   useEffect(() => {
     if (!user) return;
@@ -469,6 +492,45 @@ export default function ProviderDashboard() {
       });
     } catch (err) {
       alert("Error al enviar oferta: " + err.message);
+    }
+  };
+
+  const handleRescueOpportunity = async (opp) => {
+    try {
+      // Opción A: Reactivar la operación y extender el tiempo
+      const newExpiry = new Date(Date.now() + 20 * 60 * 1000).toISOString();
+      const { error: opError } = await supabase.from("operations")
+        .update({ status: 'pending', expires_at: newExpiry })
+        .eq("id", opp.id);
+      
+      if (opError) throw opError;
+
+      const { error } = await supabase.from("operation_offers")
+        .insert({
+          operation_id: opp.id,
+          kamellador_id: user.id,
+          price: opp.proposed_price,
+          status: 'pending',
+          last_sender_id: user.id,
+          message: "Hola! Vi que tenías este servicio pendiente. ¿Aún lo necesitas?"
+        });
+      if (error) throw error;
+      
+      showAlert("¡Oportunidad rescatada!", "La solicitud se ha reactivado. El cliente recibirá una notificación y podrá ver tu oferta.");
+      setPastOpportunities(prev => prev.filter(o => o.id !== opp.id));
+      
+      // Attempt to notify client via edge function
+      supabase.functions.invoke("bright-responder", {
+        body: {
+          userId: opp.client_id,
+          title: "¡Un experto está disponible! 🚀",
+          body: `Un ${opp.category} Premium ha respondido a tu solicitud pasada.`,
+          data: { url: "/" }
+        }
+      }).catch(e => console.error("Push error:", e));
+
+    } catch (err) {
+      alert("Error al rescatar oportunidad: " + err.message);
     }
   };
 
@@ -783,6 +845,75 @@ export default function ProviderDashboard() {
               )}
             </BottomSheet>
           </>
+        )}
+
+
+
+        {/* FEED */}
+        {activeTab === "feed" && (
+          <div style={{ height: '100%', overflowY: 'auto', paddingBottom: 80 }}>
+            <FeedView user={user} role="kamellador" onOpenChat={null} />
+          </div>
+        )}
+
+        {/* OPPORTUNITIES: Peticiones Perdidas */}
+        {activeTab === "opportunities" && (
+          <div className="view-container animate-fade-in" style={{ background: '#f7f3f1', color: '#1f2c45' }}>
+            <div className="view-container__content">
+              <div style={{ background: '#1f2c45', padding: '32px', color: 'white', borderRadius: '32px', marginBottom: '24px' }}>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 8px' }}>Oportunidades</h2>
+                <p style={{ opacity: 0.8, fontSize: '0.9rem', margin: 0, lineHeight: 1.4 }}>
+                  Rescata clientes que no fueron atendidos a tiempo.
+                </p>
+              </div>
+
+              {!isPremium ? (
+                <div style={{ textAlign: 'center', padding: '40px 20px', background: 'white', borderRadius: 24 }}>
+                  <div style={{ width: 64, height: 64, background: '#fff0ee', borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: '#ff7665' }}>
+                    <Lock className="w-8 h-8" />
+                  </div>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1f2c45', marginBottom: 8 }}>Función Premium</h3>
+                  <p style={{ color: '#5f6a79', fontSize: '0.9rem', marginBottom: 24, lineHeight: 1.5 }}>
+                    Actualiza a Premium para acceder a la bolsa de trabajo y contactar clientes de solicitudes pasadas.
+                  </p>
+                  <button onClick={() => setActiveTab('premium')} className="btn-primary" style={{ padding: '14px 24px', borderRadius: 16 }}>Ver Planes Premium</button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {pastOpportunities.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '40px 0', color: '#a4b1c6' }}>
+                      <History className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p style={{ fontWeight: 700 }}>No hay oportunidades pasadas en tu zona</p>
+                    </div>
+                  ) : (
+                    pastOpportunities.map(opp => (
+                      <div key={opp.id} className="req-card" style={{ opacity: 0.9 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                          <div>
+                            <h4 style={{ margin: 0, fontWeight: 800 }}>{opp.category}</h4>
+                            <p style={{ margin: 0, fontSize: '0.75rem', color: '#a4b1c6' }}>
+                              Solicitado el {new Date(opp.created_at).toLocaleDateString()} a las {new Date(opp.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            </p>
+                          </div>
+                          <span style={{ fontWeight: 900, color: '#ff7665' }}>${formatPrice(opp.proposed_price)}</span>
+                        </div>
+                        <div style={{ marginBottom: 16 }}>
+                          <p style={{ fontSize: '0.85rem', color: '#5f6a79', margin: 0 }}>{opp.description}</p>
+                        </div>
+                        <button 
+                          onClick={() => handleRescueOpportunity(opp)}
+                          className="btn-primary" 
+                          style={{ width: '100%', padding: "12px", fontSize: "0.9rem", borderRadius: 12 }}
+                        >
+                          Ofrecer mi disponibilidad
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         )}
 
         {/* EARNINGS: Vista de Ingresos */}

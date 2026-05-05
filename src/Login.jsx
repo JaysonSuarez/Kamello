@@ -49,6 +49,7 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     setSocialLoading(true);
     try {
+      localStorage.removeItem('kamello_intended_role');
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
