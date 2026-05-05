@@ -13,7 +13,7 @@ export default function ActiveOperationView({
   return (
     <>
       {/* ── STATE: Pending (Searching / Negotiating) ── */}
-      {activeRequest.status === "pending" && (
+      {activeRequest.status === "pending" && !activeRequest.ops_accepted_at && (
         <div className="animate-fade-in-up" style={{ textAlign: "center", padding: '20px 0' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
             <div style={{ position: "relative", width: 80, height: 80 }}>
@@ -92,6 +92,38 @@ export default function ActiveOperationView({
           <div style={{ textAlign: 'center' }}>
             <button onClick={cancelRequest} style={{ background: "none", border: "none", color: "#a4b1c6", fontWeight: 700, cursor: "pointer", fontSize: "0.85rem", textDecoration: 'underline' }}>
               Cancelar solicitud
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── STATE: Waiting for Kamellador to Accept OPS ── */}
+      {activeRequest.status === "pending" && activeRequest.ops_accepted_at && (
+        <div className="animate-fade-in-up" style={{ textAlign: "center", padding: '40px 20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <CheckCircle2 className="w-8 h-8" style={{ color: "#16a34a" }} />
+            </div>
+          </div>
+          <h3 style={{ fontSize: "1.3rem", fontWeight: 800, marginBottom: 8, color: '#1f2c45' }}>OPS Enviada</h3>
+          <p style={{ color: "#5f6a79", fontSize: "0.9rem", lineHeight: 1.5, marginBottom: 24 }}>
+            Le hemos enviado la Orden de Prestación de Servicios a <b>{activeKamellador?.full_name || 'tu profesional'}</b>.
+            <br/><br/>
+            Estamos esperando a que la acepte para continuar y mostrarte el código de seguridad.
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
+            {canChat && (
+              <button onClick={() => setChatOpen(true)} className="btn-secondary" style={{ flex: 1, position: "relative" }}>
+                <MessageSquare className="w-5 h-5" /> Chat
+                {unreadCount > 0 && (
+                  <span style={{ position: "absolute", top: -5, right: -5, background: "#ff4757", color: "white", fontSize: 10, fontWeight: 800, minWidth: 18, height: 18, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid white" }}>
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+            )}
+            <button onClick={cancelRequest} className="btn-secondary" style={{ flex: 1, borderColor: '#ff4757', color: '#ff4757' }}>
+              <XCircle className="w-5 h-5" /> Cancelar
             </button>
           </div>
         </div>

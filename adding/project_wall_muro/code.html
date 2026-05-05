@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0c2955",
+                        "accent-orange": "#F47920",
+                        "distance-blue": "#1565C0",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111721",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .custom-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .custom-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 h-screen flex flex-col">
+<!-- Top Navigation Header -->
+<header class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+<div class="flex items-center justify-between px-4 h-16 max-w-md mx-auto">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary dark:text-slate-100">menu</span>
+</div>
+<h1 class="text-primary dark:text-slate-100 text-lg font-bold tracking-tight uppercase">Muro de Proyectos</h1>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary dark:text-slate-100">search</span>
+</div>
+</div>
+</header>
+<!-- Main Feed Content -->
+<main class="flex-1 overflow-y-auto custom-scrollbar max-w-md mx-auto w-full pb-20">
+<!-- Project Card 1 -->
+<div class="bg-white dark:bg-slate-900 mb-6 shadow-sm">
+<!-- Media Area (65% estimated visual height) -->
+<div class="relative aspect-[4/5] w-full bg-slate-200 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Professional plumber working on a kitchen sink installation" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAs0Jp2VmUhJmZWx71-yqdIIYYqDt2g5jSwtHv_-UEtgVUZJbXr28helejlwV_PLvWr3gWfHozAzZO4zjxD0HS_8P0bPFS0QG0C3QBnKsbWU1nrS0fQYHRrJaJBnTL2f6we9ENQOdHOzSRylNmpiNEK0Ogwoy5HfZoNEGKQKjYKryPriuHhKqx3F21Cpqj1gzrMDZI7TigzP6t7e6BZPBraXBv7QkTfWO1Corfl2aamXXDwzmS5rESAn-g3AFQrp9iXN44efGjnyPLU"/>
+<!-- Gradient Overlay -->
+<div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent"></div>
+<!-- BOOST Badge -->
+<div class="absolute top-4 left-4 flex items-center gap-1 bg-accent-orange text-white px-3 py-1 rounded-full text-[10px] font-bold tracking-wider">
+<span class="material-symbols-outlined text-xs">local_fire_department</span>
+                    DESTACADO
+                </div>
+<!-- Distance Badge -->
+<div class="absolute top-4 right-4 bg-distance-blue text-white px-3 py-1 rounded-full text-xs font-semibold">
+                    2.3 km
+                </div>
+<!-- Overlay Content Bottom -->
+<div class="absolute bottom-4 left-4 right-4">
+<div class="flex items-center gap-3 mb-2">
+<img class="size-12 rounded-full border-2 border-white object-cover" data-alt="Profile portrait of a professional contractor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBG3M8oK3I3sTuv4mghBcGcN1FMvi0FwmnbAsF9wpUvkZEVwP91ChMU3gem_D_Fk7DLmD8AbaH_3z2kk7kZYWmKtPbPPr5cl2O42C_did6lo2V0wCzB5Esm3uBAScvD-Jaj9fk18tk2kjxrNWnS2FfgXkODI3FOS0-m5vlti7z-eL4Xys9HU5ByU20Ws5mbBXKJKt4OdNGoVe2aHwtYKZ38HxC7Ju5BkR7O8jnEN70mljT8mTKd5rCJj5T2jUdEhq9O6vwjgUSTr0bf"/>
+<div>
+<h2 class="text-white text-xl font-bold leading-tight">Juan Pérez</h2>
+<div class="inline-flex bg-accent-orange px-2 py-0.5 rounded-md mt-1">
+<span class="text-white text-[10px] font-bold uppercase tracking-wide">Plomería Experta</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Bar & Caption -->
+<div class="p-4">
+<div class="flex items-center justify-between mb-3">
+<div class="flex gap-4">
+<div class="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-primary dark:text-slate-300">favorite</span>
+<span class="text-sm font-bold">1.2k</span>
+</div>
+<div class="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-primary dark:text-slate-300">visibility</span>
+<span class="text-sm font-bold">4.5k</span>
+</div>
+</div>
+<button class="bg-accent-orange hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-lg transition-colors text-sm uppercase tracking-wide">
+                        Contratar
+                    </button>
+</div>
+<div class="text-slate-800 dark:text-slate-200 text-sm line-clamp-2">
+<span class="font-bold">@juanperez</span> Instalación completa de tuberías en proyecto residencial. Calidad garantizada y materiales de primera...
+                </div>
+</div>
+</div>
+<!-- Project Card 2 -->
+<div class="bg-white dark:bg-slate-900 mb-6 shadow-sm">
+<div class="relative aspect-[4/5] w-full bg-slate-200 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Electrician wiring a modern circuit breaker panel" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjxp3WZ_peKRCl-jVJuPI92hOVgYsCsRalfhLLX65lmw0cchAIpkKAzJF940A6bjOrW9hiRa_7NIA38-OkKk-50fkoDrzXmnx8PjRa8561oOinz9PEKbT_eEY8xsGg7v1qS4HwwyS276yyBNW2DVG4i2Soa4PSul_kdWpA8vW-SnRS2p5MTePNghHBgnx_ejqI2Qp8swvFIg5jjR8dqti1uZIvDVSn_1Y_GB_95tZ7qN8c2NnxxCVuyqJWXlMcuDCJdCG3t3BwfV2r"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent"></div>
+<div class="absolute top-4 right-4 bg-distance-blue text-white px-3 py-1 rounded-full text-xs font-semibold">
+                    5.1 km
+                </div>
+<div class="absolute bottom-4 left-4 right-4">
+<div class="flex items-center gap-3 mb-2">
+<img class="size-12 rounded-full border-2 border-white object-cover" data-alt="Profile portrait of a technician" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDk3-MCdc2wEUXqVJ0NTT2ckxoAPoh0krib3AsEwNoMFk2ko1Xd5UXntOKO6t3S2e7EWdYiB2R7kP2gRxp_rAICKtrkMexo3JWp-IFIDzfiZtulW-aryBzLMb_c1_nTUI0l7beZUaaNk4VQnpkXmVl7dGUksF00K7rKI5lcigA3QF61b39i787uUUtvTMCLsXojTecWGca3EYrdmQTn-4CswKOKL3LOLhHcz2B1FR-tKPceCcHKEC-S3zow0i7HxvKeIEzbf_MjcHc"/>
+<div>
+<h2 class="text-white text-xl font-bold leading-tight">Carlos Ruiz</h2>
+<div class="inline-flex bg-accent-orange px-2 py-0.5 rounded-md mt-1">
+<span class="text-white text-[10px] font-bold uppercase tracking-wide">Electricidad Industrial</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="p-4">
+<div class="flex items-center justify-between mb-3">
+<div class="flex gap-4">
+<div class="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-primary dark:text-slate-300">favorite</span>
+<span class="text-sm font-bold">856</span>
+</div>
+<div class="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-primary dark:text-slate-300">visibility</span>
+<span class="text-sm font-bold">2.1k</span>
+</div>
+</div>
+<button class="bg-accent-orange hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-lg transition-colors text-sm uppercase tracking-wide">
+                        Contratar
+                    </button>
+</div>
+<div class="text-slate-800 dark:text-slate-200 text-sm line-clamp-2">
+<span class="font-bold">@carlosruiz_tech</span> Mantenimiento preventivo en tablero de control principal. Todo bajo normativa vigente...
+                </div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-primary border-t border-white/10 px-4 pb-4 pt-3 flex items-center justify-between z-50">
+<a class="flex flex-col items-center gap-1 text-white" href="#">
+<span class="material-symbols-outlined fill-1">house</span>
+<span class="text-[10px] font-medium uppercase tracking-wider">Muro</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="text-[10px] font-medium uppercase tracking-wider">Explorar</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-3xl">add_circle</span>
+<span class="text-[10px] font-medium uppercase tracking-wider">Subir</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-colors relative" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="absolute -top-1 -right-1 size-4 bg-accent-orange text-[8px] flex items-center justify-center rounded-full text-white font-bold">3</span>
+<span class="text-[10px] font-medium uppercase tracking-wider">Mensajes</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium uppercase tracking-wider">Perfil</span>
+</a>
+</nav>
+</body></html>

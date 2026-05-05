@@ -135,7 +135,7 @@ CREATE POLICY "operation_messages_insert_participants" ON public.operation_messa
       SELECT 1
       FROM public.operations o
       WHERE o.id = operation_messages.operation_id
-        AND o.status IN ('accepted', 'in_progress')
+        AND o.status IN ('pending', 'accepted', 'in_progress')
         AND (o.client_id = auth.uid() OR o.kamellador_id = auth.uid())
     )
   );

@@ -69,6 +69,8 @@ export default function ClientDashboard({ user }) {
   const [showOPSDoc, setShowOPSDoc] = useState(false);
   const [pendingOPSOperation, setPendingOPSOperation] = useState(null);
   const [selectedHistoryOp, setSelectedHistoryOp] = useState(null);
+  const [showPricePrompt, setShowPricePrompt] = useState(false);
+  const [agreedPriceInput, setAgreedPriceInput] = useState("");
   const messagesEndRef = useRef(null);
 
   const activeCategory = getServiceCategory(activeRequest?.category);
@@ -261,11 +263,58 @@ export default function ClientDashboard({ user }) {
     setLoading(false);
   };
 
+  const handleFeedRequest = async (post) => {
+    setLoading(true);
+    try {
+      // 1. Crear la operación directa vinculada al kamellador del post
+      const { data: op, error: opError } = await supabase.from("operations").insert({
+        client_id: user.id,
+        kamellador_id: post.kamellador_id,
+        category: post.service_name,
+        description: `Solicitud desde el Feed: ${(post.bio || "").substring(0, 100)}...`,
+        proposed_price: 0, 
+        client_lat: position?.[0] || 0,
+        client_lng: position?.[1] || 0,
+        status: "pending",
+      }).select(OPERATION_SELECT).single();
+
+      if (opError) throw opError;
+
+      // 2. Enviar mensaje predefinido
+      const predefMessage = `¡Hola! 👋 Vi tu anuncio de *${post.service_name}* en el Feed y me interesa contratarte. ¿Podemos hablar sobre los detalles?`;
+      await supabase.from("operation_messages").insert({
+        operation_id: op.id,
+        sender_id: user.id,
+        body: predefMessage
+      });
+
+      // 3. Notificar al Kamellador
+      supabase.functions.invoke("bright-responder", {
+        body: {
+          userId: post.kamellador_id,
+          title: "¡Alguien quiere contratarte! 🎉",
+          body: `Han solicitado tus servicios desde tu anuncio en el Feed. Entra para chatear.`,
+          data: { url: "/" }
+        }
+      }).catch(console.error);
+
+      // 4. Actualizar estado y redirigir al flujo de negociación
+      setActiveRequest(op);
+      setChatOpen(true);
+      setActiveTab("inicio");
+      await refreshHistory();
+    } catch (err) {
+      alert("Error al solicitar servicio: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAcceptOffer = async (offer) => {
     setLoading(true);
     try {
       await supabase.from("operation_offers").update({ status: "accepted" }).eq("id", offer.id);
-      const { data, error } = await supabase.from("operations").update({ status: "accepted", kamellador_id: offer.kamellador_id, agreed_price: offer.price }).eq("id", activeRequest.id).select(OPERATION_SELECT).single();
+      const { data, error } = await supabase.from("operations").update({ kamellador_id: offer.kamellador_id, agreed_price: offer.price }).eq("id", activeRequest.id).select(OPERATION_SELECT).single();
       if (error) throw error;
       setActiveRequest(data);
       await refreshHistory();
@@ -352,7 +401,7 @@ export default function ClientDashboard({ user }) {
     return (
       <div className="app-shell">
         <div style={{ paddingBottom: 80, overflowY: "auto", height: "100%" }}>
-          <FeedView user={user} role="client" onOpenChat={null} />
+          <FeedView user={user} role="client" onOpenChat={handleFeedRequest} />
         </div>
         <BottomNav role="client" activeTab={activeTab} onTabChange={setActiveTab} unreadMessages={unreadCount} />
       </div>
@@ -476,12 +525,18 @@ export default function ClientDashboard({ user }) {
       {showOPSDoc && pendingOPSOperation && (
         <OPSDocument
           operation={pendingOPSOperation}
+          buttonText="ENVIAR OPS"
           onAccept={async () => {
             const now = new Date().toISOString();
-            await supabase.from("operations").update({ ops_accepted_at: now }).eq("id", pendingOPSOperation.id);
+            const updates = { ops_accepted_at: now };
+            if (pendingOPSOperation.agreed_price) {
+              updates.agreed_price = pendingOPSOperation.agreed_price;
+            }
+            await supabase.from("operations").update(updates).eq("id", pendingOPSOperation.id);
+            setActiveRequest(prev => prev.id === pendingOPSOperation.id ? { ...prev, ...updates } : prev);
             setShowOPSDoc(false);
             setPendingOPSOperation(null);
-            // El estado del activeRequest ya está en 'accepted', el PIN modal se abrirá normalmente
+            setChatOpen(false);
           }}
           onClose={() => { setShowOPSDoc(false); setPendingOPSOperation(null); }}
         />
@@ -505,7 +560,19 @@ export default function ClientDashboard({ user }) {
           <div className="chat-screen__header">
             <button onClick={() => setChatOpen(false)} style={{ background: "none", border: "none", color: "white" }}><X className="w-5 h-5" /></button>
             <div className="chat-screen__avatar" style={{ border: activeKamellador?.is_premium ? "2px solid #ffd700" : "none" }}>{activeKamellador?.avatar_url ? <img src={activeKamellador.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "K"}</div>
-            <div><p style={{ fontWeight: 700, margin: 0, color: activeKamellador?.is_premium ? "#d4af37" : "inherit" }}>{activeKamellador?.full_name}</p><p style={{ fontSize: 10, color: "#00cba9", fontWeight: 800, margin: 0 }}>{activeCategory?.shortName}</p></div>
+            <div style={{ flex: 1 }}><p style={{ fontWeight: 700, margin: 0, color: activeKamellador?.is_premium ? "#d4af37" : "inherit" }}>{activeKamellador?.full_name}</p><p style={{ fontSize: 10, color: "#00cba9", fontWeight: 800, margin: 0 }}>{activeCategory?.shortName}</p></div>
+            
+            {activeRequest.status === 'pending' && !activeRequest.ops_accepted_at && activeRequest.kamellador_id && (
+              <button 
+                onClick={() => {
+                  setAgreedPriceInput("");
+                  setShowPricePrompt(true);
+                }}
+                style={{ background: '#ff7665', color: 'white', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 800 }}
+              >
+                GENERAR OPS
+              </button>
+            )}
           </div>
           <div className="chat-screen__body">
             {chatLoading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : messages.map(m => <div key={m.id} className={`chat-bubble ${m.sender_id === user.id ? "chat-bubble--mine" : "chat-bubble--theirs"}`}>{m.body}</div>)}
@@ -559,6 +626,46 @@ export default function ClientDashboard({ user }) {
             <p>{activeRequest?.status === 'accepted' ? "El técnico ya está en camino." : "¿Deseas cancelar?"}</p>
             <button onClick={confirmCancel} className="btn-primary" style={{ background: '#ef4444', marginBottom: 12 }}>Sí, Cancelar</button>
             <button onClick={() => setShowCancelModal(false)} style={{ color: '#a4b1c6', fontWeight: 700 }}>Mantener</button>
+          </div>
+        </div>
+      )}
+      {showPricePrompt && (
+        <div className="animate-fade-in" style={{ position: 'fixed', inset: 0, background: 'rgba(31,44,69,0.7)', backdropFilter: 'blur(8px)', zIndex: 30000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div className="animate-scale-in" style={{ background: 'white', borderRadius: 32, padding: '32px 28px', maxWidth: 400, width: '100%', textAlign: 'center', boxShadow: '0 40px 80px rgba(31,44,69,0.25)' }}>
+            <div style={{ width: 64, height: 64, background: '#f0fdf4', borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+              <Zap className="w-8 h-8" style={{ color: "#16a34a" }} />
+            </div>
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: 8, color: '#1f2c45' }}>¿Precio Acordado?</h3>
+            <p style={{ color: "#5f6a79", fontSize: '0.9rem', marginBottom: 24 }}>Ingresa el monto final que negociaste con el profesional para generar la OPS.</p>
+            
+            <div style={{ position: 'relative', marginBottom: 24 }}>
+              <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', fontWeight: 800, color: '#1f2c45' }}>$</span>
+              <input 
+                autoFocus
+                type="text" 
+                value={agreedPriceInput}
+                onChange={e => setAgreedPriceInput(e.target.value.replace(/[^0-9]/g, ""))}
+                placeholder="00.000"
+                style={{ width: '100%', padding: '16px 16px 16px 32px', borderRadius: 16, border: '2px solid #efe7e2', fontSize: '1.25rem', fontWeight: 800, outline: 'none' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button onClick={() => setShowPricePrompt(false)} className="btn-secondary" style={{ flex: 1 }}>Cancelar</button>
+              <button 
+                onClick={() => {
+                  const price = Number(agreedPriceInput);
+                  if (!price || price < 5000) return alert("Ingresa un precio válido (mínimo $5.000)");
+                  setPendingOPSOperation({ ...activeRequest, agreed_price: price });
+                  setShowPricePrompt(false);
+                  setShowOPSDoc(true);
+                }} 
+                className="btn-primary" 
+                style={{ flex: 1.5 }}
+              >
+                Continuar
+              </button>
+            </div>
           </div>
         </div>
       )}

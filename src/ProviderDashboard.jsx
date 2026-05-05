@@ -267,7 +267,7 @@ export default function ProviderDashboard() {
           setNearbyServices(prev => prev.filter(s => s.id !== p.new.id));
           
           // Detect if I was just assigned to this operation
-          if (p.new.kamellador_id === user.id && p.new.status === 'accepted' && !activeOperation) {
+          if (p.new.kamellador_id === user.id && ['pending', 'accepted'].includes(p.new.status) && !activeOperation) {
             const upd = await fetchOperation(p.new.id);
             if (upd) {
               setActiveOperation({ 
@@ -693,6 +693,28 @@ export default function ProviderDashboard() {
                         <h3 style={{ margin: '0 0 4px', fontSize: '1.1rem', fontWeight: 800 }}>{activeOperation.category}</h3>
                         <p style={{ margin: 0, color: '#5f6a79', fontSize: '0.85rem', lineHeight: 1.4 }}>{activeOperation.description}</p>
                       </div>
+
+                      {activeOperation.status === 'pending' && activeOperation.ops_accepted_at && (
+                        <div style={{ background: '#fff7ed', borderRadius: 20, padding: 16, marginBottom: 16, textAlign: 'center', border: '1px solid #fed7aa' }}>
+                          <p style={{ margin: '0 0 10px', fontSize: '0.8rem', fontWeight: 800, color: '#c2410c' }}>El cliente ha enviado la OPS</p>
+                          <p style={{ margin: '0 0 14px', fontSize: '0.75rem', color: '#9a3412' }}>Acepta la Orden de Prestación de Servicios para continuar. (Costo: 1 OPS)</p>
+                          <button 
+                            onClick={async () => {
+                              try {
+                                await supabase.from("operations").update({ status: 'accepted' }).eq("id", activeOperation.id);
+                                const upd = await fetchOperation(activeOperation.id);
+                                if (upd) setActiveOperation(upd);
+                              } catch (err) {
+                                alert("Error al aceptar la OPS: " + err.message);
+                              }
+                            }}
+                            className="btn-primary"
+                            style={{ padding: '12px', fontSize: '0.9rem', borderRadius: 12, background: '#ea580c' }}
+                          >
+                            Aceptar la OPS
+                          </button>
+                        </div>
+                      )}
 
                       {activeOperation.status === 'accepted' && (
                         <div style={{ background: '#f7f3f1', borderRadius: 20, padding: 16, marginBottom: 16, textAlign: 'center' }}>

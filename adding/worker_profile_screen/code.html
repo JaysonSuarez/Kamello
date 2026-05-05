@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0c2955",
+                        "accent-orange": "#F47920",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111721",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .header-gradient {
+            background: linear-gradient(135deg, #0D2B55 0%, #1565C0 100%);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<!-- Header Section -->
+<div class="header-gradient h-48 w-full relative">
+<div class="flex items-center p-4 justify-between">
+<button class="text-white bg-black/20 backdrop-blur-md rounded-full p-2 flex items-center justify-center">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex gap-2">
+<button class="text-white bg-black/20 backdrop-blur-md rounded-full p-2 flex items-center justify-center">
+<span class="material-symbols-outlined">share</span>
+</button>
+<button class="text-white bg-black/20 backdrop-blur-md rounded-full p-2 flex items-center justify-center">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Profile Info Overlap -->
+<div class="px-4 -mt-16">
+<div class="flex flex-col items-start gap-4">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 border-4 border-accent-orange bg-white shadow-xl" data-alt="Professional portrait of a male worker" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC7a_6e_5TDHehU77dHHb4hpXV7ptkXLU1BcwCh4gbKvPQ3wpSyM1yjzi0ojOT_YR-_lupNcBg3ey6RGDyXeS2ixpLTrVmPNxBmUpQ8GcGto-1MZeTUowUCVstZ0JR76mbdo_B3pAX17JshIxeDi3-qtSb2px--WL45gs-meCenD0B4lzYKf5jvxZUEyFk0Y4V_1Pa4mb3fCEmVlZO1afRZ2iqZ71eZu_k5TBIUmt3705AzjfhGtWpQBdW9iLLH7RaPbGM_ZKBOm2FL");'>
+</div>
+<div class="absolute bottom-1 right-1 bg-accent-orange text-white text-[10px] font-bold px-2 py-1 rounded-full border-2 border-white">
+                        PRO ⭐
+                    </div>
+</div>
+<div class="w-full">
+<div class="flex justify-between items-start">
+<div>
+<h1 class="text-slate-900 dark:text-slate-100 text-2xl font-bold leading-tight tracking-tight">Carlos Rodriguez</h1>
+<p class="text-primary font-semibold text-base">Electricista Residencial Senior</p>
+</div>
+<span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold border border-primary/20">ELITE 💎</span>
+</div>
+<div class="flex flex-wrap gap-2 mt-3">
+<span class="bg-accent-orange/10 text-accent-orange px-3 py-1 rounded-full text-xs font-bold border border-accent-orange/20">Instalaciones</span>
+<span class="bg-accent-orange/10 text-accent-orange px-3 py-1 rounded-full text-xs font-bold border border-accent-orange/20">Mantenimiento</span>
+<span class="bg-accent-orange/10 text-accent-orange px-3 py-1 rounded-full text-xs font-bold border border-accent-orange/20">Urgencias 24h</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Badges -->
+<div class="p-4 mt-2 flex gap-4 overflow-x-auto no-scrollbar">
+<div class="flex items-center gap-1.5 shrink-0 bg-white dark:bg-slate-800 px-3 py-2 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700">
+<span class="material-symbols-outlined text-green-500 text-lg">verified</span>
+<span class="text-sm font-medium">Verificado</span>
+</div>
+<div class="flex items-center gap-1.5 shrink-0 bg-white dark:bg-slate-800 px-3 py-2 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700">
+<span class="material-symbols-outlined text-yellow-500 text-lg">star</span>
+<span class="text-sm font-medium">4.8 (127 reseñas)</span>
+</div>
+<div class="flex items-center gap-1.5 shrink-0 bg-white dark:bg-slate-800 px-3 py-2 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700">
+<span class="material-symbols-outlined text-primary text-lg">location_on</span>
+<span class="text-sm font-medium">3.2 km</span>
+</div>
+</div>
+<!-- Stats Cards -->
+<div class="grid grid-cols-3 gap-3 px-4 py-2">
+<div class="flex flex-col items-center justify-center gap-1 rounded-xl p-4 bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Trabajos</p>
+<p class="text-primary dark:text-slate-100 text-xl font-bold">152</p>
+</div>
+<div class="flex flex-col items-center justify-center gap-1 rounded-xl p-4 bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Rating</p>
+<p class="text-primary dark:text-slate-100 text-xl font-bold">4.8</p>
+</div>
+<div class="flex flex-col items-center justify-center gap-1 rounded-xl p-4 bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Garantía</p>
+<p class="text-primary dark:text-slate-100 text-xl font-bold">90%</p>
+</div>
+</div>
+<!-- Specialties Grid -->
+<div class="p-4">
+<h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">engineering</span>
+                Especialidades
+            </h2>
+<div class="grid grid-cols-4 gap-4">
+<div class="flex flex-col items-center gap-2">
+<div class="bg-primary/5 p-3 rounded-full">
+<span class="material-symbols-outlined text-primary">bolt</span>
+</div>
+<span class="text-[10px] font-medium text-center">Cableado</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="bg-primary/5 p-3 rounded-full">
+<span class="material-symbols-outlined text-primary">lightbulb</span>
+</div>
+<span class="text-[10px] font-medium text-center">Iluminación</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="bg-primary/5 p-3 rounded-full">
+<span class="material-symbols-outlined text-primary">home_repair_service</span>
+</div>
+<span class="text-[10px] font-medium text-center">Tableros</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="bg-primary/5 p-3 rounded-full">
+<span class="material-symbols-outlined text-primary">security</span>
+</div>
+<span class="text-[10px] font-medium text-center">CCTV</span>
+</div>
+</div>
+</div>
+<!-- Recent Work Grid -->
+<div class="p-4">
+<h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">photo_library</span>
+                Trabajos Recientes
+            </h2>
+<div class="grid grid-cols-3 gap-2">
+<div class="aspect-square rounded-lg bg-cover bg-center bg-slate-200" data-alt="Electrical wiring work photo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBOWBDivHSxmNuTMcRNZ9CszFWraoCU5hOH21eSD0L8Hmc6mHFJxKo_32U971l4dvUGHRiIzh8R7Ka69-1eXN4Tgu6AoTfoDV_hxSNzJSnC49ZVZ1xWzq5Y-q_Al7DvN06HTlrK3tYQwqv8uhKYcewhgxsD7oJLK0keiTtrowNtje7H3yosyyO_cYgoZZhqPY7pdSAB9QmD28a3JL0ktU6rc47VaO2_L6Sn1gQ008Ix4U3p2fmgOPysoyOQyQ1sUACftN6dlrTs3rhD");'></div>
+<div class="aspect-square rounded-lg bg-cover bg-center bg-slate-200" data-alt="Modern lighting installation photo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDcWvObliGa7r3m8z-ii4otS8OHhoCkTz2alovNUqMvODjhlwp7fQssuHP0uQa6_KTNApMhWSaoEgAIepMDcLKrMJ8hcP95O-VJ9hPm0jmGnz-bE7w6KusF3p4BcsPuT-k8-qnBPiE1mqjlkzqm7joYUB6Xx9jAPSWsqgmRUi0mcU0X2ihPLbA5Ui3E2GQiC7aAMitJlR_MNOZGXW1y-ONRymVC2gO-c-gLCQHE9r2fWmPmgPQT8f4m8Rm66QpH0jxOrH-R8MvuvBsk");'></div>
+<div class="aspect-square rounded-lg bg-cover bg-center bg-slate-200" data-alt="Electric panel maintenance photo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB2dQNGmGaFqiefFUUcg_7LnQaYm114rFXcLaKhdtt3Oldxm7TKQjlwlPKRY96wAEn7hFDwiOjnsVAJNrZEpuVDqN8ijnwA4PLEq0Wkg-FiyftN76JhbYB_BBHrrEO8k11RXv1sJmOtbDZ_x6qWRyQlkHCN7q9fvC9HHMqhn68RzUNeTSnFb1CDKGUmq8P-xVzbWopvV-zaQoGaJnVuE62nvtS9-SUV5jAfKc43LkPTDiuQd-oUy0KWU1vQrei3tYyCvYztKAc3HDyx");'></div>
+<div class="aspect-square rounded-lg bg-cover bg-center bg-slate-200" data-alt="Tools and equipment photo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBQ2YnNBTwLCctYTrBJSZEohojaqDlr2ygNRx9sGsWYrdDYwwXHfKpATYOM8p7ceZ_fp-WLkQgtJIgb04x08LSuSIWIZyuS6E7Ub2t8A2qqZOItIEXDkDaPzq8K6DlX35oIIGvIcgjyPVYxH5sbud7LVp391jVhoBCfXH0wIDt4g5vOP2m5c_-x9OwDjfUQbDGeYuuUJXhJmndh507iD1XYf4Wje3QrJyC9Cw51XDV1-2JrMmkKm4RWmcxwkduAPKYHKJQ3OP-ljSo7");'></div>
+<div class="aspect-square rounded-lg bg-cover bg-center bg-slate-200" data-alt="Circuit testing process photo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB0-BiKN4YkHR0KQ7utOIjpIEBQ2dVc3tCKKDJTa4kjms97okybelXtDWeAbV7mx2MBJCkk4WJxpAmylOETv6-x93F613Hn8w9TqJl1bg7DJjRDpbL0P5CzHnUAHfIm1hawIc0v1M3FaxvqWjxf77307Ayk_wD8tRytsPyY5wsxQlXtEzBvL2T1kyIdcKLOIjjcVckOHz3OwDXRgkc2YsYkYeYW-FKXxi1aVH2lPgu7YdMkdURE4Kl0dzhpE7I7ReIAT_dVna5uPfdh");'></div>
+<div class="aspect-square rounded-lg bg-cover bg-center bg-slate-200" data-alt="Completed residential project photo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB-XtK7xfDjKDRBN-Avk_6BeXewbjxQb9knEiKMr3ubOvlRWRzfoBXrS-mJm2FVgHSxwyUGEKEs_0oEXcvOB0aC0gvSYop8MAEF_u_XtqtSZqtBYHRl0777yThXGkVPvNqItTPkWK2386T0dJVQslQK6aGQNaKJgkSCwbd-Ic9udC7HaTVzE64y_US-JiVAlJ7uiUbF-sSByeV3mUmsfztlJdZwJy-9tvJS_pji5JNejJUx9gnPk4aefOyqq8ConlupQTqCp220q62Q");'></div>
+</div>
+</div>
+<!-- Map Section (Optional but fits context) -->
+<div class="p-4">
+<h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">map</span>
+                Área de Cobertura
+            </h2>
+<div class="h-32 w-full rounded-xl bg-slate-100 overflow-hidden relative">
+<img alt="Map area description" class="w-full h-full object-cover grayscale opacity-50" data-location="Mexico City" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrecQF8bjz1HhB_IXpiCzqG_z_KxJDua53ifZngG3NXao_-T5MPVExUqK3aLEJVPrg1MMX_4DQtrB9hGRqnbFaOA8enO12ObS3uahJGErhqjRoRkaGdTRdBP2hB4Nf_kBug0CuwhOqxUHwJZVzN2uUmKfroFPPJSjE1_gzUV56V7Ne7aBM2pK2Qt-SWFEozCcLPMbP9lwG8s1gN1Yp0tiU2gJyews8I7WJXi2n02NpSm8y-3Pk4qR4TCpbDmwG2wRlj170t7chFlkd"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="h-10 w-10 bg-primary/20 rounded-full flex items-center justify-center">
+<div class="h-3 w-3 bg-primary rounded-full animate-ping"></div>
+<div class="h-3 w-3 bg-primary rounded-full absolute"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Bottom CTA -->
+<div class="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 z-50">
+<button class="w-full bg-accent-orange hover:bg-accent-orange/90 text-white font-bold py-4 rounded-xl shadow-lg shadow-accent-orange/20 flex items-center justify-center gap-2 transition-all">
+<span class="material-symbols-outlined">calendar_today</span>
+                SOLICITAR SERVICIO
+            </button>
+</div>
+</div>
+</body></html>

@@ -36,51 +36,100 @@ export function PostDetail({ post, onBack, isOwner, onRequestService }) {
       .then(({ data }) => { setServices(data || []); setLoading(false); });
   }, [post?.id]);
 
+  const avatar = post.kamellador?.avatar_url;
+  const initial = (post.kamellador?.full_name?.[0] || "K").toUpperCase();
+  const rating = post.kamellador?.rating_avg?.toFixed(1) || "Nuevo";
+  const servicesCount = post.kamellador?.services_count || 0;
+
   return (
-    <div style={{ minHeight: "100vh", background: "#f7f3f1" }}>
-      {/* Header */}
-      <div style={{ background: "#1f2c45", padding: "48px 24px 80px", position: "relative" }}>
-        <button onClick={onBack} style={{ background: "rgba(255,255,255,.1)", border: "none", borderRadius: 14, padding: "10px 16px", color: "white", display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontWeight: 700, marginBottom: 24 }}>
-          <ArrowLeft className="w-4 h-4" /> Volver
-        </button>
-        <h1 style={{ color: "white", fontWeight: 900, fontSize: "1.8rem", margin: "0 0 4px" }}>{post.service_name}</h1>
-        <p style={{ color: "rgba(255,255,255,.65)", margin: 0, fontSize: "0.9rem" }}>
-          {post.kamellador?.full_name} · {post.kamellador?.specialty}
-        </p>
+    <div style={{ minHeight: "100vh", background: "#f7f3f1", paddingBottom: "100px", position: "relative" }}>
+      {/* Header Branded Background */}
+      <div style={{ height: "180px", width: "100%", background: "#1f2c45", position: "relative", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+        {/* Logo de fondo sutil */}
+        <img 
+          src="/images/K-Editado.png" 
+          alt="" 
+          style={{ 
+            position: "absolute", 
+            width: "240px", 
+            height: "240px", 
+            opacity: 0.1, 
+            filter: "brightness(2) grayscale(1)",
+            transform: "rotate(-10deg)" 
+          }} 
+        />
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center", zIndex: 20 }}>
+          <button onClick={onBack} style={{ background: "rgba(0,0,0,0.3)", backdropFilter: "blur(8px)", border: "none", borderRadius: "50%", width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", color: "white", cursor: "pointer" }}>
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
-      {/* Card flotante */}
-      <div style={{ margin: "-44px 20px 0", background: "white", borderRadius: 28, padding: "28px 24px", boxShadow: "0 8px 32px rgba(31,44,69,.1)" }}>
-        {/* Avatar + rating */}
-        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
-          <div style={{ width: 64, height: 64, borderRadius: 20, background: "#ff7665", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.6rem", fontWeight: 900, color: "white", flexShrink: 0 }}>
-            {(post.kamellador?.full_name?.[0] || "K").toUpperCase()}
-          </div>
-          <div>
-            <p style={{ fontWeight: 800, color: "#1f2c45", margin: "0 0 4px", fontSize: "1rem" }}>{post.kamellador?.full_name}</p>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <Star className="w-4 h-4" style={{ fill: "#f59e0b", color: "#f59e0b" }} />
-              <span style={{ fontWeight: 700, color: "#1f2c45", fontSize: "0.85rem" }}>
-                {post.kamellador?.rating_avg?.toFixed(1) || "Nuevo"}
-              </span>
-              {post.kamellador?.services_count > 0 && (
-                <span style={{ color: "#a4b1c6", fontSize: "0.8rem" }}>· {post.kamellador.services_count} servicios</span>
+      {/* Profile Info Overlap */}
+      <div style={{ padding: "0 20px", marginTop: "-60px", position: "relative", zIndex: 10 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div style={{ position: "relative", width: "fit-content" }}>
+            <div style={{ width: 120, height: 120, borderRadius: "50%", border: "4px solid #ff7665", background: "white", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 25px rgba(0,0,0,0.15)" }}>
+              {avatar ? (
+                <img src={avatar} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <span style={{ fontSize: "3rem", fontWeight: 900, color: "#1f2c45" }}>{initial}</span>
               )}
+            </div>
+            {post.payment_status === "premium" && (
+              <div style={{ position: "absolute", bottom: 0, right: 0, background: "#ff7665", color: "white", fontSize: "10px", fontWeight: 800, padding: "4px 8px", borderRadius: 12, border: "2px solid white" }}>
+                PRO ⭐
+              </div>
+            )}
+          </div>
+          
+          <div style={{ width: "100%" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div>
+                <h1 style={{ color: "#1f2c45", fontSize: "1.5rem", fontWeight: 900, margin: "0 0 4px", lineHeight: 1.2 }}>{post.kamellador?.full_name}</h1>
+                <p style={{ color: "#ff7665", fontWeight: 700, fontSize: "1rem", margin: 0 }}>{post.service_name}</p>
+              </div>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+              <span style={{ background: "rgba(255,118,101,0.1)", color: "#ff7665", padding: "4px 12px", borderRadius: 16, fontSize: "0.75rem", fontWeight: 800, border: "1px solid rgba(255,118,101,0.2)" }}>
+                {post.kamellador?.specialty || "Servicios"}
+              </span>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Biografía */}
-        <p style={{ color: "#5f6a79", lineHeight: 1.7, fontSize: "0.9rem", margin: 0 }}>{post.bio}</p>
+      {/* Biografía */}
+      <div style={{ padding: "20px 20px 0" }}>
+        <p style={{ color: "#5f6a79", lineHeight: 1.6, fontSize: "0.9rem", margin: 0 }}>{post.bio}</p>
+      </div>
+
+      {/* Stats Cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, padding: "20px" }}>
+        <div style={{ background: "white", borderRadius: 16, padding: "16px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px rgba(31,44,69,0.05)" }}>
+          <p style={{ color: "#a4b1c6", fontSize: "0.7rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 4px" }}>Trabajos</p>
+          <p style={{ color: "#1f2c45", fontSize: "1.25rem", fontWeight: 900, margin: 0 }}>{servicesCount}</p>
+        </div>
+        <div style={{ background: "white", borderRadius: 16, padding: "16px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px rgba(31,44,69,0.05)" }}>
+          <p style={{ color: "#a4b1c6", fontSize: "0.7rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 4px" }}>Rating</p>
+          <p style={{ color: "#1f2c45", fontSize: "1.25rem", fontWeight: 900, margin: 0 }}>{rating}</p>
+        </div>
+        <div style={{ background: "white", borderRadius: 16, padding: "16px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px rgba(31,44,69,0.05)" }}>
+          <p style={{ color: "#a4b1c6", fontSize: "0.7rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 4px" }}>Garantía</p>
+          <p style={{ color: "#1f2c45", fontSize: "1.25rem", fontWeight: 900, margin: 0 }}>100%</p>
+        </div>
       </div>
 
       {/* Servicios */}
-      <div style={{ padding: "24px 20px" }}>
-        <h3 style={{ fontWeight: 800, color: "#1f2c45", margin: "0 0 14px" }}>Servicios que ofrezco</h3>
+      <div style={{ padding: "0 20px" }}>
+        <h2 style={{ fontSize: "1.1rem", fontWeight: 900, color: "#1f2c45", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 8 }}>
+          <Star className="w-5 h-5 text-[#ff7665]" />
+          Servicios y Precios
+        </h2>
         {loading ? (
-          <div style={{ textAlign: "center", padding: "20px 0", color: "#a4b1c6" }}><Loader2 className="w-6 h-6 animate-spin" /></div>
+          <div style={{ textAlign: "center", padding: "20px 0", color: "#a4b1c6" }}><Loader2 className="w-6 h-6 animate-spin mx-auto" /></div>
         ) : services.length === 0 ? (
-          <p style={{ color: "#a4b1c6", fontSize: "0.85rem" }}>Aún no ha agregado servicios específicos.</p>
+          <p style={{ color: "#a4b1c6", fontSize: "0.85rem", textAlign: "center" }}>No hay servicios específicos publicados.</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {services.map(s => <ServiceChip key={s.id} service={s} />)}
@@ -88,22 +137,25 @@ export function PostDetail({ post, onBack, isOwner, onRequestService }) {
         )}
       </div>
 
-      {/* CTA Botón */}
+      {/* Sticky Bottom CTA */}
       {!isOwner && (
-        <div style={{ padding: "0 20px 40px" }}>
-          <button
-            onClick={() => onRequestService(post)}
-            style={{
-              width: "100%", background: "#ff7665", color: "white",
-              border: "none", borderRadius: 20, padding: "18px",
-              fontWeight: 800, fontSize: "1rem", cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-              boxShadow: "0 8px 24px rgba(255,118,101,.4)",
-            }}
-          >
-            <MessageSquare className="w-5 h-5" />
-            Solicitar Servicio
-          </button>
+        <div style={{ position: "fixed", bottom: 80, left: 0, right: 0, padding: "0 20px", zIndex: 50 }}>
+          <div style={{ maxWidth: "500px", margin: "0 auto" }}>
+            <button
+              onClick={() => onRequestService(post)}
+              style={{
+                width: "100%", background: "#ff7665", color: "white",
+                border: "none", borderRadius: 16, padding: "16px",
+                fontWeight: 900, fontSize: "1rem", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+                boxShadow: "0 8px 24px rgba(255,118,101,0.3)",
+                textTransform: "uppercase", letterSpacing: "0.05em"
+              }}
+            >
+              <MessageSquare className="w-5 h-5" />
+              Solicitar Servicio
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -282,9 +334,8 @@ export default function FeedView({ user, role, onOpenChat }) {
   };
 
   const handleRequestService = async (post) => {
-    // Crear o abrir un chat con este kamellador via una operación de tipo "feed_inquiry"
-    // Por ahora abrimos el chat directo (usando el mismo sistema de mensajes)
-    if (onOpenChat) onOpenChat(post.kamellador);
+    // Pasar el post completo para poder extraer el nombre del servicio, id del kamellador, etc.
+    if (onOpenChat) onOpenChat(post);
   };
 
   // Editing mode
@@ -349,62 +400,86 @@ export default function FeedView({ user, role, onOpenChat }) {
             <p style={{ fontSize: "0.85rem" }}>¡Sé el primero en publicar tus servicios!</p>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 80 }}>
             {posts.map(post => {
               const isOwner = post.kamellador_id === user.id;
+              const avatar = post.kamellador?.avatar_url;
+              const initial = (post.kamellador?.full_name?.[0] || "K").toUpperCase();
+              
               return (
-                <div
-                  key={post.id}
-                  onClick={() => setSelectedPost(post)}
-                  style={{
-                    background: "white", borderRadius: 24, padding: "20px 22px",
-                    cursor: "pointer", boxShadow: "0 2px 12px rgba(31,44,69,.06)",
-                    border: "1.5px solid transparent",
-                    transition: "border-color .2s, box-shadow .2s",
-                  }}
-                  onMouseOver={e => { e.currentTarget.style.borderColor = "#ff7665"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(255,118,101,.15)"; }}
-                  onMouseOut={e => { e.currentTarget.style.borderColor = "transparent"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(31,44,69,.06)"; }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                        <div style={{ width: 42, height: 42, borderRadius: 14, background: "#ff7665", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.1rem", fontWeight: 900, color: "white", flexShrink: 0 }}>
-                          {(post.kamellador?.full_name?.[0] || "K").toUpperCase()}
+                <div key={post.id} style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 20px rgba(31,44,69,0.08)" }}>
+                  {/* Hero Image Area */}
+                  <div style={{ position: "relative", aspectRatio: "4/3", width: "100%", background: "#1f2c45", overflow: "hidden" }} onClick={() => setSelectedPost(post)}>
+                    {/* Fallback image o gradiente para el hero */}
+                    <img 
+                      src={`https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=800&q=80`} 
+                      alt="Work preview" 
+                      style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.8 }} 
+                    />
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(31,44,69,0.95), rgba(31,44,69,0.2) 50%, transparent)" }} />
+                    
+                    {post.payment_status === "premium" && (
+                      <div style={{ position: "absolute", top: 16, left: 16, display: "flex", alignItems: "center", gap: 4, background: "#ff7665", color: "white", padding: "4px 12px", borderRadius: 20, fontSize: "10px", fontWeight: 800, letterSpacing: "0.05em" }}>
+                        <Star className="w-3 h-3" style={{ fill: "white" }} />
+                        DESTACADO
+                      </div>
+                    )}
+                    
+                    {/* Overlay Content Bottom */}
+                    <div style={{ position: "absolute", bottom: 16, left: 16, right: 16 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{ width: 48, height: 48, borderRadius: "50%", border: "2px solid white", overflow: "hidden", background: "#ff7665", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          {avatar ? (
+                            <img src={avatar} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          ) : (
+                            <span style={{ fontSize: "1.2rem", fontWeight: 900, color: "white" }}>{initial}</span>
+                          )}
                         </div>
                         <div>
-                          <p style={{ fontWeight: 800, color: "#1f2c45", margin: 0, fontSize: "0.95rem" }}>{post.service_name}</p>
-                          <p style={{ color: "#a4b1c6", margin: 0, fontSize: "0.78rem" }}>{post.kamellador?.full_name}</p>
+                          <h2 style={{ color: "white", fontSize: "1.1rem", fontWeight: 800, lineHeight: 1.2, margin: 0 }}>{post.kamellador?.full_name}</h2>
+                          <div style={{ display: "inline-flex", background: "#ff7665", padding: "2px 8px", borderRadius: 6, marginTop: 4 }}>
+                            <span style={{ color: "white", fontSize: "10px", fontWeight: 800, textTransform: "uppercase" }}>{post.service_name}</span>
+                          </div>
                         </div>
                       </div>
-                      <p style={{ color: "#5f6a79", fontSize: "0.82rem", lineHeight: 1.5, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                        {post.bio}
-                      </p>
                     </div>
-
-                    {isOwner && isKamellador && (
-                      <div style={{ display: "flex", gap: 8, marginLeft: 12 }} onClick={e => e.stopPropagation()}>
-                        <button onClick={() => setEditing(post)} style={{ background: "#f7f3f1", border: "none", borderRadius: 12, padding: "8px 12px", cursor: "pointer", color: "#1f2c45" }}>
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => handleDelete(post.id)} style={{ background: "#fee2e2", border: "none", borderRadius: 12, padding: "8px 12px", cursor: "pointer", color: "#ef4444" }}>
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
-                    {post.kamellador?.rating_avg > 0 && (
-                      <span style={{ background: "#fff7ed", color: "#f59e0b", fontWeight: 800, fontSize: "0.75rem", padding: "4px 10px", borderRadius: 10, display: "flex", alignItems: "center", gap: 4 }}>
-                        <Star className="w-3 h-3" style={{ fill: "#f59e0b" }} /> {post.kamellador.rating_avg.toFixed(1)}
-                      </span>
-                    )}
-                    <span style={{ background: "#f0fdf4", color: "#16a34a", fontWeight: 700, fontSize: "0.75rem", padding: "4px 10px", borderRadius: 10 }}>
-                      {post.kamellador?.specialty || "Profesional"}
-                    </span>
-                    {isOwner && (
-                      <span style={{ background: "#fff0ee", color: "#ff7665", fontWeight: 700, fontSize: "0.75rem", padding: "4px 10px", borderRadius: 10 }}>Tu publicación</span>
-                    )}
+                  {/* Action Bar & Caption */}
+                  <div style={{ padding: "16px" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                      <div style={{ display: "flex", gap: 16 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#5f6a79" }}>
+                          <Star className="w-5 h-5 text-[#f59e0b]" style={{ fill: "#f59e0b" }} />
+                          <span style={{ fontSize: "0.85rem", fontWeight: 800 }}>{post.kamellador?.rating_avg?.toFixed(1) || "N/A"}</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#5f6a79" }}>
+                          <MessageSquare className="w-5 h-5 text-[#a4b1c6]" />
+                          <span style={{ fontSize: "0.85rem", fontWeight: 800 }}>{post.kamellador?.services_count || 0}</span>
+                        </div>
+                      </div>
+                      
+                      {isOwner ? (
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button onClick={() => setEditing(post)} style={{ background: "#f7f3f1", border: "none", borderRadius: 12, padding: "8px 12px", cursor: "pointer", color: "#1f2c45" }}>
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => handleDelete(post.id)} style={{ background: "#fee2e2", border: "none", borderRadius: 12, padding: "8px 12px", cursor: "pointer", color: "#ef4444" }}>
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button 
+                          onClick={() => setSelectedPost(post)}
+                          style={{ background: "#ff7665", color: "white", fontWeight: 800, border: "none", padding: "8px 24px", borderRadius: 12, fontSize: "0.85rem", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                          Ver / Contratar
+                        </button>
+                      )}
+                    </div>
+                    <div style={{ color: "#1f2c45", fontSize: "0.85rem", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                      <span style={{ fontWeight: 800 }}>{post.service_name} </span>
+                      {post.bio}
+                    </div>
                   </div>
                 </div>
               );
