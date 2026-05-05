@@ -11,6 +11,8 @@ export default function ProfileView({ user, onLogout }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmationStep, setDeleteConfirmationStep] = useState(1);
   
   const [formData, setFormData] = useState({
     full_name: "",
@@ -105,9 +107,6 @@ export default function ProfileView({ user, onLogout }) {
   };
 
   const handleDeleteAccount = async () => {
-    if (!window.confirm("¿Estás seguro? Esta acción no se puede deshacer.")) return;
-    if (!window.confirm("¿Confirmas la eliminación permanente de tu cuenta?")) return;
-
     setSaving(true);
     try {
       const { error } = await supabase.from('profiles').delete().eq('id', user.id);
@@ -118,6 +117,7 @@ export default function ProfileView({ user, onLogout }) {
       alert("Error al eliminar cuenta: " + err.message);
     } finally {
       setSaving(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -303,10 +303,55 @@ export default function ProfileView({ user, onLogout }) {
           <div style={{ background: '#fff1f0', border: '1px solid #ffe1df', borderRadius: '20px', padding: '16px', marginTop: '20px' }}>
             <h4 style={{ margin: '0 0 4px', color: '#ef4444', fontSize: '0.9rem', fontWeight: 800 }}>Zona de Peligro</h4>
             <p style={{ margin: '0 0 12px', fontSize: '11px', color: '#ef4444', opacity: 0.7 }}>Elimina tu cuenta y datos permanentemente.</p>
-            <button onClick={handleDeleteAccount} style={{ background: '#ef4444', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '12px', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }}>
+            <button onClick={() => { setShowDeleteModal(true); setDeleteConfirmationStep(1); }} style={{ background: '#ef4444', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '12px', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }}>
               Eliminar Cuenta
             </button>
           </div>
+
+          {/* Custom Delete Modal */}
+          {showDeleteModal && (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(31,44,69,0.8)', backdropFilter: 'blur(8px)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+              <div className="animate-scale-in" style={{ background: 'white', borderRadius: '32px', width: '100%', maxWidth: '360px', padding: '32px', textAlign: 'center', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
+                <div style={{ width: '64px', height: '64px', background: '#fee2e2', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                  <Trash2 className="w-8 h-8 text-[#ef4444]" />
+                </div>
+                <h3 style={{ margin: '0 0 8px', fontSize: '1.25rem', fontWeight: 900, color: '#1f2c45' }}>
+                  {deleteConfirmationStep === 1 ? "¿Estás seguro?" : "Último paso"}
+                </h3>
+                <p style={{ color: '#5f6a79', fontSize: '0.9rem', marginBottom: '24px', lineHeight: 1.5 }}>
+                  {deleteConfirmationStep === 1 
+                    ? "Esta acción eliminará permanentemente tu perfil, historial y OPS disponibles. No se puede deshacer."
+                    : "Confirmas la eliminación total de tus datos. Perderás el acceso de forma inmediata."}
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {deleteConfirmationStep === 1 ? (
+                    <button 
+                      onClick={() => setDeleteConfirmationStep(2)}
+                      className="btn-primary" 
+                      style={{ background: '#ef4444', color: 'white' }}
+                    >
+                      Sí, entiendo el riesgo
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={handleDeleteAccount}
+                      disabled={saving}
+                      className="btn-primary" 
+                      style={{ background: '#ef4444', color: 'white' }}
+                    >
+                      {saving ? <Loader2 className="animate-spin w-5 h-5" /> : "Eliminar cuenta permanentemente"}
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => setShowDeleteModal(false)}
+                    style={{ background: 'none', border: 'none', color: '#a4b1c6', fontWeight: 700, padding: '12px', cursor: 'pointer' }}
+                  >
+                    Mejor no, volver atrás
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
