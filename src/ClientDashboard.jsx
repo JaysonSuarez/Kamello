@@ -45,8 +45,6 @@ export default function ClientDashboard({ user }) {
   const [position, setPosition] = useState(null);
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
-  const [budget, setBudget] = useState("");
-  const [minBudget, setMinBudget] = useState(20000);
   const [activeRequest, setActiveRequest] = useState(null);
   const [history, setHistory] = useState([]);
   const [chatOpen, setChatOpen] = useState(false);
@@ -80,20 +78,7 @@ export default function ClientDashboard({ user }) {
 
   const refreshHistory = async () => { setHistory(await fetchHistory(user.id, "client")); };
 
-  useEffect(() => {
-    if (category) {
-      const cat = getServiceCategory(category);
-      let base = cat?.basePrice || 20000;
-      const hour = new Date().getHours();
-      const day = new Date().getDay();
-      let surcharge = 0;
-      if (hour < 6 || hour >= 20) surcharge += 0.25;
-      if (day === 0 || day === 6) surcharge += 0.15;
-      const minimum = Math.floor(base * (1 + surcharge));
-      setMinBudget(minimum);
-      setBudget(minimum.toString());
-    }
-  }, [category]);
+
 
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -221,15 +206,13 @@ export default function ClientDashboard({ user }) {
 
   const handleSubmitRequest = async (e) => {
     e.preventDefault();
-    if (!category || !description || !budget || !position) return alert("Completa todos los campos.");
-    const finalBudget = Number(budget.replace(/[^0-9]/g, ""));
-    if (finalBudget < minBudget) return alert("El presupuesto no puede ser menor al mínimo sugerido de $" + formatPrice(minBudget));
+    if (!category || !description || !position) return alert("Completa todos los campos.");
     setLoading(true);
     const { data, error } = await supabase.from("operations").insert({
       client_id: user.id, category, description,
-      proposed_price: finalBudget,
+      proposed_price: 0,
       client_lat: position[0], client_lng: position[1],
-      status: "pending", expires_at: new Date(Date.now() + 3 * 60 * 1000).toISOString(),
+      status: "pending", expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
     }).select(OPERATION_SELECT).single();
     if (error) alert("Error: " + error.message);
     else { 
@@ -249,8 +232,8 @@ export default function ClientDashboard({ user }) {
             supabase.functions.invoke("bright-responder", {
               body: {
                 userId: k.id,
-                title: "Nueva Solicitud Cercana 🚀",
-                body: `Un cliente busca: ${category} por $${formatPrice(finalBudget)}`,
+                title: "Nueva Solicitud 🚀",
+                body: `Alguien necesita: ${category}. Sé el primero en ofertar.`,
                 data: { url: "/" }
               }
             });
@@ -505,8 +488,8 @@ export default function ClientDashboard({ user }) {
         {!activeRequest ? (
           <RequestServiceForm 
             category={category} setCategory={setCategory} description={description} setDescription={setDescription} 
-            budget={budget} setBudget={setBudget} minBudget={minBudget} loading={loading} position={position} 
-            handleSubmitRequest={handleSubmitRequest} formatPrice={formatPrice} 
+            loading={loading} position={position} 
+            handleSubmitRequest={handleSubmitRequest}
           />
         ) : (
           <ActiveOperationView 
@@ -525,18 +508,58 @@ export default function ClientDashboard({ user }) {
       {showOPSDoc && pendingOPSOperation && (
         <OPSDocument
           operation={pendingOPSOperation}
-          buttonText="ENVIAR OPS"
+          buttonText="ACEPTAR Y CONTRATAR"
           onAccept={async () => {
-            const now = new Date().toISOString();
-            const updates = { ops_accepted_at: now };
-            if (pendingOPSOperation.agreed_price) {
-              updates.agreed_price = pendingOPSOperation.agreed_price;
+            setLoading(true);
+            try {
+              const now = new Date().toISOString();
+              const finalPrice = pendingOPSOperation.agreed_price || pendingOPSOperation.proposed_price || 0;
+              
+              // 1. Marcar la fecha de OPS y el precio
+              const updates = { ops_accepted_at: now, agreed_price: finalPrice };
+              await supabase.from("operations").update(updates).eq("id", pendingOPSOperation.id);
+              
+              // 2. Consolidar la operación: Pasa a 'accepted', genera PIN y descuenta OPS al Kamellador
+              const { data: opData, error: opError } = await supabase.rpc("accept_operation", {
+                p_operation_id: pendingOPSOperation.id,
+                p_kamellador_id: pendingOPSOperation.kamellador_id,
+                p_price: finalPrice
+              });
+
+              if (opError) {
+                if (opError.message.includes('INSUFFICIENT_CREDITS')) {
+                  throw new Error("El Kamellador no tiene suficientes OPS para recibir este trabajo.");
+                }
+                throw opError;
+              }
+
+              // 3. Notificar al Kamellador
+              supabase.functions.invoke("bright-responder", {
+                body: {
+                  userId: pendingOPSOperation.kamellador_id,
+                  title: "¡Servicio Confirmado! 🎉",
+                  body: "El cliente ha aceptado la oferta y la OPS. Tienes un nuevo trabajo asignado.",
+                  data: { url: "/" }
+                }
+              }).catch(console.error);
+
+              // 4. Obtener la operación actualizada con todos los joins (para ubicación y datos del kamellador)
+              const { data: fullOp } = await supabase
+                .from("operations")
+                .select(OPERATION_SELECT)
+                .eq("id", pendingOPSOperation.id)
+                .single();
+
+              setActiveRequest(fullOp || { ...pendingOPSOperation, ...updates, status: 'accepted', service_code: opData?.service_code });
+              setShowOPSDoc(false);
+              setPendingOPSOperation(null);
+              setChatOpen(false);
+              await refreshHistory();
+            } catch (err) {
+              alert("Error al confirmar el servicio: " + err.message);
+            } finally {
+              setLoading(false);
             }
-            await supabase.from("operations").update(updates).eq("id", pendingOPSOperation.id);
-            setActiveRequest(prev => prev.id === pendingOPSOperation.id ? { ...prev, ...updates } : prev);
-            setShowOPSDoc(false);
-            setPendingOPSOperation(null);
-            setChatOpen(false);
           }}
           onClose={() => { setShowOPSDoc(false); setPendingOPSOperation(null); }}
         />
@@ -549,7 +572,7 @@ export default function ClientDashboard({ user }) {
             <div style={{ width: 88, height: 88, background: '#fee2e2', borderRadius: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}><Clock className="w-10 h-10 text-[#ef4444]" /></div>
             <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', fontWeight: 900, marginBottom: 12 }}>¿NADA AÚN?</h3>
             <p style={{ color: "#5f6a79", marginBottom: 32 }}>Parece que nadie ha aceptado. <b>Aumenta tu tarifa</b> para atraer expertos de inmediato.</p>
-            <button onClick={async () => { setShowExpiredView(false); const nb = (Number(budget) + 5000).toString(); setBudget(nb); handleSubmitRequest({ preventDefault: () => {} }); }} className="btn-primary" style={{ height: 60, borderRadius: 20 }}>Subir $5.000 y Reintentar</button>
+            <button onClick={async () => { setShowExpiredView(false); handleSubmitRequest({ preventDefault: () => {} }); }} className="btn-primary" style={{ height: 60, borderRadius: 20 }}>Reintentar Solicitud</button>
             <button onClick={() => setShowExpiredView(false)} style={{ marginTop: 12, background: 'none', border: 'none', color: '#a4b1c6', fontWeight: 700 }}>Cancelar por ahora</button>
           </div>
         </div>

@@ -395,9 +395,71 @@ export default function FeedView({ user, role, onOpenChat }) {
             <p style={{ fontWeight: 700 }}>Cargando publicaciones...</p>
           </div>
         ) : posts.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "60px 0", color: "#a4b1c6" }}>
-            <p style={{ fontWeight: 700, fontSize: "1rem" }}>Aún no hay publicaciones</p>
-            <p style={{ fontSize: "0.85rem" }}>¡Sé el primero en publicar tus servicios!</p>
+          <div style={{ padding: "20px 0 80px" }}>
+            {/* Hero CTA Banner */}
+            <div style={{
+              background: "linear-gradient(135deg, #1f2c45 0%, #2d3f60 60%, #ff7665 200%)",
+              borderRadius: 28, padding: "40px 28px", textAlign: "center",
+              position: "relative", overflow: "hidden", marginBottom: 24
+            }}>
+              <div style={{ position: "absolute", right: -40, top: -40, width: 180, height: 180, background: "rgba(255,118,101,0.12)", borderRadius: "50%" }} />
+              <div style={{ position: "absolute", left: -30, bottom: -30, width: 140, height: 140, background: "rgba(255,118,101,0.08)", borderRadius: "50%" }} />
+              <img src="/images/K-Editado.png" alt="" style={{ width: 64, height: 64, filter: "brightness(0) invert(1)", opacity: 0.15, position: "absolute", top: 20, right: 24 }} />
+              
+              <div style={{ position: "relative", zIndex: 1 }}>
+                <div style={{ width: 64, height: 64, background: "rgba(255,118,101,0.2)", borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", border: "1px solid rgba(255,118,101,0.3)" }}>
+                  {isKamellador ? <Plus className="w-8 h-8" style={{ color: "#ff7665" }} /> : <Star className="w-8 h-8" style={{ color: "#ff7665" }} />}
+                </div>
+                <h2 style={{ color: "white", fontWeight: 900, fontSize: "1.5rem", margin: "0 0 12px", lineHeight: 1.2 }}>
+                  {isKamellador ? "¡El Feed está esperando por ti!" : "Lo mejor está por venir"}
+                </h2>
+                <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.9rem", lineHeight: 1.6, margin: "0 0 24px" }}>
+                  {isKamellador 
+                    ? "Los clientes buscan expertos como tú. Publica tus servicios y empieza a recibir solicitudes directas sin gastar OPS." 
+                    : "Muy pronto verás aquí los mejores servicios y ofertas destacadas de nuestros Kamelladores expertos."}
+                </p>
+                {isKamellador ? (
+                  <button
+                    onClick={() => setEditing("new")}
+                    style={{
+                      background: "#ff7665", color: "white", border: "none",
+                      borderRadius: 16, padding: "16px 32px",
+                      fontWeight: 800, fontSize: "1rem", cursor: "pointer",
+                      display: "inline-flex", alignItems: "center", gap: 10,
+                      boxShadow: "0 8px 24px rgba(255,118,101,0.4)"
+                    }}
+                  >
+                    <Plus className="w-5 h-5" /> Crear mi anuncio ahora
+                  </button>
+                ) : (
+                  <div style={{ 
+                    display: "inline-block", padding: "12px 24px", borderRadius: 16, 
+                    background: "rgba(255,255,255,0.1)", color: "white", fontWeight: 700,
+                    fontSize: "0.9rem", border: "1px solid rgba(255,255,255,0.2)"
+                  }}>
+                    Vuelve pronto para ver novedades
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Benefits */}
+            {isKamellador && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                {[
+                  { icon: "👀", title: "Máxima visibilidad", desc: "Clientes ven tu perfil antes de buscar" },
+                  { icon: "⚡", title: "Sin costo extra", desc: "Publicar en el feed es completamente gratis" },
+                  { icon: "⭐", title: "Genera confianza", desc: "Muestra tu rating y trabajos completados" },
+                  { icon: "💰", title: "Solicitudes directas", desc: "Clientes te contactan a ti directamente" },
+                ].map(b => (
+                  <div key={b.title} style={{ background: "white", borderRadius: 20, padding: "18px 16px", boxShadow: "0 2px 12px rgba(31,44,69,0.06)" }}>
+                    <div style={{ fontSize: "1.5rem", marginBottom: 8 }}>{b.icon}</div>
+                    <p style={{ margin: "0 0 4px", fontWeight: 800, fontSize: "0.85rem", color: "#1f2c45" }}>{b.title}</p>
+                    <p style={{ margin: 0, fontSize: "0.75rem", color: "#5f6a79", lineHeight: 1.4 }}>{b.desc}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 80 }}>
@@ -409,14 +471,9 @@ export default function FeedView({ user, role, onOpenChat }) {
               return (
                 <div key={post.id} style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 20px rgba(31,44,69,0.08)" }}>
                   {/* Hero Image Area */}
-                  <div style={{ position: "relative", aspectRatio: "4/3", width: "100%", background: "#1f2c45", overflow: "hidden" }} onClick={() => setSelectedPost(post)}>
-                    {/* Fallback image o gradiente para el hero */}
-                    <img 
-                      src={`https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=800&q=80`} 
-                      alt="Work preview" 
-                      style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.8 }} 
-                    />
-                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(31,44,69,0.95), rgba(31,44,69,0.2) 50%, transparent)" }} />
+                  <div style={{ position: "relative", height: "160px", width: "100%", background: "linear-gradient(135deg, #1f2c45 0%, #2d3f60 100%)", overflow: "hidden", display: "flex", alignItems: "flex-end" }} onClick={() => setSelectedPost(post)}>
+                    <img src="/images/K-Editado.png" alt="" style={{ position: "absolute", right: -10, top: "50%", transform: "translateY(-50%)", width: 120, height: 120, opacity: 0.07, filter: "brightness(2) grayscale(1)" }} />
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(31,44,69,0.9), transparent 60%)" }} />
                     
                     {post.payment_status === "premium" && (
                       <div style={{ position: "absolute", top: 16, left: 16, display: "flex", alignItems: "center", gap: 4, background: "#ff7665", color: "white", padding: "4px 12px", borderRadius: 20, fontSize: "10px", fontWeight: 800, letterSpacing: "0.05em" }}>

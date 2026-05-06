@@ -99,7 +99,7 @@ export default function ProviderDashboard() {
   const showAlert = (title, message, type = 'info', onConfirm = null) => {
     setModal({ title, message, type, onConfirm });
   };
-  const isPremium = Boolean(profile?.is_premium);
+  const isPremium = true; // Boolean(profile?.is_premium);
   const profileCategory = getServiceCategory(profile?.specialty);
 
   const refreshHistory = async (pid = user?.id) => { if (pid) setHistory(await fetchHistory(pid, "kamellador")); };
@@ -226,7 +226,7 @@ export default function ProviderDashboard() {
     if (!isOnline || !user || !profile?.specialty || activeOperation) { setNearbyServices([]); return; }
     const sc = getServiceCategory(profile.specialty);
     const vals = Array.from(new Set([profile.specialty, sc?.id, ...(sc?.aliases || [])].filter(Boolean)));
-    const radius = profile?.is_premium ? 15 : 10;
+    const radius = 15; // profile?.is_premium ? 15 : 10;
     const fetch = async () => {
       const now = new Date().toISOString();
       const { data } = await supabase.from("operations")
@@ -659,7 +659,6 @@ export default function ProviderDashboard() {
                   <>
                     <Marker position={myLocation} icon={L.divIcon({ className: 'my-location-marker', html: `<div class="marker-target">🎯</div>`, iconSize: [30, 30] })} />
                     {isOnline && nearbyServices
-                      .filter(svc => profile?.is_premium || (now - new Date(svc.created_at).getTime() >= 30000))
                       .map(svc => (
                         <Marker key={svc.id} position={[Number(svc.client_lat), Number(svc.client_lng)]} />
                       ))}
@@ -694,27 +693,7 @@ export default function ProviderDashboard() {
                         <p style={{ margin: 0, color: '#5f6a79', fontSize: '0.85rem', lineHeight: 1.4 }}>{activeOperation.description}</p>
                       </div>
 
-                      {activeOperation.status === 'pending' && activeOperation.ops_accepted_at && (
-                        <div style={{ background: '#fff7ed', borderRadius: 20, padding: 16, marginBottom: 16, textAlign: 'center', border: '1px solid #fed7aa' }}>
-                          <p style={{ margin: '0 0 10px', fontSize: '0.8rem', fontWeight: 800, color: '#c2410c' }}>El cliente ha enviado la OPS</p>
-                          <p style={{ margin: '0 0 14px', fontSize: '0.75rem', color: '#9a3412' }}>Acepta la Orden de Prestación de Servicios para continuar. (Costo: 1 OPS)</p>
-                          <button 
-                            onClick={async () => {
-                              try {
-                                await supabase.from("operations").update({ status: 'accepted' }).eq("id", activeOperation.id);
-                                const upd = await fetchOperation(activeOperation.id);
-                                if (upd) setActiveOperation(upd);
-                              } catch (err) {
-                                alert("Error al aceptar la OPS: " + err.message);
-                              }
-                            }}
-                            className="btn-primary"
-                            style={{ padding: '12px', fontSize: '0.9rem', borderRadius: 12, background: '#ea580c' }}
-                          >
-                            Aceptar la OPS
-                          </button>
-                        </div>
-                      )}
+
 
                       {activeOperation.status === 'accepted' && (
                         <div style={{ background: '#f7f3f1', borderRadius: 20, padding: 16, marginBottom: 16, textAlign: 'center' }}>
@@ -726,13 +705,13 @@ export default function ProviderDashboard() {
                               value={securityCode}
                               onChange={e => setSecurityCode(e.target.value.replace(/[^0-9]/g, ""))}
                               placeholder="0000"
-                              style={{ width: 100, textAlign: 'center', letterSpacing: '4px', fontSize: '1.2rem', fontWeight: 800, border: '1px solid #efe7e2', borderRadius: 12, padding: '8px' }}
+                              style={{ width: 140, textAlign: 'center', letterSpacing: '8px', fontSize: '1.5rem', fontWeight: 900, border: '2px solid #efe7e2', borderRadius: 16, padding: '12px', outline: 'none' }}
                             />
                             <button 
                               onClick={handleVerifyCode}
                               disabled={securityCode.length !== 4 || isVerifyingCode}
                               className="btn-primary"
-                              style={{ width: 'auto', padding: '0 20px', borderRadius: 12 }}
+                              style={{ width: 'auto', padding: '0 24px', borderRadius: 16 }}
                             >
                               {isVerifyingCode ? '...' : 'OK'}
                             </button>
@@ -767,7 +746,7 @@ export default function ProviderDashboard() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 4px 20px', overflowX: 'auto' }}>
                         <span style={{ fontSize: '0.65rem', color: '#a4b1c6', fontWeight: 900, whiteSpace: 'nowrap' }}>RADIO:</span>
                         {[1, 2, 5, 10, 15].map(d => {
-                          const isLocked = (d === 10 || d === 15) && !profile?.subscription_plan;
+                          const isLocked = false; // (d === 10 || d === 15) && !profile?.subscription_plan;
                           const isSelected = serviceDistance === d;
                           return (
                             <button 
@@ -797,39 +776,34 @@ export default function ProviderDashboard() {
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                         {nearbyServices
-                          .filter(svc => profile?.is_premium || (now - new Date(svc.created_at).getTime() >= 30000))
                           .map(svc => (
                             <div key={svc.id} className="req-card">
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
                               <div>
                                 <h4 style={{ margin: 0, fontWeight: 800 }}>{svc.category}</h4>
-                                <p style={{ margin: 0, fontSize: '0.75rem', color: '#a4b1c6' }}>Nueva solicitud cerca de ti</p>
+                                <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#5f6a79', lineHeight: 1.4 }}>{svc.description?.substring(0, 80)}{svc.description?.length > 80 ? '...' : ''}</p>
                               </div>
-                              <span style={{ fontWeight: 900, color: '#ff7665' }}>${formatPrice(svc.proposed_price)}</span>
                             </div>
-                            <div style={{ display: "flex", gap: 8 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                               {(() => {
                                 const myOffer = myOffers.find(o => o.operation_id === svc.id);
                                 if (!myOffer) {
                                   return (
-                                    <>
-                                      <button onClick={() => handleAcceptService(svc)} className="btn-primary" style={{ flex: 1, padding: "10px", fontSize: "0.8rem", borderRadius: 12 }}>Aceptar (${formatPrice(svc.proposed_price)})</button>
-                                      <button onClick={() => { setSelectedService(svc); setOfferPrice(svc.proposed_price.toString()); setOfferOpen(true); }} className="btn-secondary" style={{ flex: 1, padding: "10px", fontSize: "0.8rem", borderRadius: 12 }}>Ofertar</button>
-                                    </>
+                                    <button 
+                                      onClick={() => { setSelectedService(svc); setOfferPrice(""); setOfferOpen(true); }} 
+                                      className="btn-primary" 
+                                      style={{ flex: 1, padding: "12px", fontSize: "0.85rem", borderRadius: 12 }}
+                                    >
+                                      Enviar Oferta de Precio
+                                    </button>
                                   );
                                 }
                                 if (myOffer.status === 'pending') {
                                   return (
                                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                      <div style={{ textAlign: 'center', background: '#f7f3f1', padding: '10px', borderRadius: 12, fontSize: '0.8rem', fontWeight: 700, color: '#5f6a79' }}>
-                                        {myOffer.last_sender_id === user.id ? `Tu oferta: $${formatPrice(myOffer.price)} enviada...` : `Cliente propone: $${formatPrice(myOffer.price)}`}
+                                      <div style={{ textAlign: 'center', background: '#f0fdf4', padding: '12px', borderRadius: 12, fontSize: '0.85rem', fontWeight: 700, color: '#16a34a', border: '1px solid #bbf7d0' }}>
+                                        ✓ Oferta enviada: ${formatPrice(myOffer.price)} — Esperando respuesta del cliente
                                       </div>
-                                      {myOffer.last_sender_id !== user.id && (
-                                        <div style={{ display: 'flex', gap: 8 }}>
-                                          <button onClick={() => handleAcceptService(svc, myOffer.price)} className="btn-primary" style={{ flex: 1, padding: "10px", fontSize: "0.8rem", borderRadius: 12 }}>Aceptar Propuesta</button>
-                                          <button onClick={() => { setSelectedService(svc); setOfferPrice(myOffer.price.toString()); setOfferOpen(true); }} className="btn-secondary" style={{ flex: 1, padding: "10px", fontSize: "0.8rem", borderRadius: 12 }}>Contraofertar</button>
-                                        </div>
-                                      )}
                                     </div>
                                   );
                                 }
@@ -837,9 +811,9 @@ export default function ProviderDashboard() {
                                   return (
                                     <>
                                       <div style={{ flex: 1, textAlign: 'center', background: '#fee2e2', padding: '10px', borderRadius: 12, fontSize: '0.8rem', fontWeight: 700, color: '#ef4444' }}>
-                                        Rechazada (${formatPrice(myOffer.price)})
+                                        Oferta rechazada (${formatPrice(myOffer.price)})
                                       </div>
-                                      <button onClick={() => { setSelectedService(svc); setOfferPrice(svc.proposed_price.toString()); setOfferOpen(true); }} className="btn-secondary" style={{ flex: 1, padding: "10px", fontSize: "0.8rem", borderRadius: 12 }}>Mejorar Oferta</button>
+                                      <button onClick={() => { setSelectedService(svc); setOfferPrice(""); setOfferOpen(true); }} className="btn-secondary" style={{ flex: 1, padding: "10px", fontSize: "0.8rem", borderRadius: 12 }}>Nueva Oferta</button>
                                     </>
                                   );
                                 }
@@ -1206,12 +1180,16 @@ export default function ProviderDashboard() {
         <div className="rating-modal">
           <form onSubmit={handleSendOffer} className="rating-modal__content">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "1.4rem", margin: 0 }}>Hacer contraoferta</h3>
+              <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "1.4rem", margin: 0 }}>Tu precio por este servicio</h3>
               <button type="button" onClick={() => setOfferOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><X className="w-5 h-5" /></button>
             </div>
             
-            <p style={{ fontSize: "0.9rem", color: "#5f6a79", marginBottom: 20 }}>
-              El cliente propuso <b>${formatPrice(selectedService?.proposed_price)}</b>. Ingresa tu precio sugerido:
+            <div style={{ background: '#f7f3f1', borderRadius: 12, padding: '12px 14px', marginBottom: 20 }}>
+              <p style={{ fontSize: "0.8rem", color: "#5f6a79", margin: "0 0 4px", fontWeight: 700 }}>Solicitud:</p>
+              <p style={{ fontSize: "0.9rem", color: "#1f2c45", margin: 0 }}>{selectedService?.description || selectedService?.category}</p>
+            </div>
+            <p style={{ fontSize: "0.85rem", color: "#5f6a79", marginBottom: 16 }}>
+              Ingresa cuánto cobrarías por este trabajo. El cliente verá todas las ofertas y elegirá la mejor.
             </p>
 
             <div style={{ position: "relative", marginBottom: 24 }}>

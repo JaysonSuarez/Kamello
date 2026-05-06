@@ -6,7 +6,6 @@ import CountdownTimer from "./CountdownTimer";
 export default function ActiveOperationView({ 
   activeRequest, activeCategory, activeKamellador, offers, 
   user, formatPrice, handleAcceptOffer, handleRejectOffer,
-  setBargainingOfferId, bargainingOfferId, bargainPrice, setBargainPrice, handleBargainOffer,
   setActiveRequest, setShowExpiredView, cancelRequest,
   canChat, unreadCount, setChatOpen, handleComplete, loadingById, canRate, setRatingOpen
 }) {
@@ -30,54 +29,38 @@ export default function ActiveOperationView({
 
           {offers.length > 0 && (
             <div style={{ textAlign: "left", marginBottom: 20 }}>
-              <p style={{ fontSize: 12, fontWeight: 800, color: "#a4b1c6", textTransform: "uppercase", marginBottom: 12 }}>{offers.length} Profesionales interesados:</p>
+              <p style={{ fontSize: 12, fontWeight: 800, color: "#a4b1c6", textTransform: "uppercase", marginBottom: 12 }}>{offers.length} Profesionales interesados — Elige el mejor precio:</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {offers.map(offer => (
-                  <div key={offer.id} style={{ background: "white", borderRadius: 16, padding: 12, border: "1px solid #efe7e2", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#1f2c45", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12, border: offer.kamellador?.is_premium ? "1px solid #ffd700" : "none" }}>
-                        {offer.kamellador?.full_name?.[0] || "K"}
-                      </div>
-                      <div>
-                        <p style={{ fontWeight: 700, fontSize: 13, margin: 0, color: offer.kamellador?.is_premium ? "#d4af37" : "inherit" }}>{offer.kamellador?.full_name}</p>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <div key={offer.id} style={{ background: "white", borderRadius: 16, padding: 14, border: "1px solid #efe7e2" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#1f2c45", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
+                          {offer.kamellador?.full_name?.[0] || "K"}
+                        </div>
+                        <div>
+                          <p style={{ fontWeight: 700, fontSize: 13, margin: 0 }}>{offer.kamellador?.full_name}</p>
+                          <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
                             <Star className="w-3 h-3" style={{ fill: "#f59e0b", color: "#f59e0b" }} />
                             <span style={{ fontSize: 11, fontWeight: 800 }}>{offer.kamellador?.rating_avg || '0.0'}</span>
+                            <span style={{ fontSize: 10, color: "#a4b1c6" }}>•</span>
+                            <span style={{ fontSize: 11, color: "#5f6a79" }}>{offer.kamellador?.services_count || 0} servicios</span>
                           </div>
-                          <span style={{ fontSize: 10, color: "#a4b1c6" }}>•</span>
-                          <span style={{ fontSize: 11, color: "#5f6a79", fontWeight: 600 }}>{offer.kamellador?.services_count || 0} servicios</span>
                         </div>
-                        <p style={{ fontSize: 14, fontWeight: 800, margin: "4px 0 0", color: "#ff7665" }}>
-                          {offer.last_sender_id === user.id ? `Tu propuesta: $${formatPrice(offer.price)}` : `$${formatPrice(offer.price)}`}
-                        </p>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <p style={{ fontSize: 18, fontWeight: 900, margin: 0, color: "#ff7665" }}>${formatPrice(offer.price)}</p>
+                        <p style={{ fontSize: 10, color: "#a4b1c6", margin: 0 }}>COP</p>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        {offer.last_sender_id !== user.id ? (
-                          <>
-                            <button onClick={() => handleAcceptOffer(offer)} className="btn-primary" style={{ padding: "6px 12px", fontSize: 12, borderRadius: 100, width: "auto" }}>Aceptar</button>
-                            <button onClick={() => { setBargainingOfferId(offer.id); setBargainPrice(offer.price.toString()); }} className="btn-secondary" style={{ padding: "6px 12px", fontSize: 12, borderRadius: 100, width: "auto" }}>Regatear</button>
-                          </>
-                        ) : (
-                          <div style={{ fontSize: 11, fontWeight: 700, color: '#a4b1c6', padding: '6px 12px' }}>Esperando respuesta...</div>
-                        )}
-                        <button onClick={() => handleRejectOffer(offer)} className="btn-secondary" style={{ padding: "6px 12px", fontSize: 12, borderRadius: 100, width: "auto", background: '#fee2e2', color: '#ef4444', border: 'none' }}>Rechazar</button>
-                      </div>
-                      
-                      {bargainingOfferId === offer.id && (
-                        <div className="animate-fade-in" style={{ marginTop: 8, display: 'flex', gap: 8 }}>
-                          <input 
-                            type="text" 
-                            value={bargainPrice} 
-                            onChange={e => setBargainPrice(e.target.value.replace(/[^0-9]/g, ""))} 
-                            placeholder="¿Cuánto ofreces?"
-                            style={{ flex: 1, padding: '8px 12px', borderRadius: 12, border: '1px solid #efe7e2', fontSize: 13 }}
-                          />
-                          <button onClick={() => handleBargainOffer(offer)} className="btn-primary" style={{ width: 'auto', padding: '0 16px', height: 38 }}>Enviar</button>
-                        </div>
-                      )}
+                    {offer.message && (
+                      <p style={{ fontSize: 12, color: "#5f6a79", background: "#f7f3f1", borderRadius: 10, padding: "8px 12px", margin: "0 0 10px" }}>
+                        &ldquo;{offer.message}&rdquo;
+                      </p>
+                    )}
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={() => handleAcceptOffer(offer)} className="btn-primary" style={{ flex: 2, padding: "10px", fontSize: 12, borderRadius: 12 }}>✓ Contratar</button>
+                      <button onClick={() => handleRejectOffer(offer)} style={{ flex: 1, padding: "10px", fontSize: 12, borderRadius: 12, background: '#fee2e2', color: '#ef4444', border: 'none', fontWeight: 700, cursor: 'pointer' }}>Rechazar</button>
                     </div>
                   </div>
                 ))}
@@ -97,37 +80,7 @@ export default function ActiveOperationView({
         </div>
       )}
 
-      {/* ── STATE: Waiting for Kamellador to Accept OPS ── */}
-      {activeRequest.status === "pending" && activeRequest.ops_accepted_at && (
-        <div className="animate-fade-in-up" style={{ textAlign: "center", padding: '40px 20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
-            <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <CheckCircle2 className="w-8 h-8" style={{ color: "#16a34a" }} />
-            </div>
-          </div>
-          <h3 style={{ fontSize: "1.3rem", fontWeight: 800, marginBottom: 8, color: '#1f2c45' }}>OPS Enviada</h3>
-          <p style={{ color: "#5f6a79", fontSize: "0.9rem", lineHeight: 1.5, marginBottom: 24 }}>
-            Le hemos enviado la Orden de Prestación de Servicios a <b>{activeKamellador?.full_name || 'tu profesional'}</b>.
-            <br/><br/>
-            Estamos esperando a que la acepte para continuar y mostrarte el código de seguridad.
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
-            {canChat && (
-              <button onClick={() => setChatOpen(true)} className="btn-secondary" style={{ flex: 1, position: "relative" }}>
-                <MessageSquare className="w-5 h-5" /> Chat
-                {unreadCount > 0 && (
-                  <span style={{ position: "absolute", top: -5, right: -5, background: "#ff4757", color: "white", fontSize: 10, fontWeight: 800, minWidth: 18, height: 18, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid white" }}>
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
-            )}
-            <button onClick={cancelRequest} className="btn-secondary" style={{ flex: 1, borderColor: '#ff4757', color: '#ff4757' }}>
-              <XCircle className="w-5 h-5" /> Cancelar
-            </button>
-          </div>
-        </div>
-      )}
+
 
       {/* ── STATE: Accepted / In Progress / Completed ── */}
       {["accepted", "in_progress", "completed"].includes(activeRequest.status) && (

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { 
   User, Settings, MapPin, Phone, Briefcase, ShieldCheck, 
   Camera, Award, Star, Save, Loader2, Trash2, X, LogOut, Zap 
@@ -260,6 +261,34 @@ export default function ProfileView({ user, onLogout }) {
             </div>
           )}
 
+          {profile?.role === 'kamellador' && (
+            <div style={{ background: 'linear-gradient(135deg, #1f2c45 0%, #2d3f60 100%)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(255,118,101,0.2)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', right: -20, top: -20, width: 100, height: 100, background: 'rgba(255,118,101,0.1)', borderRadius: '50%' }} />
+              <div style={{ position: 'absolute', right: 10, bottom: -30, width: 80, height: 80, background: 'rgba(255,118,101,0.07)', borderRadius: '50%' }} />
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <p style={{ margin: '0 0 4px', fontSize: '0.7rem', fontWeight: 800, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Tu saldo actual</p>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '3rem', fontWeight: 900, color: 'white', lineHeight: 1 }}>{profile?.ops_credits ?? 0}</span>
+                  <div style={{ marginBottom: '8px' }}>
+                    <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 800, color: '#ff7665' }}>OPS</p>
+                    <p style={{ margin: 0, fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>créditos disponibles</p>
+                  </div>
+                </div>
+                <Link
+                  to="/precios"
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    background: '#ff7665', color: 'white', borderRadius: '14px', padding: '12px 20px',
+                    fontWeight: 800, fontSize: '0.9rem', textDecoration: 'none',
+                    boxShadow: '0 4px 16px rgba(255,118,101,0.4)'
+                  }}
+                >
+                  <Zap className="w-4 h-4" /> Recargar OPS
+                </Link>
+              </div>
+            </div>
+          )}
+
           <div style={{ background: 'white', borderRadius: '20px', padding: '20px', border: '1px solid #efe7e2' }}>
             <h3 style={{ margin: '0 0 16px', fontSize: '0.9rem', fontWeight: 800, color: '#a4b1c6', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Información</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -295,6 +324,7 @@ export default function ProfileView({ user, onLogout }) {
               )}
             </div>
           </div>
+
 
           <button onClick={() => supabase.auth.signOut().then(() => onLogout?.())} style={{ background: 'white', border: '1px solid #efe7e2', borderRadius: '20px', padding: '16px', color: '#ff7665', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer' }}>
             <LogOut className="w-5 h-5" /> Cerrar Sesión

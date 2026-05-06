@@ -11,6 +11,7 @@ import {
   WashingMachine,
   Wrench,
   Zap,
+  MonitorPlay
 } from "lucide-react";
 
 export const SERVICE_CATEGORIES = [
@@ -26,26 +27,16 @@ export const SERVICE_CATEGORIES = [
     basePrice: 40000,
   },
   {
-    id: "Hardware",
-    name: "Mantenimiento y reparacion de hardware",
-    shortName: "Hardware",
-    description: "Laptops, PCs y tablets.",
+    id: "Hardware y Moviles",
+    aliases: ["Hardware", "Moviles"],
+    name: "Hardware y Móviles",
+    shortName: "PC & Móvil",
+    description: "Laptops, PCs, tablets y dispositivos móviles (pantallas, baterías, etc).",
     icon: <Laptop className="w-6 h-6" />,
     color: "text-indigo-600",
     bg: "bg-indigo-50 border-indigo-200",
     chip: "bg-indigo-100 text-indigo-700",
-    basePrice: 40000,
-  },
-  {
-    id: "Moviles",
-    name: "Reparacion de dispositivos moviles",
-    shortName: "Moviles",
-    description: "Pantallas, baterias y diagnostico rapido.",
-    icon: <Smartphone className="w-6 h-6" />,
-    color: "text-rose-600",
-    bg: "bg-rose-50 border-rose-200",
-    chip: "bg-rose-100 text-rose-700",
-    basePrice: 30000,
+    basePrice: 35000,
   },
   {
     id: "Soporte tecnico y ciberseguridad",
@@ -104,9 +95,9 @@ export const SERVICE_CATEGORIES = [
   },
   {
     id: "Albanil",
-    aliases: ["Albañil"],
-    name: "Albanileria",
-    shortName: "Albanileria",
+    aliases: ["Albañil", "Albañilería"],
+    name: "Albañilería",
+    shortName: "Albañilería",
     description: "Reparaciones locativas, muros y acabados.",
     icon: <Hammer className="w-6 h-6" />,
     color: "text-orange-500",
@@ -126,6 +117,17 @@ export const SERVICE_CATEGORIES = [
     basePrice: 30000,
   },
   {
+    id: "Redes y Creacion de Contenido",
+    name: "Redes y Creación de Contenido",
+    shortName: "Redes",
+    description: "Diseño, edición de video, fotografía y gestión de redes.",
+    icon: <MonitorPlay className="w-6 h-6" />,
+    color: "text-pink-600",
+    bg: "bg-pink-50 border-pink-200",
+    chip: "bg-pink-100 text-pink-700",
+    basePrice: 40000,
+  },
+  {
     id: "General",
     name: "Mantenimiento general",
     shortName: "General",
@@ -143,3 +145,4 @@ export function getServiceCategory(categoryId) {
     (category) => category.id === categoryId || category.aliases?.includes(categoryId)
   );
 }
+

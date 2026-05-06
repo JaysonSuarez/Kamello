@@ -10,35 +10,7 @@ export default function Pricing() {
     { name: "Pack Profesional", price: "35.000", ops: "15 OPS", description: "Para Kamelladores recurrentes.", icon: <Star className="w-6 h-6 text-[#ffd700]" />, popular: true },
   ];
 
-  const subscriptions = [
-    { 
-      name: "Plan PRO", 
-      price: "49.000", 
-      features: [
-        "🚀 100 Oportunidades de Oro", 
-        "📍 Radar Expandido (15km a la redonda)",
-        "⚡ Primicia Total: Ves servicios antes que el resto", 
-        "✨ Identidad de Élite (Nombre Dorado)",
-        "🏆 Badge de Confianza 'PRO'"
-      ], 
-      icon: <Award className="w-8 h-8 text-[#ffd700]" />,
-      color: "border-[#ffd700]"
-    },
-    { 
-      name: "Plan ULTRA", 
-      price: "89.000", 
-      features: [
-        "♾️ Conexiones Infinitas (Sin Límites)", 
-        "📍 Cobertura Total en tu Ciudad", 
-        "🔝 Posicionamiento VIP: Sé siempre el #1",
-        "🔥 Mapa de Calor: Mira dónde hay más clientes",
-        "💎 Perfil Diamante (Exclusividad Total)"
-      ], 
-      icon: <Zap className="w-8 h-8 text-[#ff7665]" />,
-      color: "border-[#ff7665]",
-      popular: true
-    },
-  ];
+
 
   return (
     <div className="min-h-screen bg-[#f7f3f1] font-sans text-[#1f2c45] pb-20">
@@ -61,7 +33,7 @@ export default function Pricing() {
             Precios Transparentes
           </span>
           <h1 className="font-serif text-5xl md:text-6xl mb-6">Elige cómo quieres <span className="text-[#ff7665]">Kamelliar</span></h1>
-          <p className="text-[#5f6a79] text-xl max-w-2xl mx-auto">Sin comisiones sobre tu trabajo. Tú eliges si pagas por uso o te suscribes para beneficios ilimitados.</p>
+          <p className="text-[#5f6a79] text-xl max-w-2xl mx-auto">Sin comisiones sobre tu trabajo. Paga por créditos de OPS para conectarte con nuevos clientes y crecer tu negocio.</p>
         </div>
 
         {/* OPS PACKS */}
@@ -94,51 +66,6 @@ export default function Pricing() {
           </div>
         </section>
 
-        {/* SUBSCRIPTIONS */}
-        <section>
-          <div className="flex items-center gap-3 mb-10">
-            <ShieldCheck className="w-6 h-6 text-[#ffd700]" />
-            <h2 className="text-2xl font-extrabold tracking-tight">Planes de Suscripción</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {subscriptions.map((plan, i) => (
-              <div key={i} className={`flex flex-col p-10 rounded-[44px] bg-white border-4 ${plan.color} relative transition-all hover:shadow-2xl`}>
-                {plan.popular && <span className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#ff7665] text-white px-8 py-2 rounded-full text-sm font-bold shadow-lg">EL MÁS POTENTE</span>}
-                
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="p-4 bg-[#f7f3f1] rounded-3xl">{plan.icon}</div>
-                  <div>
-                    <h3 className="text-2xl font-black">{plan.name}</h3>
-                    <p className="text-[#5f6a79] text-sm">Cobro mensual</p>
-                  </div>
-                </div>
-
-                <div className="flex items-baseline gap-2 mb-10">
-                  <span className="text-6xl font-black text-[#1f2c45]">${plan.price}</span>
-                  <span className="text-[#5f6a79] font-bold">COP / mes</span>
-                </div>
-
-                <div className="flex-1">
-                  <p className="font-bold text-sm text-[#a4b1c6] uppercase tracking-widest mb-6">Beneficios incluidos:</p>
-                  <ul className="space-y-5 mb-12">
-                    {plan.features.map((f, j) => (
-                      <li key={j} className="flex items-start gap-4 text-[#1f2c45] font-semibold">
-                        <div className="mt-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#00cba9] text-white">
-                          <Check className="w-3 h-3" />
-                        </div>
-                        <span className="leading-tight">{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <button className={`w-full py-5 rounded-2xl font-black text-lg transition-all ${plan.popular ? 'bg-[#ff7665] text-white shadow-xl hover:bg-[#ff5a45]' : 'bg-[#1f2c45] text-white hover:bg-[#2b3a4f]'}`}>
-                  Activar {plan.name}
-                </button>
-              </div>
-            ))}
-          </div>
-        </section>
 
         <section className="mt-24 p-12 rounded-[48px] bg-[#1f2c45] text-center text-white relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
@@ -148,7 +75,7 @@ export default function Pricing() {
           <p className="text-[#a4b1c6] max-w-2xl mx-auto leading-relaxed relative z-10 text-lg">
             Queremos que Kamello sea sostenible sin ser abusivo. 
             <span className="text-white font-bold"> No tocamos tus ganancias.</span> 
-            Al pagar por OPS o suscripción, ayudas a mantener la tecnología activa mientras tú te llevas todo lo que trabajas.
+            Al pagar por OPS, ayudas a mantener la tecnología activa mientras tú te llevas todo lo que trabajas.
           </p>
         </section>
       </main>

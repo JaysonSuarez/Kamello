@@ -50,19 +50,24 @@ export default function BottomSheet({
     (e) => {
       if (disableDrag) return;
       
-      // Check if touching a scrollable area that is not at the top
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      // Check if touching a scrollable area
       const scrollable = e.target.closest('.bottom-sheet__content');
-      if (scrollable && scrollable.scrollTop > 0) {
-        dragRef.current.ignore = true;
-        return;
+      if (scrollable) {
+        // If we're scrolled down, always ignore dragging
+        if (scrollable.scrollTop > 0) {
+          dragRef.current.ignore = true;
+          return;
+        }
       }
       
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
       dragRef.current = {
         startY: clientY,
         startHeight: currentHeight,
         dragging: true,
         ignore: false,
+        scrollable: scrollable
       };
     },
     [currentHeight, disableDrag]
@@ -134,14 +139,24 @@ export default function BottomSheet({
     
     const onTouchMoveNative = (e) => {
       if (dragRef.current.dragging && !dragRef.current.ignore) {
-        // Only prevent default if we are actually dragging the sheet (e.g. pulling down)
-        // to stop the browser's pull-to-refresh or bounce.
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const dy = dragRef.current.startY - clientY;
+        
+        // If at max height and pulling UP, let the native scroll handle it!
+        if (dragRef.current.startHeight >= snapPoints[snapPoints.length - 1] && dy > 0 && dragRef.current.scrollable) {
+           return; // Do not prevent default
+        }
+
+        // Otherwise, prevent default browser scroll / bounce when dragging the sheet
+        if (e.cancelable) {
+          e.preventDefault();
+        }
       }
     };
     
     sheet.addEventListener('touchmove', onTouchMoveNative, { passive: false });
     return () => sheet.removeEventListener('touchmove', onTouchMoveNative);
-  }, []);
+  }, [snapPoints]);
 
   return (
     <div
