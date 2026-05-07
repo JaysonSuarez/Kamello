@@ -224,8 +224,12 @@ export default function ProviderDashboard() {
   // Fetch pending services
   useEffect(() => {
     if (!isOnline || !user || !profile?.specialty || activeOperation) { setNearbyServices([]); return; }
-    const sc = getServiceCategory(profile.specialty);
-    const vals = Array.from(new Set([profile.specialty, sc?.id, ...(sc?.aliases || [])].filter(Boolean)));
+    
+    const [mainSpecialty, subspecialtiesStr] = profile.specialty.split('|');
+    const mySubspecialties = subspecialtiesStr ? subspecialtiesStr.split(',') : [];
+    
+    const sc = getServiceCategory(mainSpecialty);
+    const vals = Array.from(new Set([mainSpecialty, sc?.id, ...(sc?.aliases || [])].filter(Boolean)));
     const radius = 15; // profile?.is_premium ? 15 : 10;
     const fetch = async () => {
       const now = new Date().toISOString();
@@ -236,15 +240,20 @@ export default function ProviderDashboard() {
         .in("category", vals)
         .order("created_at", { ascending: false });
       
-      if (data && myLocation[0]) {
-        const filtered = data.filter(op => {
-          if (!op.client_lat || !op.client_lng) return true;
-          const dist = calculateDistance(myLocation[0], myLocation[1], op.client_lat, op.client_lng);
-          return dist <= radius;
-        });
+      if (data) {
+        let filtered = data;
+        if (mySubspecialties.length > 0) {
+          filtered = filtered.filter(op => mySubspecialties.some(sub => op.description?.startsWith(`[${sub}]`)));
+        }
+        
+        if (myLocation[0]) {
+          filtered = filtered.filter(op => {
+            if (!op.client_lat || !op.client_lng) return true;
+            const dist = calculateDistance(myLocation[0], myLocation[1], op.client_lat, op.client_lng);
+            return dist <= radius;
+          });
+        }
         setNearbyServices(filtered);
-      } else if (data) {
-        setNearbyServices(data);
       }
     };
     fetch();
@@ -253,13 +262,20 @@ export default function ProviderDashboard() {
         const rc = getServiceCategory(p.new.category);
         const isMatch = vals.includes(p.new.category) || rc?.id === sc?.id;
         
-        if (isMatch && myLocation[0] && p.new.client_lat && p.new.client_lng) {
-          const dist = calculateDistance(myLocation[0], myLocation[1], p.new.client_lat, p.new.client_lng);
-          if (dist <= radius) {
+        let matchesSub = true;
+        if (mySubspecialties.length > 0) {
+          matchesSub = mySubspecialties.some(sub => p.new.description?.startsWith(`[${sub}]`));
+        }
+        
+        if (isMatch && matchesSub) {
+          if (myLocation[0] && p.new.client_lat && p.new.client_lng) {
+            const dist = calculateDistance(myLocation[0], myLocation[1], p.new.client_lat, p.new.client_lng);
+            if (dist <= radius) {
+              setNearbyServices(prev => [p.new, ...prev]);
+            }
+          } else {
             setNearbyServices(prev => [p.new, ...prev]);
           }
-        } else if (isMatch) {
-          setNearbyServices(prev => [p.new, ...prev]);
         }
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "operations" }, async p => {
@@ -294,8 +310,10 @@ export default function ProviderDashboard() {
   useEffect(() => {
     if (!user || !profile?.specialty) return;
     const fetchPast = async () => {
-      const sc = getServiceCategory(profile.specialty);
-      const vals = Array.from(new Set([profile.specialty, sc?.id, ...(sc?.aliases || [])].filter(Boolean)));
+      const [mainSpecialty, subspecialtiesStr] = profile.specialty.split('|');
+      const mySubspecialties = subspecialtiesStr ? subspecialtiesStr.split(',') : [];
+      const sc = getServiceCategory(mainSpecialty);
+      const vals = Array.from(new Set([mainSpecialty, sc?.id, ...(sc?.aliases || [])].filter(Boolean)));
       const now = new Date().toISOString();
       
       const { data } = await supabase.from("operations")
@@ -304,9 +322,15 @@ export default function ProviderDashboard() {
         .lt("expires_at", now)
         .in("category", vals)
         .order("created_at", { ascending: false })
-        .limit(20);
+        .limit(40);
         
-      if (data) setPastOpportunities(data);
+      if (data) {
+        let filtered = data;
+        if (mySubspecialties.length > 0) {
+          filtered = filtered.filter(op => mySubspecialties.some(sub => op.description?.startsWith(`[${sub}]`)));
+        }
+        setPastOpportunities(filtered.slice(0, 20));
+      }
     };
     fetchPast();
   }, [user, profile?.specialty]);

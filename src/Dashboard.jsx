@@ -47,6 +47,9 @@ export default function DashboardWrapper() {
             );
             if (isRegPayload) {
               setRole(isAdminPayload ? 'admin' : p.role);
+            } else {
+              // Si ya no está registrado (ej: cambió de rol y le faltan datos), recargar para forzar onboarding
+              window.location.reload();
             }
           })
           .subscribe();
@@ -62,8 +65,8 @@ export default function DashboardWrapper() {
         // Un usuario está "registrado" si es admin, o si tiene los datos mínimos según su rol
         const isRegistered = isAdmin || (
           profile?.phone && (
-            (profile.role === 'client' && profile.address) || 
-            (profile.role === 'kamellador' && profile.specialty && profile.verification_status === 'verified')
+            ((profile.role === 'client' || profile.role === 'cliente') && profile.address) || 
+            (profile.role === 'kamellador' && profile.specialty && profile.specialty.trim().length > 3 && profile.verification_status === 'verified')
           )
         );
 
@@ -97,5 +100,9 @@ export default function DashboardWrapper() {
     return <ClientDashboard user={user} />;
   }
 
-  return <ProviderDashboard />;
+  if (role === 'kamellador' || role === 'provider') {
+    return <ProviderDashboard />;
+  }
+
+  return <div className="min-h-screen bg-[#f7f3f1] flex items-center justify-center"><div className="h-8 w-8 border-4 border-[#ff7665] border-t-transparent rounded-full animate-spin"></div></div>;
 }

@@ -37,6 +37,7 @@ export default function Onboarding() {
 
   // Estados Kamellador
   const [specialty, setSpecialty] = useState("");
+  const [subspecialties, setSubspecialties] = useState([]);
   const [phone, setPhone] = useState("");
   const [fullName, setFullName] = useState("");
   const [age, setAge] = useState("");
@@ -69,8 +70,8 @@ export default function Onboarding() {
         .single();
 
       const isAdmin = profile?.role === 'admin' || profile?.is_admin;
-      const isVerified = (profile?.role === 'client' && profile?.address) || 
-                        (profile?.role === 'kamellador' && profile?.specialty && profile?.verification_status === 'verified');
+      const isVerified = ((profile?.role === 'client' || profile?.role === 'cliente') && profile?.address) || 
+                        (profile?.role === 'kamellador' && profile?.specialty && profile?.specialty.trim().length > 3 && profile?.verification_status === 'verified');
 
       if (isAdmin || (profile?.phone && isVerified)) {
         // Si ya tiene todo según su rol, al dashboard
@@ -132,7 +133,7 @@ export default function Onboarding() {
       }
       const { error } = await supabase.from('profiles').update({
         role: 'kamellador',
-        specialty,
+        specialty: subspecialties.length > 0 ? `${specialty}|${subspecialties.join(',')}` : specialty,
         phone,
         full_name: fullName,
         age: parseInt(age),
@@ -258,16 +259,57 @@ export default function Onboarding() {
               {step === 2 && (
                 <div className="animate-in fade-in slide-in-from-right-4">
                   <h2 className="font-serif text-3xl text-[#1f2c45] text-center mb-6 italic">¿En qué eres experto?</h2>
-                  <div className="grid grid-cols-2 gap-4 max-h-[420px] overflow-y-auto pr-1">
+                  <div className="grid grid-cols-2 gap-4 max-h-[300px] overflow-y-auto pr-1">
                     {SERVICE_CATEGORIES.map(cat => (
-                      <button key={cat.id} onClick={() => setSpecialty(cat.id)}
+                      <button key={cat.id} onClick={() => { setSpecialty(cat.id); setSubspecialties([]); }}
                         className={`p-6 rounded-[32px] border-2 transition-all flex flex-col items-center gap-3 ${specialty === cat.id ? 'border-[#ff7665] bg-[#fff8f7] scale-[1.02]' : 'border-[#efe7e2] hover:border-[#a4b1c6]'}`}>
                         <div className={`p-4 rounded-2xl ${cat.chip}`}>{cat.icon}</div>
                         <span className="font-bold text-[#1f2c45] text-sm text-center">{cat.shortName}</span>
                       </button>
                     ))}
                   </div>
-                  <button onClick={nextStep} disabled={!specialty} className="w-full mt-10 bg-[#1f2c45] text-white py-5 rounded-[24px] font-bold text-lg disabled:opacity-50">Continuar</button>
+
+                  {(() => {
+                    const cat = SERVICE_CATEGORIES.find(c => c.id === specialty);
+                    if (cat?.subcategories) {
+                      return (
+                        <div className="mt-6 animate-fade-in-up">
+                          <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-3 pl-1 text-center">¿Qué equipos específicas manejas?</label>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
+                            {cat.subcategories.map(sub => {
+                              const isSelected = subspecialties.includes(sub);
+                              return (
+                                <button
+                                  key={sub}
+                                  onClick={() => {
+                                    if (isSelected) setSubspecialties(prev => prev.filter(s => s !== sub));
+                                    else setSubspecialties(prev => [...prev, sub]);
+                                  }}
+                                  style={{
+                                    padding: "8px 16px", borderRadius: 12, fontSize: "0.85rem", fontWeight: 700,
+                                    border: "2px solid", borderColor: isSelected ? "#ff7665" : "#efe7e2",
+                                    background: isSelected ? "#ff7665" : "white", color: isSelected ? "white" : "#1f2c45",
+                                    transition: "all 0.2s"
+                                  }}
+                                >
+                                  {sub}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+
+                  <button 
+                    onClick={nextStep} 
+                    disabled={!specialty || (SERVICE_CATEGORIES.find(c => c.id === specialty)?.subcategories && subspecialties.length === 0)} 
+                    className="w-full mt-8 bg-[#1f2c45] text-white py-5 rounded-[24px] font-bold text-lg disabled:opacity-50"
+                  >
+                    Continuar
+                  </button>
                 </div>
               )}
 
@@ -382,6 +424,7 @@ export default function Onboarding() {
               )}
             </>
           )}
+
         </div>
       </main>
 

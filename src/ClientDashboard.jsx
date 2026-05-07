@@ -44,6 +44,7 @@ export default function ClientDashboard({ user }) {
   const [loading, setLoading] = useState(true);
   const [position, setPosition] = useState(null);
   const [category, setCategory] = useState("");
+  const [subcategory, setSubcategory] = useState("");
   const [description, setDescription] = useState("");
   const [activeRequest, setActiveRequest] = useState(null);
   const [history, setHistory] = useState([]);
@@ -208,8 +209,9 @@ export default function ClientDashboard({ user }) {
     e.preventDefault();
     if (!category || !description || !position) return alert("Completa todos los campos.");
     setLoading(true);
+    const finalDescription = subcategory ? `[${subcategory}] ${description}` : description;
     const { data, error } = await supabase.from("operations").insert({
-      client_id: user.id, category, description,
+      client_id: user.id, category, description: finalDescription,
       proposed_price: 0,
       client_lat: position[0], client_lng: position[1],
       status: "pending", expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
@@ -344,7 +346,7 @@ export default function ClientDashboard({ user }) {
       const { error } = await supabase.from("operations").update({ status: "cancelled" }).eq("id", activeRequest.id);
       if (error) throw error;
       setShowCancelModal(false);
-      setActiveRequest(null); setCategory(""); setDescription(""); setBudget(""); await refreshHistory();
+      setActiveRequest(null); setCategory(""); setSubcategory(""); setDescription(""); setBudget(""); await refreshHistory();
     } catch (err) { alert("Error al cancelar: " + err.message); }
   };
   
@@ -487,7 +489,9 @@ export default function ClientDashboard({ user }) {
       <BottomSheet snapPoints={getSnapPoints()} initialSnap={1}>
         {!activeRequest ? (
           <RequestServiceForm 
-            category={category} setCategory={setCategory} description={description} setDescription={setDescription} 
+            category={category} setCategory={setCategory} 
+            subcategory={subcategory} setSubcategory={setSubcategory}
+            description={description} setDescription={setDescription} 
             loading={loading} position={position} 
             handleSubmitRequest={handleSubmitRequest}
           />

@@ -18,6 +18,7 @@ export default function ProfileView({ user, onLogout }) {
   const [formData, setFormData] = useState({
     full_name: "",
     specialty: "",
+    subspecialties: [],
     phone: "",
     age: "",
     avatar_url: "",
@@ -38,9 +39,11 @@ export default function ProfileView({ user, onLogout }) {
     
     if (data) {
       setProfile(data);
+      const [mainSpecialty, subStr] = (data.specialty || "").split('|');
       setFormData({
         full_name: data.full_name || "",
-        specialty: data.specialty || "",
+        specialty: mainSpecialty || "",
+        subspecialties: subStr ? subStr.split(',') : [],
         phone: data.phone || "",
         age: data.age || "",
         avatar_url: data.avatar_url || "",
@@ -58,7 +61,9 @@ export default function ProfileView({ user, onLogout }) {
         .from('profiles')
         .update({
           full_name: formData.full_name,
-          specialty: profile.role === 'kamellador' ? formData.specialty : null,
+          specialty: profile.role === 'kamellador' 
+            ? (formData.subspecialties.length > 0 ? `${formData.specialty}|${formData.subspecialties.join(',')}` : formData.specialty) 
+            : null,
           phone: formData.phone,
           age: parseInt(formData.age) || null,
           avatar_url: formData.avatar_url,
@@ -122,6 +127,31 @@ export default function ProfileView({ user, onLogout }) {
     }
   };
 
+  const handleSwitchRole = async (targetRole) => {
+    setSaving(true);
+    try {
+      const updates = { role: targetRole };
+      
+      // Si cambia a kamellador, forzar limpieza para que pase por onboarding
+      if (targetRole === 'kamellador') {
+        updates.specialty = null;
+        updates.verification_status = 'pending';
+      }
+
+      const { error } = await supabase.from('profiles').update(updates).eq('id', user.id);
+      if (error) throw error;
+      
+      // Usar navigate en lugar de reload si es posible, o reload forzado a onboarding
+      window.location.href = "/onboarding"; 
+    } catch (err) {
+      alert("Error al cambiar de modo: " + err.message);
+      setSaving(false);
+    }
+  };
+
+  const isApprovedKamellador = profile?.specialty && profile?.cedula && profile?.verification_status === 'verified';
+  const isPendingKamellador = profile?.verification_status === 'in_review';
+
   if (loading) return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
       <Loader2 className="animate-spin" style={{ color: '#ff7665' }} />
@@ -179,10 +209,50 @@ export default function ProfileView({ user, onLogout }) {
           </div>
           {profile?.role === 'kamellador' ? (
             <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>Especialidad / Rol</label>
-              <select value={formData.specialty} onChange={e => setFormData({...formData, specialty: e.target.value})} className="sheet-input">
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>Especialidad Principal</label>
+              <select 
+                value={formData.specialty} 
+                onChange={e => setFormData({...formData, specialty: e.target.value, subspecialties: []})} 
+                className="sheet-input"
+              >
                 {SERVICE_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
+              {(() => {
+                const cat = SERVICE_CATEGORIES.find(c => c.id === formData.specialty);
+                if (cat?.subcategories) {
+                  return (
+                    <div style={{ marginTop: '12px' }}>
+                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '8px' }}>Especialidades Específicas</label>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {cat.subcategories.map(sub => {
+                          const isSelected = formData.subspecialties.includes(sub);
+                          return (
+                            <button
+                              key={sub} type="button"
+                              onClick={() => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  subspecialties: isSelected 
+                                    ? prev.subspecialties.filter(s => s !== sub)
+                                    : [...prev.subspecialties, sub]
+                                }));
+                              }}
+                              style={{
+                                padding: '6px 12px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 700,
+                                border: '1px solid', borderColor: isSelected ? '#ff7665' : '#efe7e2',
+                                background: isSelected ? '#ff7665' : '#f7f3f1', color: isSelected ? 'white' : '#1f2c45',
+                              }}
+                            >
+                              {sub}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
             </div>
           ) : (
             <div>
@@ -308,7 +378,16 @@ export default function ProfileView({ user, onLogout }) {
                   </div>
                   <div>
                     <span style={{ display: 'block', fontSize: '10px', color: '#5f6a79', fontWeight: 700 }}>Especialidad</span>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{profile?.specialty || 'General'}</span>
+                    <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{profile?.specialty ? profile.specialty.split('|')[0] : 'General'}</span>
+                    {profile?.specialty && profile.specialty.includes('|') && profile.specialty.split('|')[1] && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
+                        {profile.specialty.split('|')[1].split(',').map(sub => (
+                          <span key={sub} style={{ background: '#ff7665', color: 'white', padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 800 }}>
+                            {sub}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -324,6 +403,7 @@ export default function ProfileView({ user, onLogout }) {
               )}
             </div>
           </div>
+
 
 
           <button onClick={() => supabase.auth.signOut().then(() => onLogout?.())} style={{ background: 'white', border: '1px solid #efe7e2', borderRadius: '20px', padding: '16px', color: '#ff7665', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer' }}>
