@@ -275,28 +275,35 @@ export default function ProviderDashboard() {
         }
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "operations" }, async p => {
+        // Always remove from visible lists if no longer pending
         if (p.new.status !== "pending") {
           setNearbyServices(prev => prev.filter(s => s.id !== p.new.id));
           setPastOpportunities(prev => prev.filter(s => s.id !== p.new.id));
-          
-          // Detect if I was just assigned to this operation
-          if (p.new.kamellador_id === user.id && ['pending', 'accepted'].includes(p.new.status) && !activeOperation) {
-            const upd = await fetchOperation(p.new.id);
-            if (upd) {
-              setActiveOperation({ 
-                ...upd, 
-                client_lat: upd.client_lat || DEFAULT_LOCATION[0] + 0.008, 
-                client_lng: upd.client_lng || DEFAULT_LOCATION[1] + 0.005 
-              });
-              setNearbyServices([]);
-              await refreshHistory();
-            }
-          }
+        }
 
-          // Detect if my active operation was cancelled
-          if (activeOperation && p.new.id === activeOperation.id && p.new.status === 'cancelled') {
+        // Assigned to me → activate as my job
+        if (p.new.kamellador_id === user.id && p.new.status === 'accepted' && !activeOperation) {
+          const upd = await fetchOperation(p.new.id);
+          if (upd) {
+            setActiveOperation({
+              ...upd,
+              client_lat: upd.client_lat || DEFAULT_LOCATION[0] + 0.008,
+              client_lng: upd.client_lng || DEFAULT_LOCATION[1] + 0.005
+            });
+            setNearbyServices([]);
+            await refreshHistory();
+          }
+        }
+
+        // My active operation changed status
+        if (activeOperation && p.new.id === activeOperation.id) {
+          if (['cancelled', 'expired'].includes(p.new.status)) {
             setActiveOperation(null);
             setCancelledNotice(true);
+            await refreshHistory();
+          } else {
+            const upd = await fetchOperation(p.new.id);
+            if (upd) setActiveOperation(upd);
           }
         }
       }).subscribe();
@@ -465,8 +472,8 @@ export default function ProviderDashboard() {
 
   const handleSendOffer = async (e) => {
     e.preventDefault();
-    if (!offerPrice || !selectedService) return;
-    const finalPrice = Number(offerPrice.replace(/[^0-9]/g, ""));
+    if (!selectedService || !profile?.review_price) return;
+    const finalPrice = profile.review_price;
     
     const existingOffer = myOffers.find(o => o.operation_id === selectedService.id);
     
@@ -1199,40 +1206,33 @@ export default function ProviderDashboard() {
       {/* Offer Modal */}
       {offerOpen && (
         <div className="rating-modal">
-          <form onSubmit={handleSendOffer} className="rating-modal__content">
+          <div className="rating-modal__content">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "1.4rem", margin: 0 }}>Tu precio por este servicio</h3>
+              <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "1.4rem", margin: 0 }}>Enviar Propuesta</h3>
               <button type="button" onClick={() => setOfferOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><X className="w-5 h-5" /></button>
             </div>
             
-            <div style={{ background: '#f7f3f1', borderRadius: 12, padding: '12px 14px', marginBottom: 20 }}>
-              <p style={{ fontSize: "0.8rem", color: "#5f6a79", margin: "0 0 4px", fontWeight: 700 }}>Solicitud:</p>
-              <p style={{ fontSize: "0.9rem", color: "#1f2c45", margin: 0 }}>{selectedService?.description || selectedService?.category}</p>
+            <div style={{ textAlign: 'center', marginBottom: 24 }}>
+              <p style={{ color: '#5f6a79', fontSize: '0.95rem', margin: '0 0 8px' }}>Se enviará tu precio de revisión configurado:</p>
+              <div style={{ fontSize: '2.5rem', fontWeight: 900, color: '#ff7665', margin: '16px 0' }}>${formatPrice(profile?.review_price)}</div>
+              <div style={{ background: '#f7f3f1', borderRadius: 12, padding: '12px 14px', textAlign: 'left' }}>
+                <p style={{ fontSize: "0.8rem", color: "#5f6a79", margin: "0 0 4px", fontWeight: 700 }}>Para la solicitud:</p>
+                <p style={{ fontSize: "0.9rem", color: "#1f2c45", margin: 0 }}>{selectedService?.description || selectedService?.category}</p>
+              </div>
             </div>
-            <p style={{ fontSize: "0.85rem", color: "#5f6a79", marginBottom: 16 }}>
-              Ingresa cuánto cobrarías por este trabajo. El cliente verá todas las ofertas y elegirá la mejor.
-            </p>
 
-            <div style={{ position: "relative", marginBottom: 24 }}>
-              <CreditCard className="w-5 h-5" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#a4b1c6" }} />
-              <input 
-                type="text" 
-                value={offerPrice} 
-                onChange={e => setOfferPrice(e.target.value.replace(/[^0-9]/g, ""))} 
-                className="sheet-input" 
-                style={{ paddingLeft: 44, fontSize: '1.2rem', fontWeight: 800 }} 
-                placeholder="0"
-                required 
-              />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <button onClick={handleSendOffer} className="btn-primary" style={{ height: 60, borderRadius: 20, fontSize: '1.1rem' }}>
+                Confirmar y Enviar
+              </button>
+              <button onClick={() => setOfferOpen(false)} className="btn-secondary" style={{ height: 56, borderRadius: 20 }}>
+                Cancelar
+              </button>
             </div>
-            
-            <button type="submit" className="btn-primary" style={{ height: 56, fontSize: '1rem' }}>
-              Enviar Oferta
-            </button>
             <p style={{ textAlign: "center", fontSize: 11, color: "#a4b1c6", marginTop: 12 }}>
               Al enviar una oferta no se descuentan OPS hasta que el cliente la acepte.
             </p>
-          </form>
+          </div>
         </div>
       )}
       {/* App Modal */}

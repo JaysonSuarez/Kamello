@@ -191,23 +191,52 @@ export default function ClientDashboard({ user }) {
   useEffect(() => { if (chatOpen) setUnreadCount(0); }, [chatOpen]);
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
-  // Real-time routing for client
+  // Real-time Kamellador location tracking
   useEffect(() => {
-    if (activeRequest && (activeRequest.status === 'accepted' || activeRequest.status === 'in_progress')) {
+    const kamelladorId = activeRequest?.kamellador_id;
+    if (!kamelladorId || !['accepted', 'in_progress'].includes(activeRequest?.status)) {
+      setRoute([]);
+      return;
+    }
+
+    // Initial route calculation
+    const recalcRoute = (kLat, kLng) => {
       const clientLat = activeRequest.client_lat;
       const clientLng = activeRequest.client_lng;
-      const kLat = activeRequest.kamellador?.current_lat;
-      const kLng = activeRequest.kamellador?.current_lng;
-
       if (clientLat && clientLng && kLat && kLng) {
         getRoute(kLat, kLng, clientLat, clientLng)
           .then(coords => setRoute(coords))
           .catch(err => console.error("Client Route Error:", err));
       }
-    } else {
-      setRoute([]);
-    }
-  }, [activeRequest?.status, activeRequest?.kamellador?.current_lat, activeRequest?.kamellador?.current_lng]);
+    };
+
+    // Calc with current coords
+    const kLat = activeRequest.kamellador?.current_lat;
+    const kLng = activeRequest.kamellador?.current_lng;
+    if (kLat && kLng) recalcRoute(kLat, kLng);
+
+    // Subscribe to Kamellador's profile for live location updates
+    const channel = supabase.channel(`kamellador_location_${kamelladorId}`)
+      .on("postgres_changes", {
+        event: "UPDATE",
+        schema: "public",
+        table: "profiles",
+        filter: `id=eq.${kamelladorId}`
+      }, (payload) => {
+        const { current_lat, current_lng } = payload.new;
+        if (current_lat && current_lng) {
+          // Update the kamellador position inside activeRequest for the map marker
+          setActiveRequest(prev => prev ? {
+            ...prev,
+            kamellador: { ...prev.kamellador, current_lat, current_lng }
+          } : prev);
+          recalcRoute(current_lat, current_lng);
+        }
+      })
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, [activeRequest?.kamellador_id, activeRequest?.status, activeRequest?.client_lat, activeRequest?.client_lng]);
 
   const handleSubmitRequest = async (e) => {
     e.preventDefault();

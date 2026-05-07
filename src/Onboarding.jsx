@@ -42,6 +42,9 @@ export default function Onboarding() {
   const [fullName, setFullName] = useState("");
   const [age, setAge] = useState("");
   const [cedula, setCedula] = useState("");
+  const [reviewPrice, setReviewPrice] = useState("");
+  const [bio, setBio] = useState("");
+  const [hasVehicle, setHasVehicle] = useState(false);
 
   // Estados Cliente
   const [address, setAddress] = useState("");
@@ -138,6 +141,9 @@ export default function Onboarding() {
         full_name: fullName,
         age: parseInt(age),
         cedula: cedula.trim(),
+        bio,
+        review_price: parseFloat(reviewPrice) || 0,
+        has_vehicle: hasVehicle,
         is_active: false // Inactivo hasta que lo aprueben
       }).eq('id', user.id);
       if (error) throw error;
@@ -326,7 +332,6 @@ export default function Onboarding() {
                       <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">Número de Cédula <span className="text-[#ff7665]">(requerido)</span></label>
                       <input type="text" placeholder="Ej: 1234567890" value={cedula} onChange={(e) => setCedula(e.target.value.replace(/\D/g, ''))}
                         className="w-full px-6 py-4 rounded-[24px] bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none font-bold text-[#1f2c45]" />
-                      <p className="text-xs text-[#a4b1c6] mt-1 pl-2">Solo números, sin puntos ni guiones. Único por persona.</p>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -340,8 +345,23 @@ export default function Onboarding() {
                           className="w-full px-6 py-4 rounded-[24px] bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none font-bold text-[#1f2c45]" />
                       </div>
                     </div>
+                    <div>
+                      <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">Precio de Revisión (COP)</label>
+                      <input type="number" placeholder="Ej: 30000" value={reviewPrice} onChange={(e) => setReviewPrice(e.target.value)}
+                        className="w-full px-6 py-4 rounded-[24px] bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none font-bold text-[#1f2c45]" />
+                      <p className="text-[10px] text-[#a4b1c6] mt-1 pl-2">Este valor se enviará automáticamente como tu oferta inicial.</p>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">¿Quién soy? (Breve biografía)</label>
+                      <textarea placeholder="Ej: Técnico con 10 años de experiencia..." value={bio} onChange={(e) => setBio(e.target.value)}
+                        className="w-full px-6 py-4 rounded-[24px] bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none font-bold text-[#1f2c45] min-h-[80px]" />
+                    </div>
+                    <div className="flex items-center gap-3 p-4 bg-[#f7f3f1] rounded-[24px]">
+                      <input type="checkbox" id="hasVehicle" checked={hasVehicle} onChange={(e) => setHasVehicle(e.target.checked)} className="w-5 h-5 accent-[#ff7665]" />
+                      <label htmlFor="hasVehicle" className="text-sm font-bold text-[#1f2c45]">Tengo vehículo de transporte propio</label>
+                    </div>
                   </div>
-                  <button onClick={handleFinishKamellador} disabled={loading || !phone || !fullName || !age || !cedula}
+                  <button onClick={handleFinishKamellador} disabled={loading || !phone || !fullName || !age || !cedula || !reviewPrice}
                     className="w-full mt-10 bg-[#ff7665] text-white py-5 rounded-[24px] font-bold text-lg shadow-lg shadow-[#ff7665]/30 hover:bg-[#ff5a45] transition-all">
                     {loading ? "Verificando cédula..." : "Siguiente: Documentos"}
                   </button>

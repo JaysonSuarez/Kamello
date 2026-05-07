@@ -39,18 +39,37 @@ export default function ActiveOperationView({
                           {offer.kamellador?.full_name?.[0] || "K"}
                         </div>
                         <div>
-                          <p style={{ fontWeight: 700, fontSize: 13, margin: 0 }}>{offer.kamellador?.full_name}</p>
+                          <p style={{ fontWeight: 700, fontSize: 13, margin: 0 }}>{offer.kamellador?.full_name}, {offer.kamellador?.age} años</p>
                           <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
                             <Star className="w-3 h-3" style={{ fill: "#f59e0b", color: "#f59e0b" }} />
                             <span style={{ fontSize: 11, fontWeight: 800 }}>{offer.kamellador?.rating_avg || '0.0'}</span>
                             <span style={{ fontSize: 10, color: "#a4b1c6" }}>•</span>
-                            <span style={{ fontSize: 11, color: "#5f6a79" }}>{offer.kamellador?.services_count || 0} servicios</span>
+                            <span style={{ fontSize: 11, color: "#5f6a79" }}>{offer.kamellador?.specialty?.split('|')[0]}</span>
                           </div>
                         </div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <p style={{ fontSize: 18, fontWeight: 900, margin: 0, color: "#ff7665" }}>${formatPrice(offer.price)}</p>
-                        <p style={{ fontSize: 10, color: "#a4b1c6", margin: 0 }}>COP</p>
+                        <p style={{ fontSize: 10, color: "#a4b1c6", margin: 0 }}>REVISIÓN</p>
+                      </div>
+                    </div>
+                    
+                    {offer.kamellador?.bio && (
+                      <div style={{ marginBottom: 12 }}>
+                        <p style={{ fontSize: 11, color: "#5f6a79", margin: 0, fontStyle: 'italic', lineHeight: 1.4 }}>
+                          "{offer.kamellador.bio}"
+                        </p>
+                      </div>
+                    )}
+
+                    <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: offer.kamellador?.has_vehicle ? '#00cba9' : '#ff7665' }} />
+                        <span style={{ fontSize: 10, fontWeight: 700, color: '#1f2c45' }}>{offer.kamellador?.has_vehicle ? 'TIENE VEHÍCULO' : 'SIN VEHÍCULO'}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <CheckCircle2 className="w-3 h-3 text-[#00cba9]" />
+                        <span style={{ fontSize: 10, fontWeight: 700, color: '#1f2c45' }}>VERIFICADO</span>
                       </div>
                     </div>
                     {offer.message && (

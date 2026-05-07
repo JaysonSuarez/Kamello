@@ -22,7 +22,10 @@ export default function ProfileView({ user, onLogout }) {
     phone: "",
     age: "",
     avatar_url: "",
-    address: ""
+    address: "",
+    bio: "",
+    review_price: "",
+    has_vehicle: false
   });
 
   useEffect(() => {
@@ -47,7 +50,10 @@ export default function ProfileView({ user, onLogout }) {
         phone: data.phone || "",
         age: data.age || "",
         avatar_url: data.avatar_url || "",
-        address: data.address || ""
+        address: data.address || "",
+        bio: data.bio || "",
+        review_price: data.review_price || "",
+        has_vehicle: data.has_vehicle || false
       });
     }
     setLoading(false);
@@ -67,7 +73,10 @@ export default function ProfileView({ user, onLogout }) {
           phone: formData.phone,
           age: parseInt(formData.age) || null,
           avatar_url: formData.avatar_url,
-          address: profile.role === 'client' ? formData.address : null
+          address: profile.role === 'client' ? formData.address : null,
+          bio: formData.bio,
+          review_price: parseFloat(formData.review_price) || 0,
+          has_vehicle: formData.has_vehicle
         })
         .eq('id', user.id);
 
@@ -270,6 +279,24 @@ export default function ProfileView({ user, onLogout }) {
               <input type="number" value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})} className="sheet-input" />
             </div>
           </div>
+
+          {profile?.role === 'kamellador' && (
+            <>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>Precio de Revisión (COP)</label>
+                <input type="number" value={formData.review_price} onChange={e => setFormData({...formData, review_price: e.target.value})} className="sheet-input" />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>Biografía / Quién soy</label>
+                <textarea value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} className="sheet-input" style={{ minHeight: '80px' }} />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0' }}>
+                <input type="checkbox" checked={formData.has_vehicle} onChange={e => setFormData({...formData, has_vehicle: e.target.checked})} id="has_vehicle_edit" />
+                <label htmlFor="has_vehicle_edit" style={{ fontSize: '0.85rem', fontWeight: 700 }}>Tengo vehículo propio</label>
+              </div>
+            </>
+          )}
+
           <button type="submit" disabled={saving} className="btn-primary" style={{ marginTop: '8px' }}>
             {saving ? <Loader2 className="animate-spin w-5 h-5" /> : <Save className="w-5 h-5" />} Guardar cambios
           </button>
@@ -379,6 +406,23 @@ export default function ProfileView({ user, onLogout }) {
                   <div>
                     <span style={{ display: 'block', fontSize: '10px', color: '#5f6a79', fontWeight: 700 }}>Especialidad</span>
                     <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{profile?.specialty ? profile.specialty.split('|')[0] : 'General'}</span>
+                    <span style={{ display: 'block', fontSize: '10px', color: '#5f6a79', fontWeight: 700, marginTop: '8px' }}>Precio de Revisión</span>
+                    <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>${(profile?.review_price || 0).toLocaleString()}</span>
+                    
+                    {profile?.bio && (
+                      <div style={{ marginTop: '12px' }}>
+                        <span style={{ display: 'block', fontSize: '10px', color: '#5f6a79', fontWeight: 700 }}>Sobre mí</span>
+                        <p style={{ margin: 0, fontSize: '0.8rem', color: '#1f2c45', lineHeight: 1.4 }}>{profile.bio}</p>
+                      </div>
+                    )}
+                    
+                    <div style={{ marginTop: '12px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <span style={{ fontSize: '10px', color: '#5f6a79', fontWeight: 700 }}>Vehículo:</span>
+                      <span style={{ fontSize: '10px', fontWeight: 800, color: profile?.has_vehicle ? '#00cba9' : '#ff7665' }}>
+                        {profile?.has_vehicle ? 'SÍ' : 'NO'}
+                      </span>
+                    </div>
+
                     {profile?.specialty && profile.specialty.includes('|') && profile.specialty.split('|')[1] && (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
                         {profile.specialty.split('|')[1].split(',').map(sub => (
