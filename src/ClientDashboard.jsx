@@ -328,22 +328,15 @@ export default function ClientDashboard({ user }) {
     }
   };
 
-  const handleAcceptOffer = async (offer) => {
-    setLoading(true);
-    try {
-      await supabase.from("operation_offers").update({ status: "accepted" }).eq("id", offer.id);
-      const { data, error } = await supabase.from("operations").update({ 
-        kamellador_id: offer.kamellador_id, 
-        agreed_price: offer.price,
-        status: 'accepted'
-      }).eq("id", activeRequest.id).select(OPERATION_SELECT).single();
-      if (error) throw error;
-      setActiveRequest(data);
-      await refreshHistory();
-      // Mostrar el documento de OPS antes del PIN
-      setPendingOPSOperation(data);
-      setShowOPSDoc(true);
-    } finally { setLoading(false); }
+  const handleAcceptOffer = (offer) => {
+    // No actualizamos la DB todavía, solo preparamos la OPS para el cliente
+    setPendingOPSOperation({ 
+      ...activeRequest, 
+      kamellador_id: offer.kamellador_id, 
+      agreed_price: offer.price,
+      kamellador: offer.kamellador 
+    });
+    setShowOPSDoc(true);
   };
 
   const handleRejectOffer = async (offer) => {
@@ -573,6 +566,12 @@ export default function ClientDashboard({ user }) {
                 }
                 throw opError;
               }
+
+              // 2.5 Marcar la oferta como aceptada en la DB
+              await supabase.from("operation_offers")
+                .update({ status: "accepted" })
+                .eq("operation_id", pendingOPSOperation.id)
+                .eq("kamellador_id", pendingOPSOperation.kamellador_id);
 
               // 3. Notificar al Kamellador
               supabase.functions.invoke("bright-responder", {
