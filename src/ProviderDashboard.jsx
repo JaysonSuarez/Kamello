@@ -155,29 +155,46 @@ export default function ProviderDashboard() {
           setTimeout(() => setShowWalkthrough(true), 3000);
         }
 
-        // --- Wompi Payment Processor ---
+        // --- Wompi Payment Return Handler ---
+        // The actual payment processing happens securely via the Wompi webhook (server-to-server).
+        // Here we only inform the user that we received their return from the payment gateway.
         const urlParams = new URLSearchParams(window.location.search);
         const transactionId = urlParams.get('id');
-        const pack = urlParams.get('pack');
+        const transactionStatus = urlParams.get('transaction_status') || urlParams.get('status');
         
-        if (transactionId && pack) {
-          const { data, error } = await supabase.rpc('process_wompi_payment', {
-            p_transaction_id: transactionId,
-            p_user_id: au.id,
-            p_pack: pack
-          });
-          
-          if (!error) {
-            showAlert("¡Pago Exitoso! 🎉", `Has recibido ${data.ops_added} OPS correctamente.`, "success");
-            const { data: updatedProfile } = await supabase.from("profiles").select("*").eq("id", au.id).single();
-            if (updatedProfile) setProfile(updatedProfile);
-          } else if (!error.message.includes('TRANSACTION_ALREADY_PROCESSED')) {
-            showAlert("Atención", "Hubo un problema verificando tu pago. Contacta a soporte.", "error");
+        if (transactionId) {
+          if (transactionStatus === 'APPROVED') {
+            showAlert(
+              "¡Pago recibido! 🎉",
+              "Tu pago fue procesado. Tus OPS se acreditarán en los próximos segundos automáticamente.",
+              "success"
+            );
+            // Poll profile for up to 15 seconds waiting for webhook to credit OPS
+            let attempts = 0;
+            const poll = setInterval(async () => {
+              attempts++;
+              const { data: updatedProfile } = await supabase
+                .from("profiles")
+                .select("ops_credits")
+                .eq("id", au.id)
+                .single();
+              if (updatedProfile && updatedProfile.ops_credits !== pp.ops_credits) {
+                setProfile(prev => ({ ...prev, ops_credits: updatedProfile.ops_credits }));
+                clearInterval(poll);
+              }
+              if (attempts >= 10) clearInterval(poll); // Stop after 15s
+            }, 1500);
+          } else if (transactionStatus === 'DECLINED' || transactionStatus === 'ERROR') {
+            showAlert(
+              "Pago no completado",
+              "Tu pago fue rechazado o hubo un error. Por favor intenta de nuevo.",
+              "error"
+            );
           }
-          // Clean URL to prevent re-processing
+          // Clean URL to prevent showing the alert again on refresh
           window.history.replaceState({}, document.title, window.location.pathname);
         }
-        // -------------------------------
+        // ------------------------------------
 
       } catch (err) {
         console.error("Error initializing ProviderDashboard:", err);
