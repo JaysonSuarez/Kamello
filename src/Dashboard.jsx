@@ -29,6 +29,13 @@ export default function DashboardWrapper() {
         if (!au) { navigate("/login"); return; }
         setUser(au);
 
+        // Pick up intended_role from URL params (set by Google OAuth redirect from Register)
+        const urlParams = new URLSearchParams(window.location.search);
+        const intendedRoleFromUrl = urlParams.get('intended_role');
+        if (intendedRoleFromUrl === 'client' || intendedRoleFromUrl === 'kamellador') {
+          localStorage.setItem('kamello_intended_role', intendedRoleFromUrl);
+        }
+
         // Listener en tiempo real para el perfil
         channel = supabase.channel(`dashboard_sync_${au.id}`)
           .on("postgres_changes", { 

@@ -89,21 +89,21 @@ export default function Onboarding() {
         if (profile?.verification_status === 'in_review' || profile?.verification_status === 'rejected') {
           setRole(profile.role);
           setStep(4);
-        } else if (profile?.phone) {
-          // Si tiene teléfono pero está aquí, es porque le falta algo más (especialidad en técnicos)
-          setRole(profile.role);
-          setStep(1); 
         } else {
-          // Si no tiene teléfono, es nuevo
+          // Always check localStorage first — it's the source of truth for what the user chose
           const intendedRole = localStorage.getItem('kamello_intended_role');
           
           if (intendedRole === 'client' || intendedRole === 'kamellador') {
-            // El usuario seleccionó su rol antes de ir a Google
+            // User explicitly chose a role (from Register or Register+Google)
             setRole(intendedRole);
-            setStep(1);
-            localStorage.removeItem('kamello_intended_role'); // Limpiamos para el futuro
+            localStorage.removeItem('kamello_intended_role');
+            setStep(profile?.phone ? 2 : 1); // If they already have a phone, skip to next step
+          } else if (profile?.phone) {
+            // Has phone, no intended role in storage — trust the DB role
+            setRole(profile.role);
+            setStep(1); 
           } else {
-            // No hay rol previo, o viene de Login con Google directo: siempre preguntar (Step 0)
+            // Brand new user, no phone, no stored role — ask them
             setStep(0);
           }
         }

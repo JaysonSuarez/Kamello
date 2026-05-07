@@ -525,23 +525,13 @@ export default function ProviderDashboard() {
 
   const handleRescueOpportunity = async (opp) => {
     try {
-      // Opción A: Reactivar la operación y extender el tiempo
-      const newExpiry = new Date(Date.now() + 20 * 60 * 1000).toISOString();
-      const { error: opError } = await supabase.from("operations")
-        .update({ status: 'pending', expires_at: newExpiry })
-        .eq("id", opp.id);
+      const { error } = await supabase.rpc('rescue_opportunity', {
+        p_operation_id: opp.id,
+        p_kamellador_id: user.id,
+        p_price: opp.proposed_price,
+        p_message: "Hola! Vi que tenías este servicio pendiente. ¿Aún lo necesitas?"
+      });
       
-      if (opError) throw opError;
-
-      const { error } = await supabase.from("operation_offers")
-        .insert({
-          operation_id: opp.id,
-          kamellador_id: user.id,
-          price: opp.proposed_price,
-          status: 'pending',
-          last_sender_id: user.id,
-          message: "Hola! Vi que tenías este servicio pendiente. ¿Aún lo necesitas?"
-        });
       if (error) throw error;
       
       showAlert("¡Oportunidad rescatada!", "La solicitud se ha reactivado. El cliente recibirá una notificación y podrá ver tu oferta.");
