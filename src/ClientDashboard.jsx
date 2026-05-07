@@ -173,7 +173,11 @@ export default function ClientDashboard({ user }) {
       return;
     }
     const fetchOffers = async () => {
-      const { data } = await supabase.from("operation_offers").select("*, kamellador:profiles(*)").eq("operation_id", activeRequest.id).order("created_at", { ascending: false });
+      const { data } = await supabase.from("operation_offers")
+        .select("*, kamellador:profiles(*)")
+        .eq("operation_id", activeRequest.id)
+        .neq("status", "rejected")
+        .order("created_at", { ascending: false });
       if (data) setOffers(data);
     };
     fetchOffers();
@@ -299,7 +303,11 @@ export default function ClientDashboard({ user }) {
     setLoading(true);
     try {
       await supabase.from("operation_offers").update({ status: "accepted" }).eq("id", offer.id);
-      const { data, error } = await supabase.from("operations").update({ kamellador_id: offer.kamellador_id, agreed_price: offer.price }).eq("id", activeRequest.id).select(OPERATION_SELECT).single();
+      const { data, error } = await supabase.from("operations").update({ 
+        kamellador_id: offer.kamellador_id, 
+        agreed_price: offer.price,
+        status: 'accepted'
+      }).eq("id", activeRequest.id).select(OPERATION_SELECT).single();
       if (error) throw error;
       setActiveRequest(data);
       await refreshHistory();

@@ -268,19 +268,16 @@ export default function ProviderDashboard() {
         }
         
         if (isMatch && matchesSub) {
-          if (myLocation[0] && p.new.client_lat && p.new.client_lng) {
-            const dist = calculateDistance(myLocation[0], myLocation[1], p.new.client_lat, p.new.client_lng);
-            if (dist <= radius) {
-              setNearbyServices(prev => [p.new, ...prev]);
-            }
-          } else {
-            setNearbyServices(prev => [p.new, ...prev]);
-          }
+          setNearbyServices(prev => {
+            if (prev.some(s => s.id === p.new.id)) return prev;
+            return [p.new, ...prev];
+          });
         }
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "operations" }, async p => {
         if (p.new.status !== "pending") {
           setNearbyServices(prev => prev.filter(s => s.id !== p.new.id));
+          setPastOpportunities(prev => prev.filter(s => s.id !== p.new.id));
           
           // Detect if I was just assigned to this operation
           if (p.new.kamellador_id === user.id && ['pending', 'accepted'].includes(p.new.status) && !activeOperation) {
