@@ -346,7 +346,7 @@ export default function ClientDashboard({ user }) {
       const { error } = await supabase.from("operations").update({ status: "cancelled" }).eq("id", activeRequest.id);
       if (error) throw error;
       setShowCancelModal(false);
-      setActiveRequest(null); setCategory(""); setSubcategory(""); setDescription(""); setBudget(""); await refreshHistory();
+      setActiveRequest(null); setCategory(""); setSubcategory(""); setDescription(""); await refreshHistory();
     } catch (err) { alert("Error al cancelar: " + err.message); }
   };
   
