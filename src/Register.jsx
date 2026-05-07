@@ -13,6 +13,7 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
@@ -54,7 +55,13 @@ export default function Register() {
       if (data.user) {
         // Save the intended role so Onboarding doesn't ask again
         localStorage.setItem('kamello_intended_role', role);
-        navigate("/dashboard");
+        
+        // If no session is returned, it means email confirmation is required
+        if (!data.session) {
+          setShowSuccess(true);
+        } else {
+          navigate("/dashboard");
+        }
       }
     } catch (err) {
       setError(err.message || "Error al crear la cuenta");
@@ -122,10 +129,33 @@ export default function Register() {
 
         {/* Right Side: Form */}
         <div className="flex-[1.2] p-12 bg-white w-full">
-          <div className="mb-10 text-center md:text-left">
-            <h1 className="font-serif text-4xl text-[#1f2c45]">Crear cuenta</h1>
-            <p className="mt-3 text-lg text-[#5f6a79]">Selecciona cómo quieres usar Kamello</p>
-          </div>
+          {showSuccess ? (
+            <div className="h-full flex flex-col items-center justify-center text-center animate-in fade-in zoom-in duration-500">
+              <div className="w-24 h-24 bg-green-50 rounded-[32px] flex items-center justify-center mb-8 rotate-3 shadow-lg shadow-green-500/10">
+                <Mail className="w-12 h-12 text-green-500" />
+              </div>
+              <h1 className="font-serif text-4xl text-[#1f2c45] mb-4">¡Revisa tu correo!</h1>
+              <p className="text-xl text-[#5f6a79] mb-8 leading-relaxed">
+                Hola {firstName}, hemos enviado un enlace de activación a <br />
+                <span className="font-bold text-[#1f2c45]">{email}</span>.
+              </p>
+              <div className="w-full p-6 bg-[#f7f3f1] rounded-3xl border-2 border-dashed border-[#efe7e2] text-[#5f6a79] mb-10">
+                <p className="font-medium">¿No encuentras el mensaje?</p>
+                <p className="text-sm mt-1">Revisa tu carpeta de <strong>SPAM</strong> o correo no deseado.</p>
+              </div>
+              <Link 
+                to="/login" 
+                className="inline-flex items-center gap-3 bg-[#1f2c45] text-white px-8 py-4 rounded-2xl font-bold hover:bg-[#ff7665] transition-all shadow-lg"
+              >
+                Volver al inicio <ArrowLeft className="w-5 h-5" />
+              </Link>
+            </div>
+          ) : (
+            <>
+              <div className="mb-10 text-center md:text-left">
+                <h1 className="font-serif text-4xl text-[#1f2c45]">Crear cuenta</h1>
+                <p className="mt-3 text-lg text-[#5f6a79]">Selecciona cómo quieres usar Kamello</p>
+              </div>
 
           {/* Role Selector */}
           <div className="flex gap-4 mb-8">
@@ -241,9 +271,11 @@ export default function Register() {
             </button>
           </div>
 
-          <p className="mt-6 text-center text-sm text-[#5f6a79]">
-            ¿Ya tienes una cuenta? <Link to="/login" className="font-bold text-[#ff7665] hover:underline">Inicia sesión</Link>
-          </p>
+              <p className="mt-6 text-center text-sm text-[#5f6a79]">
+                ¿Ya tienes una cuenta? <Link to="/login" className="font-bold text-[#ff7665] hover:underline">Inicia sesión</Link>
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>
