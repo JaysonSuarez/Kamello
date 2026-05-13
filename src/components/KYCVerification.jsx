@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Camera, CheckCircle2, FileText, Loader2, ShieldCheck, Upload, UserCheck, Clock } from 'lucide-react';
+import { useLanguage } from '../lib/i18n';
 import '../styles.css';
 
 export default function KYCVerification({ user, profile, onVerified }) {
+  const { t } = useLanguage();
   const isRejected = profile?.verification_status === 'rejected';
   const [step, setStep] = useState(profile?.verification_status === 'in_review' ? 4 : 1);
   const [loading, setLoading] = useState(false);
@@ -158,8 +160,8 @@ export default function KYCVerification({ user, profile, onVerified }) {
         flexShrink: 0 
       }}>
         <ShieldCheck className="w-12 h-12" style={{ color: '#00cba9', margin: '0 auto 12px' }} />
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 8px' }}>Seguridad Kamello</h1>
-        <p style={{ color: '#a4b1c6', fontSize: '0.9rem' }}>Verificación de identidad requerida.</p>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 8px' }}>{t('kyc_title')}</h1>
+        <p style={{ color: '#a4b1c6', fontSize: '0.9rem' }}>{t('kyc_subtitle')}</p>
       </div>
 
       <canvas ref={canvasRef} style={{ display: 'none' }} />
@@ -181,51 +183,51 @@ export default function KYCVerification({ user, profile, onVerified }) {
               <div style={{ background: '#fff5f5', border: '1px solid #feb2b2', borderRadius: 16, padding: 16, marginBottom: 20 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#c53030', marginBottom: 8 }}>
                   <ShieldCheck className="w-5 h-5" />
-                  <span style={{ fontWeight: 800, fontSize: '0.9rem' }}>DOCUMENTOS RECHAZADOS</span>
+                  <span style={{ fontWeight: 800, fontSize: '0.9rem' }}>{t('kyc_status_rejected')}</span>
                 </div>
                 <p style={{ fontSize: '0.85rem', color: '#742a2a', margin: 0, lineHeight: 1.4 }}>
-                  Tu verificación previa no fue aprobada. Por favor, asegúrate de que el PDF de la cédula sea legible y la selfie tenga buena iluminación.
+                  {t('kyc_rejected_text')}
                 </p>
               </div>
             )}
             
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: 20 }}>Documentos Requeridos</h2>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: 20 }}>{t('kyc_req_title')}</h2>
             <div style={{ background: '#f7f3f1', padding: 16, borderRadius: 16, marginBottom: 16 }}>
-              <p style={{ fontWeight: 700, margin: '0 0 4px' }}>1. Cédula en PDF</p>
-              <p style={{ fontSize: '0.85rem', color: '#5f6a79' }}>Foto de ambos lados en un solo archivo.</p>
+              <p style={{ fontWeight: 700, margin: '0 0 4px' }}>{t('kyc_req_id')}</p>
+              <p style={{ fontSize: '0.85rem', color: '#5f6a79' }}>{t('kyc_req_id_desc')}</p>
             </div>
             <div style={{ background: '#f7f3f1', padding: 16, borderRadius: 16, marginBottom: 30 }}>
-              <p style={{ fontWeight: 700, margin: '0 0 4px' }}>2. Selfie Biometríca</p>
-              <p style={{ fontSize: '0.85rem', color: '#5f6a79' }}>Foto actual de tu rostro.</p>
+              <p style={{ fontWeight: 700, margin: '0 0 4px' }}>{t('kyc_req_selfie')}</p>
+              <p style={{ fontSize: '0.85rem', color: '#5f6a79' }}>{t('kyc_req_selfie_desc')}</p>
             </div>
             <button onClick={() => setStep(2)} className="btn-primary btn-primary--accent">
-              {isRejected ? "Enviar nuevamente documentos" : "Comenzar Verificación"}
+              {isRejected ? t('kyc_retry_btn') : t('kyc_start_btn')}
             </button>
           </div>
         )}
 
         {step === 2 && (
           <div className="animate-fade-in-up">
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: 8 }}>Subir Cédula</h2>
-            <p style={{ fontSize: '0.9rem', color: '#5f6a79', marginBottom: 24 }}>Sube tu documento en formato PDF.</p>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: 8 }}>{t('kyc_upload_id_title')}</h2>
+            <p style={{ fontSize: '0.9rem', color: '#5f6a79', marginBottom: 24 }}>{t('kyc_upload_id_desc')}</p>
             <label style={{ display: 'block', background: '#f7f3f1', border: '2px dashed #efe7e2', borderRadius: 20, padding: 40, textAlign: 'center', cursor: 'pointer', marginBottom: 24 }}>
-              {idFile ? <p style={{ fontWeight: 800, color: '#00cba9' }}>✅ {idFile.name}</p> : <><Upload className="w-12 h-12 mx-auto text-[#a4b1c6] mb-4" /><p style={{ fontWeight: 700 }}>Toca para subir PDF</p></>}
+              {idFile ? <p style={{ fontWeight: 800, color: '#00cba9' }}>{t('kyc_upload_success').replace('{{name}}', idFile.name)}</p> : <><Upload className="w-12 h-12 mx-auto text-[#a4b1c6] mb-4" /><p style={{ fontWeight: 700 }}>{t('kyc_upload_placeholder')}</p></>}
               <input type="file" accept="application/pdf" hidden onChange={(e) => setIdFile(e.target.files[0])} />
             </label>
-            <button onClick={() => setStep(3)} disabled={!idFile} className="btn-primary btn-primary--accent">Continuar a Selfie</button>
+            <button onClick={() => setStep(3)} disabled={!idFile} className="btn-primary btn-primary--accent">{t('common_continue')} a Selfie</button>
           </div>
         )}
 
         {step === 3 && (
           <div className="animate-fade-in-up">
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: 24 }}>Selfie Biométrica</h2>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: 24 }}>{t('kyc_req_selfie')}</h2>
             <div style={{ width: 240, height: 240, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 24px', border: '4px solid #ff7665', background: '#f7f3f1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {selfiePreview ? <img src={selfiePreview} alt="Selfie" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : stream ? <video ref={videoRef} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }} /> : <Camera className="w-12 h-12 text-[#a4b1c6]" />}
             </div>
-            {!stream && !selfiePreview && <button onClick={startCamera} className="btn-primary" style={{ background: '#1f2c45' }}>Activar Cámara</button>}
-            {stream && <button onClick={capturePhoto} className="btn-primary btn-primary--accent">Capturar Foto</button>}
-            {selfiePreview && <button onClick={submitKYC} disabled={loading} className="btn-primary btn-primary--accent">{loading ? "Enviando..." : "Enviar a Revisión"}</button>}
-            {selfiePreview && <button onClick={() => { setSelfiePreview(null); startCamera(); }} className="mt-4 text-[#ff7665] font-bold w-full">Repetir Foto</button>}
+            {!stream && !selfiePreview && <button onClick={startCamera} className="btn-primary" style={{ background: '#1f2c45' }}>{t('kyc_camera_btn')}</button>}
+            {stream && <button onClick={capturePhoto} className="btn-primary btn-primary--accent">{t('kyc_capture_btn')}</button>}
+            {selfiePreview && <button onClick={submitKYC} disabled={loading} className="btn-primary btn-primary--accent">{loading ? t('kyc_submitting') : t('kyc_submit_btn')}</button>}
+            {selfiePreview && <button onClick={() => { setSelfiePreview(null); startCamera(); }} className="mt-4 text-[#ff7665] font-bold w-full">{t('kyc_retake_btn')}</button>}
           </div>
         )}
 
@@ -248,14 +250,14 @@ export default function KYCVerification({ user, profile, onVerified }) {
                 <Clock className="w-10 h-10" style={{ color: '#ff7665' }} />
               </div>
             </div>
-            <h2 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: 12, color: '#1f2c45' }}>Documentos en Revisión</h2>
+            <h2 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: 12, color: '#1f2c45' }}>{t('kyc_review_title')}</h2>
             <p style={{ color: '#5f6a79', fontSize: '1rem', lineHeight: 1.6, marginBottom: 40 }}>
-              Estamos verificando tu identidad para garantizar la seguridad de la comunidad Kamello.
+              {t('kyc_review_text')}
             </p>
             <div style={{ background: '#f7f3f1', padding: 20, borderRadius: 24, textAlign: 'left', marginBottom: 40 }}>
-              <p style={{ margin: 0, fontSize: '0.85rem', color: '#1f2c45', fontWeight: 800 }}>Tiempo estimado: <b>5 a 15 minutos</b></p>
+              <p style={{ margin: 0, fontSize: '0.85rem', color: '#1f2c45', fontWeight: 800 }}>{t('kyc_review_time')}</p>
             </div>
-            <button onClick={() => supabase.auth.signOut().then(() => navigate("/"))} style={{ color: '#ff7665', fontWeight: 800, fontSize: '0.9rem', background: 'none', border: 'none' }}>Cerrar Sesión</button>
+            <button onClick={() => supabase.auth.signOut().then(() => navigate("/"))} style={{ color: '#ff7665', fontWeight: 800, fontSize: '0.9rem', background: 'none', border: 'none' }}>{t('profile_logout_btn')}</button>
           </div>
         )}
       </div>
@@ -267,9 +269,9 @@ export default function KYCVerification({ user, profile, onVerified }) {
             <div style={{ width: 100, height: 100, background: '#e6fffb', borderRadius: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 32px', border: '4px solid #00cba9' }}>
               <CheckCircle2 className="w-12 h-12" style={{ color: '#00cba9' }} />
             </div>
-            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem', color: '#1f2c45', marginBottom: 16, fontWeight: 900 }}>¡Perfil Aprobado!</h2>
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem', color: '#1f2c45', marginBottom: 16, fontWeight: 900 }}>{t('kyc_congrats_title')}</h2>
             <p style={{ color: '#5f6a79', fontSize: '1.1rem', lineHeight: 1.6, marginBottom: 40 }}>
-              ¡Felicidades! Ya eres parte oficial de los <b>Kamelladores</b>. Prepárate para recibir tus primeras ofertas.
+              {t('kyc_congrats_text')}
             </p>
             <button 
               onClick={() => {
@@ -279,7 +281,7 @@ export default function KYCVerification({ user, profile, onVerified }) {
               className="btn-primary"
               style={{ background: '#00cba9', height: 64, borderRadius: 24, fontSize: '1.2rem', boxShadow: '0 12px 30px rgba(0,203,169,0.3)' }}
             >
-              ¡Empezar ahora!
+              {t('kyc_start_now')}
             </button>
           </div>
         </div>

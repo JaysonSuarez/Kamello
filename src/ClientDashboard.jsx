@@ -14,6 +14,8 @@ import { usePushNotifications } from "./hooks/usePushNotifications";
 import { getRoute } from "./utils/geo";
 import FeedView from "./components/FeedView";
 import OPSDocument from "./components/OPSDocument";
+import { useLanguage } from "./lib/i18n";
+import LanguageSwitcher from "./components/LanguageSwitcher";
 
 // Modular Components
 import MapView from "./components/client/MapView";
@@ -26,17 +28,26 @@ function formatPrice(v) {
   return Number(v || 0).toLocaleString("es-CO");
 }
 
-function formatDate(v) {
-  return v ? new Date(v).toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" }) : "";
+function formatDate(v, lang = 'es') {
+  return v ? new Date(v).toLocaleString(lang === 'es' ? "es-CO" : "en-US", { dateStyle: "medium", timeStyle: "short" }) : "";
 }
 
-function getStatusLabel(s) {
-  return { pending: "Buscando", accepted: "Aceptado", in_progress: "En progreso", completed: "Por calificar", rated: "Calificado", cancelled: "Cancelado", expired: "Expirado" }[s] || s;
+function getStatusLabel(s, t) {
+  return { 
+    pending: t('client_status_pending'), 
+    accepted: t('client_status_accepted'), 
+    in_progress: t('client_status_in_progress'), 
+    completed: t('client_status_completed'), 
+    rated: t('client_status_rated'), 
+    cancelled: t('client_status_cancelled'), 
+    expired: t('client_status_expired') 
+  }[s] || s;
 }
 
 export default function ClientDashboard({ user }) {
   if (!user) return <div className="app-shell" style={{ justifyContent: "center", alignItems: "center" }}><Loader2 className="h-8 w-8 animate-spin text-[#ff7665]" /></div>;
   
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const { subscribeToPush } = usePushNotifications();
   const { fetchOperation, fetchActiveOperation, fetchHistory, rateOperation, completeOperation, loadingById } = useOperations();
@@ -428,16 +439,16 @@ export default function ClientDashboard({ user }) {
       <div className="app-shell">
         <div className="view-container">
           <div className="view-container__content">
-            <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "1.75rem", marginBottom: 16 }}>Actividad</h2>
-            {history.length === 0 ? <p style={{ color: "#5f6a79", fontSize: "0.875rem" }}>Aún no tienes servicios en historial.</p> : history.map(op => (
+            <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "1.75rem", marginBottom: 16 }}>{t('client_tab_activity')}</h2>
+            {history.length === 0 ? <p style={{ color: "#5f6a79", fontSize: "0.875rem" }}>{t('client_history_empty')}</p> : history.map(op => (
               <div key={op.id} className="history-item" onClick={() => setSelectedHistoryOp(op)} style={{ cursor: "pointer" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                  <p style={{ fontWeight: 700, fontSize: "0.875rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{op.description || op.category}</p>
-                  <span style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "#ff7665", flexShrink: 0 }}>{getStatusLabel(op.status)}</span>
+                   <p style={{ fontWeight: 700, fontSize: "0.875rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{op.description || op.category}</p>
+                  <span style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "#ff7665", flexShrink: 0 }}>{getStatusLabel(op.status, t)}</span>
                 </div>
-                <p style={{ fontSize: 11, color: "#5f6a79", marginTop: 4 }}>{formatDate(op.updated_at)}</p>
+                <p style={{ fontSize: 11, color: "#5f6a79", marginTop: 4 }}>{formatDate(op.updated_at, language)}</p>
                 {op.operation_ratings?.[0] && <p style={{ fontSize: 12, marginTop: 6, display: "flex", alignItems: "center", gap: 4 }}><Star className="w-3 h-3" style={{ fill: "#f59e0b", color: "#f59e0b" }} /> {op.operation_ratings[0].rating}/5</p>}
-                {op.ops_accepted_at && <p style={{ fontSize: 11, color: "#16a34a", marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}><Shield className="w-3 h-3" /> Documento OPS firmado</p>}
+                {op.ops_accepted_at && <p style={{ fontSize: 11, color: "#16a34a", marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}><Shield className="w-3 h-3" /> {t('client_history_ops_signed')}</p>}
               </div>
             ))}
           </div>
@@ -461,13 +472,13 @@ export default function ClientDashboard({ user }) {
           <div className="animate-fade-in" style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(31,44,69,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
             <div style={{ background: "white", borderRadius: 24, padding: "24px", width: "100%", maxWidth: 360 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 900 }}>Detalle del Servicio</h3>
+                <h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 900 }}>{t('client_history_detail')}</h3>
                 <button onClick={() => setSelectedHistoryOp(null)} style={{ background: "none", border: "none", cursor: "pointer" }}><X className="w-5 h-5 text-[#a4b1c6]" /></button>
               </div>
               <p style={{ fontWeight: 800, margin: "0 0 8px" }}>{selectedHistoryOp.category}</p>
               <p style={{ color: "#5f6a79", margin: "0 0 16px", fontSize: "0.9rem" }}>{selectedHistoryOp.description}</p>
-              <p style={{ fontSize: "0.85rem", color: "#a4b1c6" }}>Estado: {getStatusLabel(selectedHistoryOp.status)}</p>
-              <p style={{ fontSize: "0.85rem", color: "#a4b1c6" }}>Sin documento OPS firmado (Servicio antiguo o cancelado).</p>
+              <p style={{ fontSize: "0.85rem", color: "#a4b1c6" }}>Estado: {getStatusLabel(selectedHistoryOp.status, t)}</p>
+              <p style={{ fontSize: "0.85rem", color: "#a4b1c6" }}>{t('client_history_no_ops')}</p>
             </div>
           </div>
         )}
@@ -480,7 +491,7 @@ export default function ClientDashboard({ user }) {
       <div className="app-shell">
         <div className="view-container">
           <div className="view-container__content">
-            <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "1.75rem", marginBottom: 16 }}>Mi Cuenta</h2>
+            <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "1.75rem", marginBottom: 16 }}>{t('client_tab_account')}</h2>
             <ProfileView user={user} onLogout={() => navigate("/")} />
           </div>
         </div>
@@ -500,6 +511,7 @@ export default function ClientDashboard({ user }) {
       <div className="top-bar">
         <div className="top-bar__left"><img src="/images/K-Editado.png" alt="K" className="top-bar__logo" /><span className="top-bar__title">Kamello</span></div>
         <div className="top-bar__right">
+          <LanguageSwitcher />
           <button onClick={() => supabase.auth.signOut().then(() => navigate("/"))} className="top-bar__btn"><LogOut className="w-4 h-4" /></button>
           <button onClick={() => setActiveTab("account")} className="top-bar__avatar">{user?.email?.[0]?.toUpperCase() || "U"}</button>
         </div>
@@ -509,10 +521,10 @@ export default function ClientDashboard({ user }) {
         <div style={{ position: "absolute", top: 80, left: "50%", transform: "translateX(-50%)", zIndex: 700, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, pointerEvents: "none", width: '100%' }}>
           <div style={{ background: "rgba(255,255,255,0.95)", padding: "10px 24px", borderRadius: 100, boxShadow: "0 4px 20px rgba(31,44,69,0.12)", display: "flex", alignItems: "center", gap: 10, pointerEvents: "auto" }}>
             <MapPin className={`w-5 h-5 ${isLocationFixed ? 'text-[#00cba9]' : 'text-[#ff7665]'}`} />
-            <span style={{ fontSize: "0.9rem", fontWeight: 800 }}>{isLocationFixed ? "Ubicación fijada" : "Toca el mapa para fijar dirección"}</span>
-            {isLocationFixed && <button onClick={() => setIsLocationFixed(false)} style={{ background: '#f7f3f1', border: 'none', padding: '4px 12px', borderRadius: 12, fontSize: '0.75rem', fontWeight: 800, color: '#ff7665', cursor: 'pointer' }}>Cambiar</button>}
+            <span style={{ fontSize: "0.9rem", fontWeight: 800 }}>{isLocationFixed ? t('client_loc_fixed') : t('client_loc_tap')}</span>
+            {isLocationFixed && <button onClick={() => setIsLocationFixed(false)} style={{ background: '#f7f3f1', border: 'none', padding: '4px 12px', borderRadius: 12, fontSize: '0.75rem', fontWeight: 800, color: '#ff7665', cursor: 'pointer' }}>{t('client_loc_change')}</button>}
           </div>
-          {!isLocationFixed && position && <button onClick={() => setIsLocationFixed(true)} className="animate-bounce" style={{ background: '#1f2c45', color: 'white', border: 'none', padding: '12px 24px', borderRadius: 100, fontSize: '0.9rem', fontWeight: 800, boxShadow: '0 8px 24px rgba(31,44,69,0.25)', pointerEvents: 'auto', cursor: 'pointer' }}>Fijar esta ubicación</button>}
+          {!isLocationFixed && position && <button onClick={() => setIsLocationFixed(true)} className="animate-bounce" style={{ background: '#1f2c45', color: 'white', border: 'none', padding: '12px 24px', borderRadius: 100, fontSize: '0.9rem', fontWeight: 800, boxShadow: '0 8px 24px rgba(31,44,69,0.25)', pointerEvents: 'auto', cursor: 'pointer' }}>{t('client_loc_fix_btn')}</button>}
         </div>
       )}
 
@@ -610,10 +622,10 @@ export default function ClientDashboard({ user }) {
         <div className="animate-fade-in" style={{ position: 'fixed', inset: 0, background: 'rgba(31,44,69,0.85)', backdropFilter: 'blur(10px)', zIndex: 20000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
           <div className="animate-scale-in" style={{ background: 'white', borderRadius: 40, padding: '40px 32px', maxWidth: 420, width: '100%', textAlign: 'center' }}>
             <div style={{ width: 88, height: 88, background: '#fee2e2', borderRadius: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}><Clock className="w-10 h-10 text-[#ef4444]" /></div>
-            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', fontWeight: 900, marginBottom: 12 }}>¿NADA AÚN?</h3>
-            <p style={{ color: "#5f6a79", marginBottom: 32 }}>Parece que nadie ha aceptado. <b>Aumenta tu tarifa</b> para atraer expertos de inmediato.</p>
-            <button onClick={async () => { setShowExpiredView(false); handleSubmitRequest({ preventDefault: () => {} }); }} className="btn-primary" style={{ height: 60, borderRadius: 20 }}>Reintentar Solicitud</button>
-            <button onClick={() => setShowExpiredView(false)} style={{ marginTop: 12, background: 'none', border: 'none', color: '#a4b1c6', fontWeight: 700 }}>Cancelar por ahora</button>
+            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', fontWeight: 900, marginBottom: 12 }}>{t('client_expired_title')}</h3>
+            <p style={{ color: "#5f6a79", marginBottom: 32 }}>{t('client_expired_text')}</p>
+            <button onClick={async () => { setShowExpiredView(false); handleSubmitRequest({ preventDefault: () => {} }); }} className="btn-primary" style={{ height: 60, borderRadius: 20 }}>{t('client_expired_retry')}</button>
+            <button onClick={() => setShowExpiredView(false)} style={{ marginTop: 12, background: 'none', border: 'none', color: '#a4b1c6', fontWeight: 700 }}>{t('client_expired_cancel')}</button>
           </div>
         </div>
       )}
@@ -626,14 +638,14 @@ export default function ClientDashboard({ user }) {
             <div style={{ flex: 1 }}><p style={{ fontWeight: 700, margin: 0, color: activeKamellador?.is_premium ? "#d4af37" : "inherit" }}>{activeKamellador?.full_name}</p><p style={{ fontSize: 10, color: "#00cba9", fontWeight: 800, margin: 0 }}>{activeCategory?.shortName}</p></div>
             
             {activeRequest.status === 'pending' && !activeRequest.ops_accepted_at && activeRequest.kamellador_id && (
-              <button 
+               <button 
                 onClick={() => {
                   setAgreedPriceInput("");
                   setShowPricePrompt(true);
                 }}
                 style={{ background: '#ff7665', color: 'white', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 800 }}
               >
-                GENERAR OPS
+                {t('client_chat_generate_ops')}
               </button>
             )}
           </div>
@@ -642,7 +654,7 @@ export default function ClientDashboard({ user }) {
             <div ref={messagesEndRef} />
           </div>
           <form onSubmit={sendMessage} className="chat-screen__input">
-            <input value={chatDraft} onChange={e => setChatDraft(e.target.value)} placeholder="Mensaje..." />
+            <input value={chatDraft} onChange={e => setChatDraft(e.target.value)} placeholder={t('client_chat_placeholder')} />
             <button type="submit" disabled={!chatDraft.trim()}><Send className="w-4 h-4" /></button>
           </form>
         </div>
@@ -651,11 +663,11 @@ export default function ClientDashboard({ user }) {
       {ratingOpen && (
         <div className="rating-modal">
           <form onSubmit={handleRate} className="rating-modal__content">
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}><h3>Calificar</h3><button type="button" onClick={() => setRatingOpen(false)}><X className="w-5 h-5" /></button></div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}><h3>{t('client_rating_title')}</h3><button type="button" onClick={() => setRatingOpen(false)}><X className="w-5 h-5" /></button></div>
             <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 24 }}>{[1, 2, 3, 4, 5].map(v => <button key={v} type="button" onClick={() => setRatingValue(v)}><Star className="w-8 h-8" style={{ fill: v <= ratingValue ? "#f59e0b" : "none", color: v <= ratingValue ? "#f59e0b" : "#d8cec7" }} /></button>)}</div>
             
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16, justifyContent: "center" }}>
-              {["Puntualidad", "Calidad", "Rapidez", "Buen Trato", "Limpieza", "Honestidad"].map(tag => {
+              {(t('client_rating_tags') || ["Puntualidad", "Calidad", "Rapidez", "Buen Trato", "Limpieza", "Honestidad"]).map(tag => {
                 const isSelected = ratingTags.includes(tag);
                 return (
                   <button 
@@ -675,8 +687,8 @@ export default function ClientDashboard({ user }) {
               })}
             </div>
 
-            <textarea value={ratingComment} onChange={e => setRatingComment(e.target.value)} placeholder="¿Algo más que quieras decir? (Opcional)" className="sheet-input" style={{ height: 80, marginBottom: 16 }} />
-            <button type="submit" disabled={loadingById[activeRequest?.id]} className="btn-primary">{loadingById[activeRequest?.id] ? "Guardando..." : "Enviar Calificación"}</button>
+            <textarea value={ratingComment} onChange={e => setRatingComment(e.target.value)} placeholder={t('client_rating_comment_placeholder')} className="sheet-input" style={{ height: 80, marginBottom: 16 }} />
+            <button type="submit" disabled={loadingById[activeRequest?.id]} className="btn-primary">{loadingById[activeRequest?.id] ? t('client_rating_saving') : t('client_rating_submit')}</button>
           </form>
         </div>
       )}
@@ -685,10 +697,10 @@ export default function ClientDashboard({ user }) {
         <div className="animate-fade-in" style={{ position: 'fixed', inset: 0, background: 'rgba(31,44,69,0.8)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
           <div className="animate-scale-in" style={{ background: 'white', borderRadius: 40, padding: 40, maxWidth: 400, width: '100%', textAlign: 'center' }}>
             <XCircle className="w-12 h-12 mx-auto text-[#ef4444] mb-4" />
-            <h3>¿Seguro?</h3>
-            <p>{activeRequest?.status === 'accepted' ? "El técnico ya está en camino." : "¿Deseas cancelar?"}</p>
-            <button onClick={confirmCancel} className="btn-primary" style={{ background: '#ef4444', marginBottom: 12 }}>Sí, Cancelar</button>
-            <button onClick={() => setShowCancelModal(false)} style={{ color: '#a4b1c6', fontWeight: 700 }}>Mantener</button>
+            <h3>{t('client_cancel_confirm')}</h3>
+            <p>{activeRequest?.status === 'accepted' ? t('client_cancel_text_accepted') : t('client_cancel_text_default')}</p>
+            <button onClick={confirmCancel} className="btn-primary" style={{ background: '#ef4444', marginBottom: 12 }}>{t('client_cancel_yes')}</button>
+            <button onClick={() => setShowCancelModal(false)} style={{ color: '#a4b1c6', fontWeight: 700 }}>{t('client_cancel_no')}</button>
           </div>
         </div>
       )}
@@ -698,8 +710,8 @@ export default function ClientDashboard({ user }) {
             <div style={{ width: 64, height: 64, background: '#f0fdf4', borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
               <Zap className="w-8 h-8" style={{ color: "#16a34a" }} />
             </div>
-            <h3 style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: 8, color: '#1f2c45' }}>¿Precio Acordado?</h3>
-            <p style={{ color: "#5f6a79", fontSize: '0.9rem', marginBottom: 24 }}>Ingresa el monto final que negociaste con el profesional para generar la OPS.</p>
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: 8, color: '#1f2c45' }}>{t('client_price_prompt_title')}</h3>
+            <p style={{ color: "#5f6a79", fontSize: '0.9rem', marginBottom: 24 }}>{t('client_price_prompt_text')}</p>
             
             <div style={{ position: 'relative', marginBottom: 24 }}>
               <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', fontWeight: 800, color: '#1f2c45' }}>$</span>
@@ -708,7 +720,7 @@ export default function ClientDashboard({ user }) {
                 type="text" 
                 value={agreedPriceInput}
                 onChange={e => setAgreedPriceInput(e.target.value.replace(/[^0-9]/g, ""))}
-                placeholder="00.000"
+                placeholder={t('client_price_prompt_placeholder')}
                 style={{ width: '100%', padding: '16px 16px 16px 32px', borderRadius: 16, border: '2px solid #efe7e2', fontSize: '1.25rem', fontWeight: 800, outline: 'none' }}
               />
             </div>
@@ -726,7 +738,7 @@ export default function ClientDashboard({ user }) {
                 className="btn-primary" 
                 style={{ flex: 1.5 }}
               >
-                Continuar
+                {t('client_price_prompt_continue')}
               </button>
             </div>
           </div>

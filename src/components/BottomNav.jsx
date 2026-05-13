@@ -1,23 +1,26 @@
 import React from "react";
 import { Home, BarChart3, MessageSquare, Menu, ClipboardList, User, History, Newspaper } from "lucide-react";
-
-const CLIENT_TABS = [
-  { id: "home", label: "Inicio", icon: Home },
-  { id: "feed", label: "Feed", icon: Newspaper },
-  { id: "activity", label: "Actividad", icon: ClipboardList },
-  { id: "account", label: "Cuenta", icon: User },
-];
-
-const PROVIDER_TABS = [
-  { id: "home", label: "Inicio", icon: Home },
-  { id: "feed", label: "Feed", icon: Newspaper },
-  { id: "opportunities", label: "Oportunidades", icon: History },
-  { id: "earnings", label: "Ganancias", icon: BarChart3 },
-  { id: "messages", label: "Mensajes", icon: MessageSquare },
-  { id: "menu", label: "Menú", icon: Menu },
-];
+import { useLanguage } from "../lib/i18n";
 
 export default function BottomNav({ role, activeTab, onTabChange, unreadMessages = 0 }) {
+  const { t } = useLanguage();
+
+  const CLIENT_TABS = [
+    { id: "home", label: t('nav_home'), icon: Home },
+    { id: "feed", label: t('nav_feed'), icon: Newspaper },
+    { id: "activity", label: t('nav_activity'), icon: ClipboardList },
+    { id: "account", label: t('nav_account'), icon: User },
+  ];
+
+  const PROVIDER_TABS = [
+    { id: "home", label: t('nav_home'), icon: Home },
+    { id: "feed", label: t('nav_feed'), icon: Newspaper },
+    { id: "opportunities", label: t('nav_opportunities'), icon: History },
+    { id: "earnings", label: t('nav_earnings'), icon: BarChart3 },
+    { id: "messages", label: t('nav_messages'), icon: MessageSquare },
+    { id: "menu", label: t('nav_menu'), icon: Menu },
+  ];
+
   const tabs = role === "client" || role === "cliente" ? CLIENT_TABS : PROVIDER_TABS;
 
   return (

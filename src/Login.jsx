@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { supabase } from "./lib/supabase";
+import { useLanguage } from "./lib/i18n";
+import LanguageSwitcher from "./components/LanguageSwitcher";
 
 const logoImageUrl = "/images/K-Editado.png";
 
@@ -11,6 +13,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   React.useEffect(() => {
@@ -40,7 +43,7 @@ export default function Login() {
         navigate("/dashboard");
       }
     } catch (err) {
-      setError(err.message || "Error al iniciar sesión");
+      setError(err.message || t('login_error_generic'));
     } finally {
       setLoading(false);
     }
@@ -78,8 +81,11 @@ export default function Login() {
               Kamello
             </span>
           </Link>
-          <h1 className="mt-8 font-serif text-4xl text-[#1f2c45]">¡Bienvenido de nuevo!</h1>
-          <p className="mt-3 text-lg text-[#5f6a79]">Ingresa tus credenciales para continuar</p>
+          <div className="mt-4 flex justify-center">
+            <LanguageSwitcher />
+          </div>
+          <h1 className="mt-8 font-serif text-4xl text-[#1f2c45]">{t('login_welcome')}</h1>
+          <p className="mt-3 text-lg text-[#5f6a79]">{t('login_subtitle')}</p>
         </div>
 
         {/* Form Container */}
@@ -92,7 +98,7 @@ export default function Login() {
             )}
             
             <div>
-              <label className="block text-sm font-bold text-[#1f2c45] mb-2 px-1">Correo electrónico</label>
+              <label className="block text-sm font-bold text-[#1f2c45] mb-2 px-1">{t('login_email_label')}</label>
               <div className="relative group">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5f6a79] group-focus-within:text-[#ff7665] transition-colors">
                   <Mail className="w-5 h-5" />
@@ -101,7 +107,7 @@ export default function Login() {
                   type="email" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ejemplo@correo.com"
+                  placeholder={t('login_email_placeholder')}
                   required
                   className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none transition-all text-[#1f2c45] font-medium"
                 />
@@ -109,7 +115,7 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-[#1f2c45] mb-2 px-1">Contraseña</label>
+              <label className="block text-sm font-bold text-[#1f2c45] mb-2 px-1">{t('login_password_label')}</label>
               <div className="relative group">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5f6a79] group-focus-within:text-[#ff7665] transition-colors">
                   <Lock className="w-5 h-5" />
@@ -124,7 +130,7 @@ export default function Login() {
                 />
               </div>
               <div className="mt-2 text-right">
-                <Link to="/forgot-password" size="sm" className="text-sm font-semibold text-[#ff7665] hover:underline">¿Olvidaste tu contraseña?</Link>
+                <Link to="/forgot-password" size="sm" className="text-sm font-semibold text-[#ff7665] hover:underline">{t('login_forgot_password')}</Link>
               </div>
             </div>
 
@@ -137,7 +143,7 @@ export default function Login() {
                 <Loader2 className="w-6 h-6 animate-spin" />
               ) : (
                 <>
-                  Iniciar Sesión
+                  {t('login_button')}
                   <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                 </>
               )}
@@ -146,7 +152,7 @@ export default function Login() {
 
           <div className="mt-8 relative">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-[#efe7e2]"></div></div>
-            <div className="relative flex justify-center text-sm"><span className="px-4 bg-white text-[#5f6a79] font-medium">O continúa con</span></div>
+            <div className="relative flex justify-center text-sm"><span className="px-4 bg-white text-[#5f6a79] font-medium">{t('login_social_divider')}</span></div>
           </div>
 
           <div className="mt-8">
@@ -165,7 +171,7 @@ export default function Login() {
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
-                  Continuar con Google
+                  {t('login_google_button')}
                 </>
               )}
             </button>
@@ -173,8 +179,8 @@ export default function Login() {
         </div>
 
         <p className="mt-8 text-center text-lg text-[#5f6a79]">
-          ¿No tienes una cuenta?{" "}
-          <Link to="/register" className="font-bold text-[#ff7665] hover:underline">Regístrate gratis</Link>
+          {t('login_no_account')}{" "}
+          <Link to="/register" className="font-bold text-[#ff7665] hover:underline">{t('login_register_link')}</Link>
         </p>
       </div>
     </div>

@@ -24,10 +24,12 @@ import {
 import { supabase } from "./lib/supabase";
 import { SERVICE_CATEGORIES } from "./serviceCategories";
 import KYCVerification from "./components/KYCVerification";
+import { useLanguage } from "./lib/i18n";
 
 const logoImageUrl = "/images/K-Editado.png";
 
 export default function Onboarding() {
+  const { t, language } = useLanguage();
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null); // null, 'kamellador', 'client'
   const [step, setStep] = useState(0); // Empezamos en 0 para selección de rol si es necesario
@@ -207,8 +209,8 @@ export default function Onboarding() {
 
           {step === 0 && (
             <div className="animate-in fade-in slide-in-from-bottom-6 duration-700">
-              <h1 className="font-serif text-4xl text-[#1f2c45] leading-tight text-center italic mb-4">¿Cómo quieres usar Kamello?</h1>
-              <p className="text-[#5f6a79] text-lg text-center mb-10">Personalizaremos tu experiencia según tu elección.</p>
+              <h1 className="font-serif text-4xl text-[#1f2c45] leading-tight text-center italic mb-4">{t('onboarding_title_role')}</h1>
+              <p className="text-[#5f6a79] text-lg text-center mb-10">{t('onboarding_subtitle_role')}</p>
               
               <div className="grid grid-cols-1 gap-6">
                 <button 
@@ -219,8 +221,8 @@ export default function Onboarding() {
                     <Briefcase className="w-10 h-10" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-black text-[#1f2c45]">Quiero Kamellar</h3>
-                    <p className="text-[#5f6a79] text-sm">Soy un experto técnico y busco trabajos en mi zona.</p>
+                    <h3 className="text-2xl font-black text-[#1f2c45]">{t('onboarding_role_provider_title')}</h3>
+                    <p className="text-[#5f6a79] text-sm">{t('onboarding_role_provider_desc')}</p>
                   </div>
                   <ArrowRight className="absolute right-8 w-6 h-6 text-[#efe7e2] group-hover:text-[#ff7665] group-hover:translate-x-2 transition-all" />
                 </button>
@@ -233,8 +235,8 @@ export default function Onboarding() {
                     <ShoppingCart className="w-10 h-10" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-black text-[#1f2c45]">Quiero Pedir Ayuda</h3>
-                    <p className="text-[#5f6a79] text-sm">Necesito a un experto para una reparación o servicio técnico.</p>
+                    <h3 className="text-2xl font-black text-[#1f2c45]">{t('onboarding_role_client_title')}</h3>
+                    <p className="text-[#5f6a79] text-sm">{t('onboarding_role_client_desc')}</p>
                   </div>
                   <ArrowRight className="absolute right-8 w-6 h-6 text-[#efe7e2] group-hover:text-[#ff7665] group-hover:translate-x-2 transition-all" />
                 </button>
@@ -247,30 +249,30 @@ export default function Onboarding() {
             <>
               {step === 1 && (
                 <div className="animate-in fade-in slide-in-from-right-4">
-                  <h1 className="font-serif text-4xl text-[#1f2c45] leading-tight text-center italic">¡Bienvenido, Kamellador!</h1>
-                  <p className="mt-4 text-[#5f6a79] text-lg text-center">Configura tu perfil para empezar a recibir ofertas hoy mismo.</p>
+                  <h1 className="font-serif text-4xl text-[#1f2c45] leading-tight text-center italic">{t('onboarding_welcome_provider')}</h1>
+                  <p className="mt-4 text-[#5f6a79] text-lg text-center">{t('onboarding_welcome_provider_desc')}</p>
                   <div className="mt-10 bg-[#fff8f4] p-6 rounded-3xl border border-[#f1d8cb] flex items-start gap-4">
                     <div className="bg-[#ff7665] p-3 rounded-2xl text-white shadow-lg"><ShieldCheck className="w-6 h-6" /></div>
                     <div>
-                      <h3 className="font-bold text-[#1f2c45]">Seguridad</h3>
-                      <p className="text-sm text-[#5f6a79] mt-1">Tu perfil será verificado antes de poder ver clientes.</p>
+                      <h3 className="font-bold text-[#1f2c45]">{t('onboarding_security_title')}</h3>
+                      <p className="text-sm text-[#5f6a79] mt-1">{t('onboarding_security_desc')}</p>
                     </div>
                   </div>
                   <button onClick={nextStep} className="w-full mt-10 bg-[#1f2c45] text-white py-5 rounded-[24px] font-bold text-lg flex items-center justify-center gap-2 hover:bg-[#ff7665] transition-all group">
-                    Continuar <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    {t('common_continue')} <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
               )}
 
               {step === 2 && (
                 <div className="animate-in fade-in slide-in-from-right-4">
-                  <h2 className="font-serif text-3xl text-[#1f2c45] text-center mb-6 italic">¿En qué eres experto?</h2>
+                  <h2 className="font-serif text-3xl text-[#1f2c45] text-center mb-6 italic">{t('onboarding_specialty_title')}</h2>
                   <div className="grid grid-cols-2 gap-4 max-h-[300px] overflow-y-auto pr-1">
                     {SERVICE_CATEGORIES.map(cat => (
                       <button key={cat.id} onClick={() => { setSpecialty(cat.id); setSubspecialties([]); }}
                         className={`p-6 rounded-[32px] border-2 transition-all flex flex-col items-center gap-3 ${specialty === cat.id ? 'border-[#ff7665] bg-[#fff8f7] scale-[1.02]' : 'border-[#efe7e2] hover:border-[#a4b1c6]'}`}>
                         <div className={`p-4 rounded-2xl ${cat.chip}`}>{cat.icon}</div>
-                        <span className="font-bold text-[#1f2c45] text-sm text-center">{cat.shortName}</span>
+                        <span className="font-bold text-[#1f2c45] text-sm text-center">{language === 'en' ? cat.name : cat.shortName}</span>
                       </button>
                     ))}
                   </div>
@@ -280,7 +282,7 @@ export default function Onboarding() {
                     if (cat?.subcategories) {
                       return (
                         <div className="mt-6 animate-fade-in-up">
-                          <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-3 pl-1 text-center">¿Qué equipos específicas manejas?</label>
+                          <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-3 pl-1 text-center">{t('onboarding_specialty_hint')}</label>
                           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
                             {cat.subcategories.map(sub => {
                               const isSelected = subspecialties.includes(sub);
@@ -314,56 +316,56 @@ export default function Onboarding() {
                     disabled={!specialty || (SERVICE_CATEGORIES.find(c => c.id === specialty)?.subcategories && subspecialties.length === 0)} 
                     className="w-full mt-8 bg-[#1f2c45] text-white py-5 rounded-[24px] font-bold text-lg disabled:opacity-50"
                   >
-                    Continuar
+                    {t('common_continue')}
                   </button>
                 </div>
               )}
 
               {step === 3 && (
                 <div className="animate-in fade-in slide-in-from-right-4">
-                  <h2 className="font-serif text-3xl text-[#1f2c45] text-center mb-6 italic">Tus Datos</h2>
+                  <h2 className="font-serif text-3xl text-[#1f2c45] text-center mb-6 italic">{t('onboarding_data_title')}</h2>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">Nombre Completo</label>
+                      <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">{t('profile_name_label')}</label>
                       <input type="text" placeholder="Tu nombre" value={fullName} onChange={(e) => setFullName(e.target.value)}
                         className="w-full px-6 py-4 rounded-[24px] bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none font-bold text-[#1f2c45]" />
                     </div>
                     <div>
-                      <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">Número de Cédula <span className="text-[#ff7665]">(requerido)</span></label>
+                      <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">{t('onboarding_cedula_label')}</label>
                       <input type="text" placeholder="Ej: 1234567890" value={cedula} onChange={(e) => setCedula(e.target.value.replace(/\D/g, ''))}
                         className="w-full px-6 py-4 rounded-[24px] bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none font-bold text-[#1f2c45]" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">Celular</label>
+                        <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">{t('profile_phone_label')}</label>
                         <input type="tel" placeholder="+57 3..." value={phone} onChange={(e) => setPhone(e.target.value)}
                           className="w-full px-6 py-4 rounded-[24px] bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none font-bold text-[#1f2c45]" />
                       </div>
                       <div>
-                        <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">Edad</label>
+                        <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">{t('profile_age_label')}</label>
                         <input type="number" placeholder="25" value={age} onChange={(e) => setAge(e.target.value)}
                           className="w-full px-6 py-4 rounded-[24px] bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none font-bold text-[#1f2c45]" />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">Precio de Revisión (COP)</label>
+                      <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">{t('profile_price_label')}</label>
                       <input type="number" placeholder="Ej: 30000" value={reviewPrice} onChange={(e) => setReviewPrice(e.target.value)}
                         className="w-full px-6 py-4 rounded-[24px] bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none font-bold text-[#1f2c45]" />
-                      <p className="text-[10px] text-[#a4b1c6] mt-1 pl-2">Este valor se enviará automáticamente como tu oferta inicial.</p>
+                      <p className="text-[10px] text-[#a4b1c6] mt-1 pl-2">{t('onboarding_review_price_hint')}</p>
                     </div>
                     <div>
-                      <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">¿Quién soy? (Breve biografía)</label>
-                      <textarea placeholder="Ej: Técnico con 10 años de experiencia..." value={bio} onChange={(e) => setBio(e.target.value)}
+                      <label className="block text-xs font-black text-[#a4b1c6] uppercase tracking-widest mb-2 pl-1">{t('profile_bio_label')}</label>
+                      <textarea placeholder={t('onboarding_bio_placeholder')} value={bio} onChange={(e) => setBio(e.target.value)}
                         className="w-full px-6 py-4 rounded-[24px] bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none font-bold text-[#1f2c45] min-h-[80px]" />
                     </div>
                     <div className="flex items-center gap-3 p-4 bg-[#f7f3f1] rounded-[24px]">
                       <input type="checkbox" id="hasVehicle" checked={hasVehicle} onChange={(e) => setHasVehicle(e.target.checked)} className="w-5 h-5 accent-[#ff7665]" />
-                      <label htmlFor="hasVehicle" className="text-sm font-bold text-[#1f2c45]">Tengo vehículo de transporte propio</label>
+                      <label htmlFor="hasVehicle" className="text-sm font-bold text-[#1f2c45]">{t('profile_vehicle_label')}</label>
                     </div>
                   </div>
                   <button onClick={handleFinishKamellador} disabled={loading || !phone || !fullName || !age || !cedula || !reviewPrice}
                     className="w-full mt-10 bg-[#ff7665] text-white py-5 rounded-[24px] font-bold text-lg shadow-lg shadow-[#ff7665]/30 hover:bg-[#ff5a45] transition-all">
-                    {loading ? "Verificando cédula..." : "Siguiente: Documentos"}
+                    {loading ? t('common_saving') : t('onboarding_finish_provider')}
                   </button>
                 </div>
               )}
@@ -385,50 +387,50 @@ export default function Onboarding() {
             <>
               {step === 1 && (
                 <div className="animate-in fade-in slide-in-from-right-4">
-                  <h1 className="font-serif text-4xl text-[#1f2c45] leading-tight text-center italic">¡Bienvenido a Kamello!</h1>
-                  <p className="mt-4 text-[#5f6a79] text-lg text-center">Estamos listos para ayudarte con tus reparaciones.</p>
+                  <h1 className="font-serif text-4xl text-[#1f2c45] leading-tight text-center italic">{t('onboarding_welcome_client')}</h1>
+                  <p className="mt-4 text-[#5f6a79] text-lg text-center">{t('onboarding_welcome_client_desc')}</p>
                   <div className="mt-10 bg-blue-50 p-6 rounded-3xl border border-blue-100 flex items-start gap-4">
                     <div className="bg-[#1f2c45] p-3 rounded-2xl text-white shadow-lg"><Heart className="w-6 h-6" /></div>
                     <div>
-                      <h3 className="font-bold text-[#1f2c45]">Confianza</h3>
-                      <p className="text-sm text-[#5f6a79] mt-1">Conectamos solo con técnicos verificados de tu comunidad.</p>
+                      <h3 className="font-bold text-[#1f2c45]">{t('onboarding_trust_title')}</h3>
+                      <p className="text-sm text-[#5f6a79] mt-1">{t('onboarding_trust_desc')}</p>
                     </div>
                   </div>
                   <button onClick={nextStep} className="w-full mt-10 bg-[#1f2c45] text-white py-5 rounded-[24px] font-bold text-lg flex items-center justify-center gap-2 hover:bg-[#ff7665] transition-all group">
-                    Comenzar <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    {t('hero_cta_start')} <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
               )}
 
               {step === 2 && (
                 <div className="animate-in fade-in slide-in-from-right-4">
-                  <h2 className="font-serif text-3xl text-[#1f2c45] text-center mb-6 italic">Tu Ubicación</h2>
+                  <h2 className="font-serif text-3xl text-[#1f2c45] text-center mb-6 italic">{t('onboarding_location_title')}</h2>
                   <div className="space-y-6">
                     <div className="relative">
                       <div className="absolute left-5 top-1/2 -translate-y-1/2 text-[#a4b1c6]"><Navigation className="w-5 h-5" /></div>
                       <input 
-                        type="text" placeholder="Ej: Calle 100 #15-20, Bogotá" value={address} onChange={(e) => setAddress(e.target.value)}
+                        type="text" placeholder={t('onboarding_location_placeholder')} value={address} onChange={(e) => setAddress(e.target.value)}
                         className="w-full pl-14 pr-6 py-5 rounded-[24px] bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none font-bold text-[#1f2c45]" />
                     </div>
                     <div className="p-6 bg-green-50 rounded-3xl border border-green-100 flex items-center gap-4">
                       <Star className="fill-green-500 text-green-500 w-6 h-6" />
-                      <p className="text-sm text-green-700 font-medium">Encontraremos técnicos a menos de 5km de ti.</p>
+                      <p className="text-sm text-green-700 font-medium">{t('onboarding_location_hint')}</p>
                     </div>
                   </div>
-                  <button onClick={nextStep} disabled={!address} className="w-full mt-10 bg-[#1f2c45] text-white py-5 rounded-[24px] font-bold text-lg disabled:opacity-50 transition-all shadow-xl">Continuar</button>
+                  <button onClick={nextStep} disabled={!address} className="w-full mt-10 bg-[#1f2c45] text-white py-5 rounded-[24px] font-bold text-lg disabled:opacity-50 transition-all shadow-xl">{t('common_continue')}</button>
                 </div>
               )}
 
               {step === 3 && (
                 <div className="animate-in fade-in slide-in-from-right-4">
-                  <h2 className="font-serif text-3xl text-[#1f2c45] text-center mb-6 italic">Contacto Final</h2>
+                  <h2 className="font-serif text-3xl text-[#1f2c45] text-center mb-6 italic">{t('onboarding_contact_title')}</h2>
                   <div className="space-y-6">
                     <input type="tel" placeholder="+57 3..." value={phone} onChange={(e) => setPhone(e.target.value)}
                       className="w-full px-6 py-5 rounded-[24px] bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none font-bold text-[#1f2c45]" />
                   </div>
                   <button onClick={handleFinishCliente} disabled={loading || !phone}
                     className="w-full mt-10 bg-[#ff7665] text-white py-5 rounded-[24px] font-bold text-lg shadow-lg shadow-[#ff7665]/30 hover:bg-[#ff5a45] transition-all">
-                    {loading ? "Cargando..." : "¡Listos para pedir servicios!"}
+                    {loading ? t('common_saving') : t('onboarding_finish_client')}
                   </button>
                 </div>
               )}
@@ -450,7 +452,7 @@ export default function Onboarding() {
 
       <footer className="p-8 text-center" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)' }}>
         <p className="text-xs text-[#a4b1c6] font-black uppercase tracking-widest">
-          {step === 0 ? "Selección de rol" : (step === 4 && role === 'kamellador') ? "Verificación de Identidad" : `Paso ${step} de ${role === 'kamellador' ? 4 : 3}`}
+          {step === 0 ? t('onboarding_step_role') : (step === 4 && role === 'kamellador') ? t('onboarding_step_kyc') : t('onboarding_step_n_of_m').replace('{{n}}', step).replace('{{m}}', role === 'kamellador' ? 4 : 3)}
         </p>
       </footer>
     </div>

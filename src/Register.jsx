@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, User, ArrowRight, CheckCircle2, Loader2, Briefcase, ShoppingCart } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, CheckCircle2, Loader2, Briefcase, ShoppingCart, ArrowLeft } from "lucide-react";
 import { supabase } from "./lib/supabase";
+import { useLanguage } from "./lib/i18n";
+import LanguageSwitcher from "./components/LanguageSwitcher";
 
 const logoImageUrl = "/images/K-Editado.png";
 
@@ -15,6 +17,7 @@ export default function Register() {
   const [socialLoading, setSocialLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState(null);
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   React.useEffect(() => {
@@ -64,7 +67,7 @@ export default function Register() {
         }
       }
     } catch (err) {
-      setError(err.message || "Error al crear la cuenta");
+      setError(err.message || t('register_error_generic') || "Error al crear la cuenta");
     } finally {
       setLoading(false);
     }
@@ -104,15 +107,18 @@ export default function Register() {
                 Kamello
               </span>
             </Link>
-            <h2 className="mt-16 font-serif text-5xl leading-tight">Únete a la mayor red de técnicos.</h2>
-            <p className="mt-6 text-xl text-[#a4b1c6] max-w-sm">Crea tu perfil en minutos y accede a cientos de solicitudes en tu zona.</p>
+            <div className="mt-4 flex">
+              <LanguageSwitcher className="bg-white/10 border-white/20 text-white hover:bg-white/20" />
+            </div>
+            <h2 className="mt-16 font-serif text-5xl leading-tight">{t('register_title')}</h2>
+            <p className="mt-6 text-xl text-[#a4b1c6] max-w-sm">{t('register_subtitle')}</p>
           </div>
 
           <div className="mt-12 space-y-6 z-10">
             {[
-              "Cobra el 100% de tu trabajo",
-              "Seguridad garantizada por PIN",
-              "Soporte técnico 24/7"
+              t('marketing_stat_2_label'),
+              t('marketing_stat_3_label'),
+              "Soporte 24/7"
             ].map((text) => (
               <div key={text} className="flex items-center gap-4 text-lg">
                 <div className="flex-shrink-0 h-6 w-6 rounded-full bg-[#ff7665] flex items-center justify-center">
@@ -153,8 +159,8 @@ export default function Register() {
           ) : (
             <>
               <div className="mb-10 text-center md:text-left">
-                <h1 className="font-serif text-4xl text-[#1f2c45]">Crear cuenta</h1>
-                <p className="mt-3 text-lg text-[#5f6a79]">Selecciona cómo quieres usar Kamello</p>
+                <h1 className="font-serif text-4xl text-[#1f2c45]">{t('nav_register')}</h1>
+                <p className="mt-3 text-lg text-[#5f6a79]">{t('register_role_label')}</p>
               </div>
 
           {/* Role Selector */}
@@ -165,7 +171,7 @@ export default function Register() {
               className={`flex-1 p-4 rounded-3xl border-2 transition-all flex flex-col items-center gap-2 ${role === 'kamellador' ? 'border-[#ff7665] bg-[#fff8f7] text-[#ff7665]' : 'border-[#efe7e2] text-[#5f6a79] hover:border-[#ff7665]/50'}`}
             >
               <Briefcase className="w-6 h-6" />
-              <span className="font-bold text-sm">Quiero Kamellar</span>
+              <span className="font-bold text-sm uppercase">{t('register_role_provider').split(' ')[2]}</span>
             </button>
             <button 
               type="button"
@@ -173,7 +179,7 @@ export default function Register() {
               className={`flex-1 p-4 rounded-3xl border-2 transition-all flex flex-col items-center gap-2 ${role === 'client' ? 'border-[#ff7665] bg-[#fff8f7] text-[#ff7665]' : 'border-[#efe7e2] text-[#5f6a79] hover:border-[#ff7665]/50'}`}
             >
               <ShoppingCart className="w-6 h-6" />
-              <span className="font-bold text-sm">Quiero Solicitar</span>
+              <span className="font-bold text-sm uppercase">{t('register_role_client').split(' ')[2]}</span>
             </button>
           </div>
 
@@ -186,7 +192,7 @@ export default function Register() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-[#1f2c45] mb-2 px-1">Nombre</label>
+                <label className="block text-sm font-bold text-[#1f2c45] mb-2 px-1">{t('register_name_label').split(' ')[0]}</label>
                 <div className="relative group">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5f6a79] group-focus-within:text-[#ff7665] transition-colors">
                     <User className="w-5 h-5" />
@@ -199,7 +205,7 @@ export default function Register() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-bold text-[#1f2c45] mb-2 px-1">Apellido</label>
+                <label className="block text-sm font-bold text-[#1f2c45] mb-2 px-1">{t('register_name_label').split(' ')[1] || 'Apellido'}</label>
                 <input 
                   type="text" value={lastName} onChange={(e) => setLastName(e.target.value)}
                   placeholder="Pérez" required
@@ -240,7 +246,7 @@ export default function Register() {
               type="submit" disabled={loading || socialLoading}
               className="w-full bg-[#1f2c45] text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:bg-[#ff7665] transition-all flex items-center justify-center gap-2 group disabled:opacity-70"
             >
-              {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <>Registrarme como {role === 'kamellador' ? 'Profesional' : 'Cliente'} <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" /></>}
+              {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <>{t('register_button')} <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" /></>}
             </button>
           </form>
 
@@ -272,7 +278,7 @@ export default function Register() {
           </div>
 
               <p className="mt-6 text-center text-sm text-[#5f6a79]">
-                ¿Ya tienes una cuenta? <Link to="/login" className="font-bold text-[#ff7665] hover:underline">Inicia sesión</Link>
+                {t('register_already_have_account')} <Link to="/login" className="font-bold text-[#ff7665] hover:underline">{t('register_login_link')}</Link>
               </p>
             </>
           )}

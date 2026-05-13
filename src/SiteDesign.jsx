@@ -1,7 +1,8 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search, FileText, Handshake, ChevronRight, LogIn, UserPlus, Share2, Send, Camera, CheckCircle2, X, Zap, MapPin, DollarSign, Clock, Loader2 } from "lucide-react";
-import { supabase } from "./lib/supabase";
+import { useLanguage } from "./lib/i18n";
+import LanguageSwitcher from "./components/LanguageSwitcher";
 
 
 const landingImageUrl = "/images/Kamello image.png";
@@ -20,6 +21,7 @@ export default function SiteDesign() {
   const [showOffers, setShowOffers] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isCheckingSession, setIsCheckingSession] = React.useState(true);
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   React.useEffect(() => {
@@ -80,17 +82,18 @@ export default function SiteDesign() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8 font-medium">
-            <a href="#beneficios" className="text-[#4e5969] hover:text-[#ff7665] transition-colors">Beneficios</a>
-            <Link to="/precios" className="text-[#4e5969] hover:text-[#ff7665] transition-colors">Planes & OPS</Link>
-            <a href="#testimonios" className="text-[#4e5969] hover:text-[#ff7665] transition-colors">Testimonios</a>
+            <a href="#beneficios" className="text-[#4e5969] hover:text-[#ff7665] transition-colors">{t('nav_benefits')}</a>
+            <Link to="/precios" className="text-[#4e5969] hover:text-[#ff7665] transition-colors">{t('nav_pricing')}</Link>
+            <a href="#testimonios" className="text-[#4e5969] hover:text-[#ff7665] transition-colors">{t('nav_testimonials')}</a>
           </nav>
 
           <div className="hidden md:flex items-center gap-4">
+            <LanguageSwitcher />
             <Link to="/login" className="font-semibold text-[#1f2c45] hover:text-[#ff7665] transition-colors">
-              Iniciar Sesión
+              {t('nav_login')}
             </Link>
             <Link to="/register" className="rounded-full bg-[#1f2c45] px-6 py-2.5 font-semibold text-white transition-transform hover:-translate-y-0.5 hover:bg-[#2b3a4f] shadow-lg hover:shadow-xl">
-              Regístrate
+              {t('nav_register')}
             </Link>
           </div>
 
@@ -116,16 +119,19 @@ export default function SiteDesign() {
         {isMenuOpen && (
           <div className="md:hidden absolute top-[72px] left-0 right-0 bg-[#f7f3f1] border-b border-[#efe7e2] shadow-xl p-6 flex flex-col gap-6 animate-in slide-in-from-top-4">
             <nav className="flex flex-col gap-4 font-medium">
-              <a href="#beneficios" onClick={() => setIsMenuOpen(false)} className="text-[#4e5969] hover:text-[#ff7665] text-lg">Beneficios</a>
-              <Link to="/precios" onClick={() => setIsMenuOpen(false)} className="text-[#4e5969] hover:text-[#ff7665] text-lg">Planes & OPS</Link>
-              <a href="#testimonios" onClick={() => setIsMenuOpen(false)} className="text-[#4e5969] hover:text-[#ff7665] text-lg">Testimonios</a>
+              <a href="#beneficios" onClick={() => setIsMenuOpen(false)} className="text-[#4e5969] hover:text-[#ff7665] text-lg">{t('nav_benefits')}</a>
+              <Link to="/precios" onClick={() => setIsMenuOpen(false)} className="text-[#4e5969] hover:text-[#ff7665] text-lg">{t('nav_pricing')}</Link>
+              <a href="#testimonios" onClick={() => setIsMenuOpen(false)} className="text-[#4e5969] hover:text-[#ff7665] text-lg">{t('nav_testimonials')}</a>
             </nav>
             <div className="flex flex-col gap-4 pt-4 border-t border-[#efe7e2]">
+              <div className="flex justify-center">
+                <LanguageSwitcher className="w-full justify-center py-3" />
+              </div>
               <Link to="/login" className="font-bold text-[#1f2c45] text-center py-3 border-2 border-[#1f2c45] rounded-xl hover:bg-[#1f2c45] hover:text-white transition-colors">
-                Iniciar Sesión
+                {t('nav_login')}
               </Link>
               <Link to="/register" className="bg-[#ff7665] text-white font-bold text-center py-3 rounded-xl hover:bg-[#ff5a45] transition-colors">
-                Regístrate Gratis
+                {t('nav_register_free')}
               </Link>
             </div>
           </div>
@@ -138,13 +144,13 @@ export default function SiteDesign() {
           <div className="z-10 flex flex-1 flex-col items-start text-left">
             <div className="mb-6 inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#f5c49f] bg-[#fff8f4] px-4 py-2 text-xs font-semibold text-[#4f5b6f] shadow-sm transition-transform hover:-translate-y-1 hover:shadow-md sm:text-sm">
               <span className="animate-pulse text-[#ff8b40]">★</span>
-              Soluciones rápidas para tu hogar o negocio
+              {t('hero_badge')}
             </div>
 
             <h1 className="max-w-[16ch] font-serif text-5xl leading-[1.05] tracking-[-0.03em] text-[#1f2c45] sm:text-6xl md:text-[64px] lg:text-[76px]">
-              Expertos técnicos listos para{" "}
+              {t('hero_title_1')}
               <span className="relative inline-block text-[#ff7665]">
-                ayudarte
+                {t('hero_title_2')}
                 <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M2 10C50 2 150 2 198 10" stroke="#ff7665" strokeWidth="4" strokeLinecap="round" />
                 </svg>
@@ -152,8 +158,7 @@ export default function SiteDesign() {
             </h1>
 
             <p className="mt-8 max-w-[32ch] text-lg leading-[1.6] text-[#4e5969] sm:text-xl md:text-2xl">
-              Kamello es la red de servicios técnicos más rápida y justa de Colombia. 
-              Sin comisiones, solo soluciones a tu alcance.
+              {t('hero_description')}
             </p>
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -161,7 +166,7 @@ export default function SiteDesign() {
                 to="/register"
                 className="group flex items-center justify-center gap-3 rounded-2xl bg-[#ff7665] px-8 py-4 text-xl font-bold text-white shadow-lg shadow-[#ff7665]/30 transition-all hover:-translate-y-1 hover:bg-[#ff5a45] hover:shadow-xl hover:shadow-[#ff7665]/40"
               >
-                Comenzar ahora
+                {t('hero_cta_start')}
                 <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>
               </Link>
               <button
@@ -169,7 +174,7 @@ export default function SiteDesign() {
                 onClick={() => setShowOffers(true)}
                 className="flex items-center justify-center gap-2 rounded-2xl border-2 border-[#1f2c45] px-8 py-4 text-xl font-bold text-[#1f2c45] transition-all hover:-translate-y-1 hover:bg-[#1f2c45] hover:text-white"
               >
-                Ver ofertas
+                {t('hero_cta_offers')}
               </button>
             </div>
           </div>
@@ -200,28 +205,28 @@ export default function SiteDesign() {
             
             <div className="relative z-10 max-w-4xl mx-auto">
               <span className="inline-block px-4 py-1.5 rounded-full bg-[#ff7665]/10 text-[#ff7665] text-sm font-bold tracking-wider uppercase mb-6">
-                Tu trabajo, tu dinero
+                {t('marketing_badge')}
               </span>
               <h2 className="font-serif text-4xl md:text-6xl text-white leading-tight mb-8">
-                Pactas $100.000,<br />
-                <span className="text-[#ffd700]">cobras $100.000.</span>
+                {t('marketing_title_1')}<br />
+                <span className="text-[#ffd700]">{t('marketing_title_2')}</span>
               </h2>
               <p className="text-xl text-[#a4b1c6] leading-relaxed mb-12 max-w-2xl mx-auto">
-                En Kamello <span className="text-white font-bold">no cobramos comisión</span> por tus servicios. El 100% de lo que acuerdes con el cliente va directo a tu bolsillo. Nosotros solo te cobramos el OPS de conexión.
+                {t('marketing_description')}
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="bg-white/5 backdrop-blur-sm p-6 rounded-3xl border border-white/10">
                   <h3 className="text-[#00cba9] text-3xl font-bold mb-1">0%</h3>
-                  <p className="text-sm text-white/70">Comisión de plataforma</p>
+                  <p className="text-sm text-white/70">{t('marketing_stat_1_label')}</p>
                 </div>
                 <div className="bg-white/5 backdrop-blur-sm p-6 rounded-3xl border border-white/10">
                   <h3 className="text-[#ffd700] text-3xl font-bold mb-1">100%</h3>
-                  <p className="text-sm text-white/70">Para el Kamellador</p>
+                  <p className="text-sm text-white/70">{t('marketing_stat_2_label')}</p>
                 </div>
                 <div className="bg-white/5 backdrop-blur-sm p-6 rounded-3xl border border-white/10">
-                  <h3 className="text-[#ff7665] text-3xl font-bold mb-1">Seguro</h3>
-                  <p className="text-sm text-white/70">Pagos protegidos</p>
+                  <h3 className="text-[#ff7665] text-3xl font-bold mb-1">{t('marketing_stat_3_label').split(' ')[0]}</h3>
+                  <p className="text-sm text-white/70">{t('marketing_stat_3_label')}</p>
                 </div>
               </div>
             </div>
@@ -232,8 +237,8 @@ export default function SiteDesign() {
         <section id="beneficios" className="mt-12 rounded-[40px] bg-white px-6 py-16 shadow-sm md:px-10 lg:px-16 lg:py-24">
           <div className="text-center">
             <h2 className="mx-auto max-w-[24ch] font-serif text-4xl leading-[1.1] tracking-[-0.02em] text-[#1f2c45] md:text-5xl lg:text-6xl">
-              La plataforma diseñada para el{" "}
-              <span className="text-[#ff7665]">técnico moderno</span>
+              {t('benefits_title_1')}
+              <span className="text-[#ff7665]">{t('benefits_title_2')}</span>
             </h2>
           </div>
 
@@ -243,22 +248,22 @@ export default function SiteDesign() {
                 iconBg: "bg-[#fee4db]",
                 icon: <Zap className="w-6 h-6" />,
                 iconColor: "text-[#ff7f61]",
-                title: "Solicitudes en tiempo real",
-                text: "Recibe notificaciones instantáneas de clientes a menos de 5km que necesitan tu ayuda ya mismo.",
+                title: t('benefit_1_title'),
+                text: t('benefit_1_text'),
               },
               {
                 iconBg: "bg-[#fff2d8]",
                 icon: <DollarSign className="w-6 h-6" />,
                 iconColor: "text-[#f3af2f]",
-                title: "Tú pones el precio",
-                text: "Acepta la oferta del cliente o envía tu contra-oferta si el trabajo requiere más esfuerzo.",
+                title: t('benefit_2_title'),
+                text: t('benefit_2_text'),
               },
               {
                 iconBg: "bg-[#dff3ea]",
                 icon: <CheckCircle2 className="w-6 h-6" />,
                 iconColor: "text-[#3e9b76]",
-                title: "Seguridad y Confianza",
-                text: "Verificamos a cada cliente y profesional para que trabajes con total tranquilidad y respaldo.",
+                title: t('benefit_3_title'),
+                text: t('benefit_3_text'),
               },
             ].map((item, i) => (
               <article 
@@ -288,24 +293,24 @@ export default function SiteDesign() {
               <div className="relative">
                 <span className="absolute -left-4 -top-6 text-6xl text-[#ff7665]/20 font-serif">"</span>
                 <p className="relative z-10 text-2xl font-medium leading-[1.5] text-[#3a4557] md:text-3xl lg:text-[34px]">
-                  Antes perdía horas buscando clientes. Con Kamello, los trabajos me llegan al celular mientras estoy en la calle.
+                  {t('testimonial_quote')}
                 </p>
                 <div className="mt-8 flex items-center gap-5">
                   <div className="relative h-16 w-16 overflow-hidden rounded-full border-2 border-white shadow-md bg-slate-200 flex items-center justify-center">
                     <span className="text-2xl">👷‍♂️</span>
                   </div>
                   <div>
-                    <span className="block text-xl font-bold text-[#1f2c45]">Ricardo M.</span>
-                    <span className="text-[#5f6a79]">Electricista Certificado</span>
+                    <span className="block text-xl font-bold text-[#1f2c45]">{t('testimonial_author')}</span>
+                    <span className="text-[#5f6a79]">{t('testimonial_role')}</span>
                   </div>
                 </div>
               </div>
 
               <div className="flex flex-col gap-8 md:border-l md:border-[#ecd7ca]/60 md:pl-12 lg:pl-16">
                 {[
-                  { number: "+2K", label: "Servicios completados" },
-                  { number: "+1K", label: "Kamelladores activos" },
-                  { number: "0%", label: "Comisión por servicio" },
+                  { number: "+2K", label: t('stat_completed') },
+                  { number: "+1K", label: t('stat_active') },
+                  { number: "0%", label: t('stat_no_commission') },
                 ].map((stat, idx) => (
                   <div key={idx} className="group flex flex-col">
                     <span className="text-5xl font-extrabold tracking-tight text-[#ff7665] transition-transform group-hover:translate-x-2 md:text-6xl">
@@ -397,7 +402,7 @@ export default function SiteDesign() {
                 </span>
               </div>
               <p className="mt-6 text-lg leading-[1.6] text-[#a4b1c6]">
-                Conectamos el mejor talento con las oportunidades más increíbles de todo el mundo.
+                {t('footer_description')}
               </p>
               
               <div className="mt-8 flex gap-4">
@@ -414,29 +419,29 @@ export default function SiteDesign() {
             </div>
 
             <div>
-              <h4 className="text-xl font-bold text-white">Para Kamelladores</h4>
+              <h4 className="text-xl font-bold text-white">{t('footer_title_providers')}</h4>
               <ul className="mt-6 flex flex-col gap-4 text-lg text-[#a4b1c6]">
-                <li><Link to="/dashboard" className="hover:text-[#ff7665] transition-colors">Ver solicitudes</Link></li>
-                <li><Link to="/register" className="hover:text-[#ff7665] transition-colors">Registro técnico</Link></li>
-                <li><Link to="/precios" className="hover:text-[#ff7665] transition-colors">Planes y OPS</Link></li>
+                <li><Link to="/dashboard" className="hover:text-[#ff7665] transition-colors">{t('footer_link_requests')}</Link></li>
+                <li><Link to="/register" className="hover:text-[#ff7665] transition-colors">{t('footer_link_tech_reg')}</Link></li>
+                <li><Link to="/precios" className="hover:text-[#ff7665] transition-colors">{t('footer_link_pricing')}</Link></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="text-xl font-bold text-white">Para Clientes</h4>
+              <h4 className="text-xl font-bold text-white">{t('footer_title_clients')}</h4>
               <ul className="mt-6 flex flex-col gap-4 text-lg text-[#a4b1c6]">
-                <li><Link to="/register" className="hover:text-[#ff7665] transition-colors">Pedir un servicio</Link></li>
-                <li><Link to="/seguridad" className="hover:text-[#ff7665] transition-colors">Seguridad</Link></li>
-                <li><Link to="/ayuda" className="hover:text-[#ff7665] transition-colors">Centro de ayuda</Link></li>
+                <li><Link to="/register" className="hover:text-[#ff7665] transition-colors">{t('footer_link_order')}</Link></li>
+                <li><Link to="/seguridad" className="hover:text-[#ff7665] transition-colors">{t('footer_link_security')}</Link></li>
+                <li><Link to="/ayuda" className="hover:text-[#ff7665] transition-colors">{t('footer_link_help')}</Link></li>
               </ul>
             </div>
           </div>
           
           <div className="mt-16 flex flex-col items-center justify-between border-t border-white/10 pt-8 text-[#a4b1c6] md:flex-row">
-            <p>© 2026 Kamello. Todos los derechos reservados.</p>
+            <p>{t('footer_rights')}</p>
             <div className="mt-4 flex gap-6 md:mt-0">
-              <Link to="/privacy" className="hover:text-white transition-colors">Privacidad</Link>
-              <Link to="/terms" className="hover:text-white transition-colors">Términos</Link>
+              <Link to="/privacy" className="hover:text-white transition-colors">{t('footer_privacy')}</Link>
+              <Link to="/terms" className="hover:text-white transition-colors">{t('footer_terms')}</Link>
             </div>
           </div>
         </footer>

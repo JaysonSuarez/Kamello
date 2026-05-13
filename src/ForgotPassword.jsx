@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Mail, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
 import { supabase } from "./lib/supabase";
+import { useLanguage } from "./lib/i18n";
+import LanguageSwitcher from "./components/LanguageSwitcher";
 
 const logoImageUrl = "/images/K-Editado.png";
 
@@ -10,6 +12,7 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
+  const { t } = useLanguage();
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
@@ -24,9 +27,9 @@ export default function ForgotPassword() {
 
       if (resetError) throw resetError;
 
-      setMessage("¡Enlace enviado! Revisa tu correo electrónico para restablecer tu contraseña.");
+      setMessage(t('auth_forgot_success_text'));
     } catch (err) {
-      setError(err.message || "Error al enviar el correo de restablecimiento");
+      setError(err.message || "Error");
     } finally {
       setLoading(false);
     }
@@ -46,8 +49,11 @@ export default function ForgotPassword() {
               Kamello
             </span>
           </Link>
-          <h1 className="mt-8 font-serif text-4xl text-[#1f2c45]">Recuperar acceso</h1>
-          <p className="mt-3 text-lg text-[#5f6a79]">Te enviaremos un enlace para crear una nueva contraseña</p>
+          <div className="mt-4 flex justify-center">
+            <LanguageSwitcher />
+          </div>
+          <h1 className="mt-8 font-serif text-4xl text-[#1f2c45]">{t('auth_forgot_title')}</h1>
+          <p className="mt-3 text-lg text-[#5f6a79]">{t('auth_forgot_subtitle')}</p>
         </div>
 
         <div className="bg-white rounded-[32px] p-8 shadow-xl shadow-[#1f2c45]/5 border border-[#efe7e2]">
@@ -60,7 +66,7 @@ export default function ForgotPassword() {
               )}
               
               <div>
-                <label className="block text-sm font-bold text-[#1f2c45] mb-2 px-1">Correo electrónico</label>
+                <label className="block text-sm font-bold text-[#1f2c45] mb-2 px-1">{t('login_email_label')}</label>
                 <div className="relative group">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5f6a79] group-focus-within:text-[#ff7665] transition-colors">
                     <Mail className="w-5 h-5" />
@@ -69,7 +75,7 @@ export default function ForgotPassword() {
                     type="email" 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="ejemplo@correo.com"
+                    placeholder={t('login_email_placeholder')}
                     required
                     className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[#f7f3f1] border-2 border-transparent focus:border-[#ff7665] focus:bg-white outline-none transition-all text-[#1f2c45] font-medium"
                   />
@@ -84,7 +90,7 @@ export default function ForgotPassword() {
                 {loading ? (
                   <Loader2 className="w-6 h-6 animate-spin" />
                 ) : (
-                  "Enviar enlace de recuperación"
+                  t('auth_forgot_btn')
                 )}
               </button>
             </form>
@@ -93,19 +99,19 @@ export default function ForgotPassword() {
               <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-green-50 text-green-500 mb-6">
                 <CheckCircle2 className="w-10 h-10" />
               </div>
-              <h3 className="text-xl font-bold text-[#1f2c45] mb-2">¡Correo enviado!</h3>
+              <h3 className="text-xl font-bold text-[#1f2c45] mb-2">{t('auth_forgot_success_title')}</h3>
               <p className="text-[#5f6a79] mb-8">{message}</p>
               <Link to="/login" className="text-[#ff7665] font-bold hover:underline flex items-center justify-center gap-2">
                 <ArrowLeft className="w-4 h-4" />
-                Volver al inicio de sesión
+                {t('auth_forgot_back_login')}
               </Link>
             </div>
           )}
         </div>
 
         <p className="mt-8 text-center text-lg text-[#5f6a79]">
-          ¿Recordaste tu contraseña?{" "}
-          <Link to="/login" className="font-bold text-[#ff7665] hover:underline">Inicia sesión</Link>
+          {t('auth_forgot_remember')}{" "}
+          <Link to="/login" className="font-bold text-[#ff7665] hover:underline">{t('register_login_link')}</Link>
         </p>
       </div>
     </div>

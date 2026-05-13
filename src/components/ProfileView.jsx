@@ -6,8 +6,10 @@ import {
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { SERVICE_CATEGORIES } from "../serviceCategories";
+import { useLanguage } from "../lib/i18n";
 
 export default function ProfileView({ user, onLogout }) {
+  const { t } = useLanguage();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -177,7 +179,7 @@ export default function ProfileView({ user, onLogout }) {
               {profile?.avatar_url ? (
                 <img src={profile.avatar_url} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
-                <span style={{ fontSize: '2rem', fontWeight: 800 }}>{profile?.full_name?.[0] || user.email[0].toUpperCase()}</span>
+                <span style={{ fontSize: '2rem', fontWeight: 800 }}>{profile?.full_name?.[0] || user?.email?.[0]?.toUpperCase()}</span>
               )}
             </div>
             <label style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: '#ff7665', padding: '6px', borderRadius: '12px', cursor: 'pointer', border: '3px solid #1f2c45' }}>
@@ -186,17 +188,17 @@ export default function ProfileView({ user, onLogout }) {
             </label>
           </div>
           <div style={{ flex: 1 }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0 }}>{profile?.full_name || 'Sin nombre'}</h2>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0 }}>{profile?.full_name || t('profile_no_name')}</h2>
             <p style={{ fontSize: '0.85rem', opacity: 0.7, margin: '2px 0 8px' }}>{user.email}</p>
             <div style={{ display: 'flex', gap: '12px' }}>
               <div style={{ textAlign: 'center' }}>
                 <span style={{ display: 'block', fontSize: '1rem', fontWeight: 800 }}>{profile?.rating_avg || '0.0'}</span>
-                <span style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', opacity: 0.5 }}>Rating</span>
+                <span style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', opacity: 0.5 }}>{t('profile_rating')}</span>
               </div>
               <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)' }} />
               <div style={{ textAlign: 'center' }}>
                 <span style={{ display: 'block', fontSize: '1rem', fontWeight: 800 }}>{profile?.services_count || '0'}</span>
-                <span style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', opacity: 0.5 }}>Servicios</span>
+                <span style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', opacity: 0.5 }}>{t('profile_services')}</span>
               </div>
             </div>
           </div>
@@ -211,14 +213,14 @@ export default function ProfileView({ user, onLogout }) {
 
       {isEditing ? (
         <form onSubmit={handleUpdateProfile} style={{ background: 'white', borderRadius: '24px', padding: '20px', border: '1px solid #efe7e2', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800 }}>Editar Perfil</h3>
+          <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800 }}>{t('profile_edit_btn')}</h3>
           <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>Nombre Completo</label>
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>{t('profile_name_label')}</label>
             <input type="text" value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} className="sheet-input" required />
           </div>
           {profile?.role === 'kamellador' ? (
             <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>Especialidad Principal</label>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>{t('profile_specialty_label')}</label>
               <select 
                 value={formData.specialty} 
                 onChange={e => setFormData({...formData, specialty: e.target.value, subspecialties: []})} 
@@ -231,7 +233,7 @@ export default function ProfileView({ user, onLogout }) {
                 if (cat?.subcategories) {
                   return (
                     <div style={{ marginTop: '12px' }}>
-                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '8px' }}>Especialidades Específicas</label>
+                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '8px' }}>{t('profile_subspecialties_label')}</label>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                         {cat.subcategories.map(sub => {
                           const isSelected = formData.subspecialties.includes(sub);
@@ -265,17 +267,17 @@ export default function ProfileView({ user, onLogout }) {
             </div>
           ) : (
             <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>Dirección de Servicio</label>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>{t('profile_address_label')}</label>
               <input type="text" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="sheet-input" placeholder="Ej: Calle 100 #15-20" />
             </div>
           )}
           <div style={{ display: 'flex', gap: '12px' }}>
             <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>Teléfono</label>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>{t('profile_phone_label')}</label>
               <input type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="sheet-input" />
             </div>
             <div style={{ width: '80px' }}>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>Edad</label>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>{t('profile_age_label')}</label>
               <input type="number" value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})} className="sheet-input" />
             </div>
           </div>
@@ -283,11 +285,11 @@ export default function ProfileView({ user, onLogout }) {
           {profile?.role === 'kamellador' && (
             <>
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>Precio de Revisión (COP)</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>{t('profile_price_label')}</label>
                 <input type="number" value={formData.review_price} onChange={e => setFormData({...formData, review_price: e.target.value})} className="sheet-input" />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>Biografía / Quién soy</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px' }}>{t('profile_bio_label')}</label>
                 <textarea value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} className="sheet-input" style={{ minHeight: '80px' }} />
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0' }}>
@@ -298,7 +300,7 @@ export default function ProfileView({ user, onLogout }) {
           )}
 
           <button type="submit" disabled={saving} className="btn-primary" style={{ marginTop: '8px' }}>
-            {saving ? <Loader2 className="animate-spin w-5 h-5" /> : <Save className="w-5 h-5" />} Guardar cambios
+            {saving ? <Loader2 className="animate-spin w-5 h-5" /> : <Save className="w-5 h-5" />} {t('profile_save_btn')}
           </button>
         </form>
       ) : (
@@ -308,12 +310,12 @@ export default function ProfileView({ user, onLogout }) {
               <div style={{ position: 'absolute', top: '-10px', right: '-10px', width: '80px', height: '80px', background: 'rgba(255,118,101,0.1)', borderRadius: '50%', blur: '40px' }} />
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                 <Award className="w-6 h-6 text-[#ff7665]" />
-                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800 }}>Nivel de Lealtad</h3>
+                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800 }}>{t('profile_loyalty_title')}</h3>
               </div>
               
               <div style={{ marginBottom: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 700, opacity: 0.8 }}>Total OPS invertidos</span>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, opacity: 0.8 }}>{t('profile_loyalty_spent')}</span>
                   <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#ff7665' }}>{profile?.total_ops_spent || 0}</span>
                 </div>
                 <div style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
@@ -332,12 +334,17 @@ export default function ProfileView({ user, onLogout }) {
                 <p style={{ fontSize: '0.7rem', marginTop: '8px', opacity: 0.6, fontWeight: 600 }}>
                   {(() => {
                     const spent = profile?.total_ops_spent || 0;
-                    if (spent < 10) return `Te faltan ${10 - spent} OPS para tu primer regalo de +1 OPS.`;
-                    if (spent < 50) return `Te faltan ${50 - spent} OPS para un regalo de +5 OPS.`;
-                    if (spent < 100) return `Te faltan ${100 - spent} OPS para un regalo de +8 OPS.`;
-                    if (spent < 200) return `Te faltan ${200 - spent} OPS para un regalo de +10 OPS.`;
-                    const next = Math.ceil((spent + 1) / 100) * 100;
-                    return `Próximo regalo de +15 OPS al llegar a ${next} OPS invertidos.`;
+                    let next = 10, gift = 1;
+                    if (spent < 10) { next = 10; gift = 1; }
+                    else if (spent < 50) { next = 50; gift = 5; }
+                    else if (spent < 100) { next = 100; gift = 8; }
+                    else if (spent < 200) { next = 200; gift = 10; }
+                    else { next = Math.ceil((spent + 1) / 100) * 100; gift = 15; }
+                    
+                    if (spent < next) {
+                      return t('profile_loyalty_next').replace('{{count}}', next - spent);
+                    }
+                    return t('profile_loyalty_next_gift').replace('{{gift}}', gift).replace('{{target}}', next);
                   })()}
                 </p>
               </div>
@@ -380,22 +387,22 @@ export default function ProfileView({ user, onLogout }) {
                     boxShadow: '0 4px 16px rgba(255,118,101,0.4)'
                   }}
                 >
-                  <Zap className="w-4 h-4" /> Recargar OPS
+                  <Zap className="w-4 h-4" /> {t('profile_recharge_btn')}
                 </Link>
               </div>
             </div>
           )}
 
           <div style={{ background: 'white', borderRadius: '20px', padding: '20px', border: '1px solid #efe7e2' }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '0.9rem', fontWeight: 800, color: '#a4b1c6', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Información</h3>
+            <h3 style={{ margin: '0 0 16px', fontSize: '0.9rem', fontWeight: 800, color: '#a4b1c6', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('profile_info_title')}</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f7f3f1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1f2c45' }}>
                   <Phone className="w-5 h-5" />
                 </div>
                 <div>
-                  <span style={{ display: 'block', fontSize: '10px', color: '#5f6a79', fontWeight: 700 }}>Teléfono</span>
-                  <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{profile?.phone || 'No registrado'}</span>
+                  <span style={{ display: 'block', fontSize: '10px', color: '#5f6a79', fontWeight: 700 }}>{t('profile_phone_label')}</span>
+                  <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{profile?.phone || t('profile_not_registered')}</span>
                 </div>
               </div>
               {profile?.role === 'kamellador' ? (
@@ -404,22 +411,22 @@ export default function ProfileView({ user, onLogout }) {
                     <Briefcase className="w-5 h-5" />
                   </div>
                   <div>
-                    <span style={{ display: 'block', fontSize: '10px', color: '#5f6a79', fontWeight: 700 }}>Especialidad</span>
+                    <span style={{ display: 'block', fontSize: '10px', color: '#5f6a79', fontWeight: 700 }}>{t('profile_specialty_label')}</span>
                     <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{profile?.specialty ? profile.specialty.split('|')[0] : 'General'}</span>
-                    <span style={{ display: 'block', fontSize: '10px', color: '#5f6a79', fontWeight: 700, marginTop: '8px' }}>Precio de Revisión</span>
+                    <span style={{ display: 'block', fontSize: '10px', color: '#5f6a79', fontWeight: 700, marginTop: '8px' }}>{t('profile_price_label')}</span>
                     <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>${(profile?.review_price || 0).toLocaleString()}</span>
                     
                     {profile?.bio && (
                       <div style={{ marginTop: '12px' }}>
-                        <span style={{ display: 'block', fontSize: '10px', color: '#5f6a79', fontWeight: 700 }}>Sobre mí</span>
+                        <span style={{ display: 'block', fontSize: '10px', color: '#5f6a79', fontWeight: 700 }}>{t('profile_about_me')}</span>
                         <p style={{ margin: 0, fontSize: '0.8rem', color: '#1f2c45', lineHeight: 1.4 }}>{profile.bio}</p>
                       </div>
                     )}
                     
                     <div style={{ marginTop: '12px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <span style={{ fontSize: '10px', color: '#5f6a79', fontWeight: 700 }}>Vehículo:</span>
+                      <span style={{ fontSize: '10px', color: '#5f6a79', fontWeight: 700 }}>{t('profile_vehicle_label')}:</span>
                       <span style={{ fontSize: '10px', fontWeight: 800, color: profile?.has_vehicle ? '#00cba9' : '#ff7665' }}>
-                        {profile?.has_vehicle ? 'SÍ' : 'NO'}
+                        {profile?.has_vehicle ? t('profile_vehicle_yes') : t('profile_vehicle_no')}
                       </span>
                     </div>
 
@@ -440,8 +447,8 @@ export default function ProfileView({ user, onLogout }) {
                     <MapPin className="w-5 h-5" />
                   </div>
                   <div>
-                    <span style={{ display: 'block', fontSize: '10px', color: '#5f6a79', fontWeight: 700 }}>Mi Dirección</span>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{profile?.address || 'No registrada'}</span>
+                    <span style={{ display: 'block', fontSize: '10px', color: '#5f6a79', fontWeight: 700 }}>{t('profile_address_label')}</span>
+                    <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{profile?.address || t('profile_not_registered')}</span>
                   </div>
                 </div>
               )}
@@ -451,14 +458,14 @@ export default function ProfileView({ user, onLogout }) {
 
 
           <button onClick={() => supabase.auth.signOut().then(() => onLogout?.())} style={{ background: 'white', border: '1px solid #efe7e2', borderRadius: '20px', padding: '16px', color: '#ff7665', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer' }}>
-            <LogOut className="w-5 h-5" /> Cerrar Sesión
+            <LogOut className="w-5 h-5" /> {t('profile_logout_btn')}
           </button>
 
           <div style={{ background: '#fff1f0', border: '1px solid #ffe1df', borderRadius: '20px', padding: '16px', marginTop: '20px' }}>
-            <h4 style={{ margin: '0 0 4px', color: '#ef4444', fontSize: '0.9rem', fontWeight: 800 }}>Zona de Peligro</h4>
-            <p style={{ margin: '0 0 12px', fontSize: '11px', color: '#ef4444', opacity: 0.7 }}>Elimina tu cuenta y datos permanentemente.</p>
+            <h4 style={{ margin: '0 0 4px', color: '#ef4444', fontSize: '0.9rem', fontWeight: 800 }}>{t('profile_danger_title')}</h4>
+            <p style={{ margin: '0 0 12px', fontSize: '11px', color: '#ef4444', opacity: 0.7 }}>{t('profile_danger_text')}</p>
             <button onClick={() => { setShowDeleteModal(true); setDeleteConfirmationStep(1); }} style={{ background: '#ef4444', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '12px', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }}>
-              Eliminar Cuenta
+              {t('profile_delete_btn')}
             </button>
           </div>
 
@@ -470,12 +477,12 @@ export default function ProfileView({ user, onLogout }) {
                   <Trash2 className="w-8 h-8 text-[#ef4444]" />
                 </div>
                 <h3 style={{ margin: '0 0 8px', fontSize: '1.25rem', fontWeight: 900, color: '#1f2c45' }}>
-                  {deleteConfirmationStep === 1 ? "¿Estás seguro?" : "Último paso"}
+                  {deleteConfirmationStep === 1 ? t('profile_delete_confirm_1') : t('profile_delete_confirm_2')}
                 </h3>
                 <p style={{ color: '#5f6a79', fontSize: '0.9rem', marginBottom: '24px', lineHeight: 1.5 }}>
                   {deleteConfirmationStep === 1 
-                    ? "Esta acción eliminará permanentemente tu perfil, historial y OPS disponibles. No se puede deshacer."
-                    : "Confirmas la eliminación total de tus datos. Perderás el acceso de forma inmediata."}
+                    ? t('profile_delete_text_1')
+                    : t('profile_delete_text_2')}
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {deleteConfirmationStep === 1 ? (
@@ -484,7 +491,7 @@ export default function ProfileView({ user, onLogout }) {
                       className="btn-primary" 
                       style={{ background: '#ef4444', color: 'white' }}
                     >
-                      Sí, entiendo el riesgo
+                      {t('profile_delete_yes')}
                     </button>
                   ) : (
                     <button 
@@ -493,14 +500,14 @@ export default function ProfileView({ user, onLogout }) {
                       className="btn-primary" 
                       style={{ background: '#ef4444', color: 'white' }}
                     >
-                      {saving ? <Loader2 className="animate-spin w-5 h-5" /> : "Eliminar cuenta permanentemente"}
+                      {saving ? <Loader2 className="animate-spin w-5 h-5" /> : t('profile_delete_final')}
                     </button>
                   )}
                   <button 
                     onClick={() => setShowDeleteModal(false)}
                     style={{ background: 'none', border: 'none', color: '#a4b1c6', fontWeight: 700, padding: '12px', cursor: 'pointer' }}
                   >
-                    Mejor no, volver atrás
+                    {t('profile_delete_no')}
                   </button>
                 </div>
               </div>

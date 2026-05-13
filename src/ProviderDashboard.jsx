@@ -19,12 +19,17 @@ import "leaflet/dist/leaflet.css";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import FeedView from "./components/FeedView";
+import { useLanguage } from "./lib/i18n";
+import LanguageSwitcher from "./components/LanguageSwitcher";
 
 const DefaultIcon = L.icon({ iconUrl: markerIcon, shadowUrl: markerShadow, iconSize: [25, 41], iconAnchor: [12, 41] });
 L.Marker.prototype.options.icon = DefaultIcon;
 const DEFAULT_LOCATION = [4.6097, -74.0817];
 
 function AppModal({ isOpen, title, message, onConfirm, onCancel, type = "confirm", icon: Icon = CheckCircle2, confirmText = "Aceptar", confirmColor = "#ff7665" }) {
+  const { t } = useLanguage();
+  const finalConfirmText = confirmText === "Aceptar" ? t('common_accept') : confirmText;
+  const finalCancelText = t('common_cancel');
   if (!isOpen) return null;
   return (
     <div className="animate-fade-in" style={{ position: 'fixed', inset: 0, background: 'rgba(31,44,69,0.85)', backdropFilter: 'blur(10px)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
@@ -35,9 +40,9 @@ function AppModal({ isOpen, title, message, onConfirm, onCancel, type = "confirm
         <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', color: '#1f2c45', marginBottom: 12, fontWeight: 900 }}>{title}</h3>
         <p style={{ color: "#5f6a79", fontSize: "1rem", marginBottom: 32, lineHeight: 1.5 }}>{message}</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <button onClick={onConfirm} className="btn-primary" style={{ background: confirmColor, height: 56, borderRadius: 18 }}>{confirmText}</button>
+          <button onClick={onConfirm} className="btn-primary" style={{ background: confirmColor, height: 56, borderRadius: 18 }}>{finalConfirmText}</button>
           {type === "confirm" && (
-            <button onClick={onCancel} style={{ background: 'none', border: 'none', color: '#a4b1c6', fontWeight: 700, padding: 12 }}>Cancelar</button>
+            <button onClick={onCancel} style={{ background: 'none', border: 'none', color: '#a4b1c6', fontWeight: 700, padding: 12 }}>{finalCancelText}</button>
           )}
         </div>
       </div>
@@ -51,12 +56,21 @@ function ChangeMapView({ center }) {
   return null;
 }
 function formatPrice(v) { return Number(v || 0).toLocaleString("es-CO"); }
-function formatDate(v) { return v ? new Date(v).toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" }) : ""; }
-function getStatusLabel(s) {
-  return { pending: "Pendiente", accepted: "Aceptado", in_progress: "En progreso", completed: "Completado", rated: "Calificado", cancelled: "Cancelado", expired: "Expirado" }[s] || s;
+function formatDate(v, lang = 'es') { return v ? new Date(v).toLocaleString(lang === 'es' ? "es-CO" : "en-US", { dateStyle: "medium", timeStyle: "short" }) : ""; }
+function getStatusLabel(s, t) {
+  return { 
+    pending: t('provider_status_pending'), 
+    accepted: t('provider_status_accepted'), 
+    in_progress: t('provider_status_in_progress'), 
+    completed: t('provider_status_completed'), 
+    rated: t('provider_status_rated'), 
+    cancelled: t('provider_status_cancelled'), 
+    expired: t('provider_status_expired') 
+  }[s] || s;
 }
 
 export default function ProviderDashboard() {
+  const { t, language } = useLanguage();
   const { fetchOperation, fetchActiveOperation, fetchHistory, startOperation, completeOperation, loadingById } = useOperations();
   const { subscribeToPush } = usePushNotifications();
   const [user, setUser] = useState(null);
@@ -165,8 +179,8 @@ export default function ProviderDashboard() {
         if (transactionId) {
           if (transactionStatus === 'APPROVED') {
             showAlert(
-              "¡Pago recibido! 🎉",
-              "Tu pago fue procesado. Tus OPS se acreditarán en los próximos segundos automáticamente.",
+              t('provider_payment_success_title'),
+              t('provider_payment_success_text'),
               "success"
             );
             // Poll profile for up to 15 seconds waiting for webhook to credit OPS
@@ -186,8 +200,8 @@ export default function ProviderDashboard() {
             }, 1500);
           } else if (transactionStatus === 'DECLINED' || transactionStatus === 'ERROR') {
             showAlert(
-              "Pago no completado",
-              "Tu pago fue rechazado o hubo un error. Por favor intenta de nuevo.",
+              t('provider_payment_failed_title'),
+              t('provider_payment_failed_text'),
               "error"
             );
           }
@@ -551,7 +565,7 @@ export default function ProviderDashboard() {
       
       if (error) throw error;
       
-      showAlert("¡Oportunidad rescatada!", "La solicitud se ha reactivado. El cliente recibirá una notificación y podrá ver tu oferta.");
+      showAlert(t('provider_rescue_title'), t('provider_rescue_text'));
       setPastOpportunities(prev => prev.filter(o => o.id !== opp.id));
       
       // Attempt to notify client via edge function
@@ -591,7 +605,7 @@ export default function ProviderDashboard() {
         setToast(null);
       }
     } catch (err) {
-      setToast(err.message || "Código incorrecto");
+      setToast(t('provider_verify_error'));
       setTimeout(() => setToast(null), 3000);
     } finally {
       setIsVerifyingCode(false);
@@ -656,8 +670,9 @@ export default function ProviderDashboard() {
             <h1 className="top-bar__title">Kamello</h1>
           </div>
           <div className="top-bar__right">
+            <LanguageSwitcher />
             <button onClick={() => setIsOnline(!isOnline)} className="btn-secondary" style={{ height: 40, borderRadius: 20, padding: '0 20px', fontSize: '0.8rem', fontWeight: 800, color: isOnline ? '#ff7665' : '#00cba9' }}>
-              {isOnline ? 'Desconectar' : 'Conectarse'}
+              {isOnline ? t('provider_offline_btn') : t('provider_online_btn')}
             </button>
             <div className="top-bar__avatar" style={{ background: '#fff0ee', color: '#ff7665' }}>
               {profile?.full_name?.[0] || user?.email?.[0]?.toUpperCase()}
@@ -718,7 +733,7 @@ export default function ProviderDashboard() {
                     <div className="status-card status-card--accepted" style={{ padding: '20px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                         <span className="badge badge--success" style={{ background: activeOperation.status === 'in_progress' ? '#00cba9' : '#ff7665', color: 'white' }}>
-                          {activeOperation.status === 'in_progress' ? 'TRABAJO EN PROGRESO' : 'EN CAMINO'}
+                          {activeOperation.status === 'in_progress' ? t('provider_job_in_progress') : t('provider_job_on_way')}
                         </span>
                         <span style={{ fontWeight: 800, color: '#1f2c45', fontSize: '1.1rem' }}>${formatPrice(activeOperation.agreed_price || activeOperation.proposed_price)}</span>
                       </div>
@@ -732,14 +747,14 @@ export default function ProviderDashboard() {
 
                       {activeOperation.status === 'accepted' && (
                         <div style={{ background: '#f7f3f1', borderRadius: 20, padding: 16, marginBottom: 16, textAlign: 'center' }}>
-                          <p style={{ margin: '0 0 10px', fontSize: '0.75rem', fontWeight: 800, color: '#a4b1c6', textTransform: 'uppercase' }}>Ingresa código de llegada</p>
+                          <p style={{ margin: '0 0 10px', fontSize: '0.75rem', fontWeight: 800, color: '#a4b1c6', textTransform: 'uppercase' }}>{t('provider_arrival_code')}</p>
                           <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
                             <input 
                               type="text" 
                               maxLength={4} 
                               value={securityCode}
                               onChange={e => setSecurityCode(e.target.value.replace(/[^0-9]/g, ""))}
-                              placeholder="0000"
+                              placeholder={t('provider_arrival_placeholder')}
                               style={{ width: 140, textAlign: 'center', letterSpacing: '8px', fontSize: '1.5rem', fontWeight: 900, border: '2px solid #efe7e2', borderRadius: 16, padding: '12px', outline: 'none' }}
                             />
                             <button 
@@ -748,7 +763,7 @@ export default function ProviderDashboard() {
                               className="btn-primary"
                               style={{ width: 'auto', padding: '0 24px', borderRadius: 16 }}
                             >
-                              {isVerifyingCode ? '...' : 'OK'}
+                              {isVerifyingCode ? '...' : t('provider_arrival_ok')}
                             </button>
                           </div>
                         </div>
@@ -756,16 +771,16 @@ export default function ProviderDashboard() {
 
                       <div style={{ display: 'flex', gap: 10 }}>
                         <button onClick={() => { setActiveChat(activeOperation); setActiveTab('messages'); }} className="btn-secondary" style={{ flex: 1 }}>
-                          <MessageSquare className="w-4 h-4" /> Chat
+                          <MessageSquare className="w-4 h-4" /> {t('provider_chat_btn')}
                         </button>
                         {activeOperation.status === 'in_progress' ? (
                           <div style={{ flex: 1.5, background: '#f7f3f1', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 800, color: '#5f6a79' }}>
                             <Loader2 className="w-3 h-3 animate-spin mr-2" />
-                            Trabajo en curso
+                            {t('provider_job_ongoing')}
                           </div>
                         ) : (
                           <button disabled className="btn-primary" style={{ flex: 1.5, opacity: 0.5, background: '#a4b1c6' }}>
-                            Esperando llegada
+                            {t('provider_waiting_arrival')}
                           </button>
                         )}
                       </div>
@@ -773,13 +788,13 @@ export default function ProviderDashboard() {
                   ) : (
                     <>
                       <div className="offline-hero" style={{ paddingBottom: 16 }}>
-                        <h2 className="offline-hero__title">Buscando...</h2>
-                        <p className="offline-hero__sub">Esperando solicitudes de {profile?.specialty || 'técnicos'} en tu zona.</p>
+                        <h2 className="offline-hero__title">{t('provider_searching')}</h2>
+                        <p className="offline-hero__sub">{t('provider_waiting_requests').replace('{{specialty}}', profile?.specialty || 'técnicos')}</p>
                       </div>
 
                       {/* Selector de Distancia Integrado */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 4px 20px', overflowX: 'auto' }}>
-                        <span style={{ fontSize: '0.65rem', color: '#a4b1c6', fontWeight: 900, whiteSpace: 'nowrap' }}>RADIO:</span>
+                        <span style={{ fontSize: '0.65rem', color: '#a4b1c6', fontWeight: 900, whiteSpace: 'nowrap' }}>{t('provider_radio')}</span>
                         {[1, 2, 5, 10, 15].map(d => {
                           const isLocked = false; // (d === 10 || d === 15) && !profile?.subscription_plan;
                           const isSelected = serviceDistance === d;
@@ -829,7 +844,7 @@ export default function ProviderDashboard() {
                                       className="btn-primary" 
                                       style={{ flex: 1, padding: "12px", fontSize: "0.85rem", borderRadius: 12 }}
                                     >
-                                      Enviar Oferta de Precio
+                                      {t('provider_offer_btn')}
                                     </button>
                                   );
                                 }
@@ -837,7 +852,7 @@ export default function ProviderDashboard() {
                                   return (
                                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
                                       <div style={{ textAlign: 'center', background: '#f0fdf4', padding: '12px', borderRadius: 12, fontSize: '0.85rem', fontWeight: 700, color: '#16a34a', border: '1px solid #bbf7d0' }}>
-                                        ✓ Oferta enviada: ${formatPrice(myOffer.price)} — Esperando respuesta del cliente
+                                        {t('provider_offer_sent').replace('{{price}}', formatPrice(myOffer.price))}
                                       </div>
                                     </div>
                                   );
@@ -846,9 +861,9 @@ export default function ProviderDashboard() {
                                   return (
                                     <>
                                       <div style={{ flex: 1, textAlign: 'center', background: '#fee2e2', padding: '10px', borderRadius: 12, fontSize: '0.8rem', fontWeight: 700, color: '#ef4444' }}>
-                                        Oferta rechazada (${formatPrice(myOffer.price)})
+                                        {t('provider_offer_rejected').replace('{{price}}', formatPrice(myOffer.price))}
                                       </div>
-                                      <button onClick={() => { setSelectedService(svc); setOfferPrice(""); setOfferOpen(true); }} className="btn-secondary" style={{ flex: 1, padding: "10px", fontSize: "0.8rem", borderRadius: 12 }}>Nueva Oferta</button>
+                                      <button onClick={() => { setSelectedService(svc); setOfferPrice(""); setOfferOpen(true); }} className="btn-secondary" style={{ flex: 1, padding: "10px", fontSize: "0.8rem", borderRadius: 12 }}>{t('provider_offer_new')}</button>
                                     </>
                                   );
                                 }
@@ -860,7 +875,7 @@ export default function ProviderDashboard() {
                         {nearbyServices.length === 0 && (
                           <div style={{ textAlign: 'center', padding: '40px 0', opacity: 0.5 }}>
                             <div className="pulse-ring" style={{ position: 'relative', margin: '0 auto 20px', top: 0, left: 0, transform: 'none' }}></div>
-                            <p style={{ fontWeight: 700 }}>No hay solicitudes cercanas</p>
+                            <p style={{ fontWeight: 700 }}>{t('provider_no_requests')}</p>
                           </div>
                         )}
                       </div>
@@ -869,9 +884,9 @@ export default function ProviderDashboard() {
                 </div>
               ) : (
                 <div className="offline-hero animate-fade-in" style={{ padding: 20 }}>
-                  <h2 className="offline-hero__title">Estás Offline</h2>
-                  <p className="offline-hero__sub">Conéctate para empezar a recibir solicitudes y ganar dinero hoy.</p>
-                  <button onClick={() => setIsOnline(true)} className="cta-connect cta-connect--go">Conectarse Ahora</button>
+                  <h2 className="offline-hero__title">{t('provider_offline_title')}</h2>
+                  <p className="offline-hero__sub">{t('provider_offline_subtitle')}</p>
+                  <button onClick={() => setIsOnline(true)} className="cta-connect cta-connect--go">{t('provider_offline_connect')}</button>
                 </div>
               )}
             </BottomSheet>
@@ -923,7 +938,7 @@ export default function ProviderDashboard() {
                           <div>
                             <h4 style={{ margin: 0, fontWeight: 800 }}>{opp.category}</h4>
                             <p style={{ margin: 0, fontSize: '0.75rem', color: '#a4b1c6' }}>
-                              Solicitado el {new Date(opp.created_at).toLocaleDateString()} a las {new Date(opp.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                              {t('common_back_home').split(' ')[0]} {new Date(opp.created_at).toLocaleDateString()} {t('common_at')} {new Date(opp.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                             </p>
                           </div>
                           <span style={{ fontWeight: 900, color: '#ff7665' }}>${formatPrice(opp.proposed_price)}</span>
@@ -936,7 +951,7 @@ export default function ProviderDashboard() {
                           className="btn-primary" 
                           style={{ width: '100%', padding: "12px", fontSize: "0.9rem", borderRadius: 12 }}
                         >
-                          Ofrecer mi disponibilidad
+                          {t('provider_offer_availability')}
                         </button>
                       </div>
                     ))
@@ -990,19 +1005,19 @@ export default function ProviderDashboard() {
               
               {/* OPS Credits Summary */}
               <div style={{ background: '#1f2c45', padding: '32px', color: 'white', borderRadius: '32px', marginBottom: '32px', textAlign: 'center' }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: '0 0 16px', opacity: 0.8 }}>Tu Balance</h2>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: '0 0 16px', opacity: 0.8 }}>{t('provider_balance_title')}</h2>
                 <div style={{ fontSize: '3rem', fontWeight: 900, color: '#ff7665', lineHeight: 1 }}>{profile?.ops_credits ?? 10}</div>
-                <div style={{ fontSize: '0.9rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 8 }}>OPS Disponibles</div>
+                <div style={{ fontSize: '0.9rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 8 }}>{t('provider_balance_subtitle')}</div>
               </div>
 
               {/* Seccion 1: Packs OPS */}
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 900, marginBottom: 20 }}>Compra de OPS (Prepago)</h3>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 900, marginBottom: 20 }}>{t('provider_prepay_title')}</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 32 }}>
                 <div style={{ background: 'white', borderRadius: 24, padding: 20, border: '1px solid #efe7e2' }}>
                   <div style={{ background: '#f7f3f1', width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
                     <Zap className="w-5 h-5 text-[#ff7665]" />
                   </div>
-                  <h4 style={{ margin: 0, fontWeight: 800 }}>Pack Básico</h4>
+                  <h4 style={{ margin: 0, fontWeight: 800 }}>{t('provider_pack_basic')}</h4>
                   <div style={{ fontSize: '1.25rem', fontWeight: 900, margin: '4px 0' }}>$15.000</div>
                   <p style={{ fontSize: '0.75rem', color: '#00cba9', fontWeight: 800, margin: '0 0 12px' }}>5 OPS</p>
                   <button 
@@ -1010,14 +1025,14 @@ export default function ProviderDashboard() {
                     className="btn-primary" 
                     style={{ padding: '10px', fontSize: '0.8rem' }}
                   >
-                    Comprar
+                    {t('provider_buy_btn')}
                   </button>
                 </div>
                 <div style={{ background: 'white', borderRadius: 24, padding: 20, border: '2px solid #ff7665' }}>
                   <div style={{ background: '#fff0ee', width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
                     <Star className="w-5 h-5 text-[#ff7665]" />
                   </div>
-                  <h4 style={{ margin: 0, fontWeight: 800 }}>Pack Pro</h4>
+                  <h4 style={{ margin: 0, fontWeight: 800 }}>{t('provider_pack_pro')}</h4>
                   <div style={{ fontSize: '1.25rem', fontWeight: 900, margin: '4px 0' }}>$35.000</div>
                   <p style={{ fontSize: '0.75rem', color: '#00cba9', fontWeight: 800, margin: '0 0 12px' }}>15 OPS</p>
                   <button 
@@ -1025,20 +1040,20 @@ export default function ProviderDashboard() {
                     className="btn-primary btn-primary--accent" 
                     style={{ padding: '10px', fontSize: '0.8rem' }}
                   >
-                    Comprar
+                    {t('provider_buy_btn')}
                   </button>
                 </div>
               </div>
 
               {/* Seccion 2: Suscripciones Mensuales */}
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 900, marginBottom: 20 }}>Planes Mensuales (Ilimitado)</h3>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 900, marginBottom: 20 }}>{t('provider_monthly_title')}</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {/* Plan PRO */}
                 <div style={{ background: 'white', borderRadius: 28, padding: 24, border: '2px solid #ffd700' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
                     <div>
-                      <h4 style={{ margin: 0, fontWeight: 900, fontSize: '1.4rem' }}>Plan PRO</h4>
-                      <p style={{ margin: 0, color: '#5f6a79', fontSize: '0.8rem' }}>Acceso Prioritario</p>
+                      <h4 style={{ margin: 0, fontWeight: 900, fontSize: '1.4rem' }}>{t('provider_plan_pro')}</h4>
+                      <p style={{ margin: 0, color: '#5f6a79', fontSize: '0.8rem' }}>{t('provider_plan_pro_subtitle')}</p>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>$49.000</div>
@@ -1046,21 +1061,20 @@ export default function ProviderDashboard() {
                     </div>
                   </div>
                   <ul style={{ margin: '0 0 24px', padding: 0, listStyle: 'none', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                    <li style={{ fontSize: '0.8rem', fontWeight: 600 }}>🚀 100 Oportunidades</li>
-                    <li style={{ fontSize: '0.8rem', fontWeight: 600 }}>📍 Radar 15km</li>
-                    <li style={{ fontSize: '0.8rem', fontWeight: 600 }}>⚡ Primicia Total</li>
-                    <li style={{ fontSize: '0.8rem', fontWeight: 600 }}>✨ Perfil Dorado</li>
+                    {(t('provider_plan_pro_features') || []).map(f => (
+                      <li key={f} style={{ fontSize: '0.8rem', fontWeight: 600 }}>{f}</li>
+                    ))}
                   </ul>
-                  <button className="btn-primary" style={{ background: '#ffd700', color: '#1f2c45' }}>Activar Plan PRO</button>
+                  <button className="btn-primary" style={{ background: '#ffd700', color: '#1f2c45' }}>{t('provider_activate_plan').replace('{{plan}}', 'PRO')}</button>
                 </div>
 
                 {/* Plan ULTRA */}
                 <div style={{ background: '#1f2c45', borderRadius: 28, padding: 24, color: 'white', position: 'relative', overflow: 'hidden' }}>
-                  <div style={{ position: 'absolute', top: 0, right: 0, background: '#ff7665', color: 'white', padding: '4px 20px', borderRadius: '0 0 0 20px', fontSize: '0.7rem', fontWeight: 900 }}>EL MÁS POTENTE</div>
+                  <div style={{ position: 'absolute', top: 0, right: 0, background: '#ff7665', color: 'white', padding: '4px 20px', borderRadius: '0 0 0 20px', fontSize: '0.7rem', fontWeight: 900 }}>{t('common_save').toUpperCase()}</div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
                     <div>
-                      <h4 style={{ margin: 0, fontWeight: 900, fontSize: '1.4rem' }}>Plan ULTRA</h4>
-                      <p style={{ margin: 0, opacity: 0.6, fontSize: '0.8rem' }}>Dominio Total</p>
+                      <h4 style={{ margin: 0, fontWeight: 900, fontSize: '1.4rem' }}>{t('provider_plan_ultra')}</h4>
+                      <p style={{ margin: 0, opacity: 0.6, fontSize: '0.8rem' }}>{t('provider_plan_ultra_subtitle')}</p>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#ff7665' }}>$89.000</div>
@@ -1068,12 +1082,11 @@ export default function ProviderDashboard() {
                     </div>
                   </div>
                   <ul style={{ margin: '0 0 24px', padding: 0, listStyle: 'none', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                    <li style={{ fontSize: '0.8rem', fontWeight: 600 }}>♾️ Conexiones Infinitas</li>
-                    <li style={{ fontSize: '0.8rem', fontWeight: 600, color: '#ff7665' }}>📍 Cobertura Total</li>
-                    <li style={{ fontSize: '0.8rem', fontWeight: 600 }}>🔝 Posición VIP</li>
-                    <li style={{ fontSize: '0.8rem', fontWeight: 600 }}>🔥 Mapa de Calor</li>
+                    {(t('provider_plan_ultra_features') || []).map(f => (
+                      <li key={f} style={{ fontSize: '0.8rem', fontWeight: 600 }}>{f}</li>
+                    ))}
                   </ul>
-                  <button className="btn-primary btn-primary--accent">Activar Plan ULTRA</button>
+                  <button className="btn-primary btn-primary--accent">{t('provider_activate_plan').replace('{{plan}}', 'ULTRA')}</button>
                 </div>
               </div>
               <div style={{ height: 100 }} />
@@ -1095,7 +1108,7 @@ export default function ProviderDashboard() {
                   </div>
                   <div style={{ flex: 1 }}>
                     <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800 }}>{activeChat.client?.full_name || 'Cliente Kamello'}</h4>
-                    <span style={{ fontSize: '0.75rem', color: '#a4b1c6', fontWeight: 700 }}>Servicio: {activeChat.category}</span>
+                    <span style={{ fontSize: '0.75rem', color: '#a4b1c6', fontWeight: 700 }}>{t('provider_chat_service').replace('{{category}}', activeChat.category)}</span>
                   </div>
                 </div>
                 <div className="chat-screen__body" style={{ flex: 1, background: '#f7f3f1', padding: '20px', display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto' }}>
@@ -1113,7 +1126,7 @@ export default function ProviderDashboard() {
                   <input 
                     value={chatDraft} 
                     onChange={e => setChatDraft(e.target.value)} 
-                    placeholder="Escribe un mensaje..." 
+                    placeholder={t('provider_chat_placeholder')} 
                     style={{ flex: 1, background: '#f7f3f1', border: 'none', borderRadius: 16, padding: '12px 16px', fontSize: '1rem' }}
                   />
                   <button type="submit" disabled={!chatDraft.trim()} style={{ background: '#ff7665', color: 'white', width: 48, height: 48, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none' }}>
@@ -1123,22 +1136,22 @@ export default function ProviderDashboard() {
               </div>
             ) : (
               <div className="view-container__content">
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 24 }}>Mensajes</h2>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 24 }}>{t('provider_messages_title')}</h2>
                 {activeOperation ? (
                   <div onClick={() => setActiveChat(activeOperation)} className="req-card" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16 }}>
                     <div style={{ width: 48, height: 48, borderRadius: 12, background: '#f7f3f1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <MessageSquare className="w-6 h-6 text-[#ff7665]" />
                     </div>
                     <div style={{ flex: 1 }}>
-                      <h4 style={{ margin: 0, fontWeight: 800 }}>Chat con Cliente</h4>
-                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#a4b1c6' }}>Servicio de {activeOperation.category}</p>
+                      <h4 style={{ margin: 0, fontWeight: 800 }}>{t('provider_chat_with_client')}</h4>
+                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#a4b1c6' }}>{t('provider_chat_service').replace('{{category}}', activeOperation.category)}</p>
                     </div>
                     {unreadCount > 0 && <span className="btm-nav__badge" style={{ position: 'static' }}>{unreadCount}</span>}
                   </div>
                 ) : (
                   <div style={{ textAlign: 'center', padding: '60px 0', opacity: 0.5 }}>
                     <MessageSquare className="w-12 h-12 mx-auto mb-4" />
-                    <p>No tienes chats activos</p>
+                    <p>{t('provider_no_chats')}</p>
                   </div>
                 )}
               </div>
@@ -1165,9 +1178,9 @@ export default function ProviderDashboard() {
             <div style={{ width: 80, height: 80, background: '#fff0ee', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
               <Zap className="w-10 h-10" style={{ color: '#ff7665' }} />
             </div>
-            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', color: '#1f2c45', marginBottom: 16 }}>¿Quieres más radio de trabajo?</h3>
+            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', color: '#1f2c45', marginBottom: 16 }}>{t('provider_upsell_radius_title')}</h3>
             <p style={{ color: '#5f6a79', fontSize: '1rem', lineHeight: 1.6, marginBottom: 32 }}>
-              ¡Adelante! Pásate al plan <b>PRO</b> o <b>ULTRA</b> y obtén todas las ventajas de un verdadero kamellador profesional.
+              {t('provider_upsell_radius_text')}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <button 
@@ -1175,13 +1188,13 @@ export default function ProviderDashboard() {
                 className="btn-primary btn-primary--accent"
                 style={{ py: 18, fontSize: '1.1rem' }}
               >
-                Ver Planes Premium
+                {t('provider_premium_required_btn')}
               </button>
               <button 
                 onClick={() => setShowPremiumModal(false)} 
                 style={{ background: 'none', border: 'none', color: '#a4b1c6', fontWeight: 700, padding: 12, fontSize: '0.9rem', cursor: 'pointer' }}
               >
-                Tal vez más tarde
+                {t('provider_upsell_later')}
               </button>
             </div>
           </div>
@@ -1195,16 +1208,16 @@ export default function ProviderDashboard() {
             <div style={{ width: 80, height: 80, background: '#fee2e2', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
               <Clock className="w-10 h-10" style={{ color: '#ef4444' }} />
             </div>
-            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', color: '#1f2c45', marginBottom: 16 }}>Servicio Cancelado</h3>
+            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', color: '#1f2c45', marginBottom: 16 }}>{t('provider_cancelled_title')}</h3>
             <p style={{ color: '#5f6a79', fontSize: '1rem', lineHeight: 1.6, marginBottom: 32 }}>
-              Lastimosamente el cliente rechazó por algún motivo, no te preocupes <b>tu OPS está intacta</b>.
+              {t('provider_cancelled_text')}
             </p>
             <button 
               onClick={() => setCancelledNotice(false)} 
               className="btn-primary"
               style={{ width: '100%', height: 56, borderRadius: 20 }}
             >
-              Entendido
+              {t('provider_cancelled_ok')}
             </button>
           </div>
         </div>
@@ -1215,29 +1228,29 @@ export default function ProviderDashboard() {
         <div className="rating-modal">
           <div className="rating-modal__content">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "1.4rem", margin: 0 }}>Enviar Propuesta</h3>
+              <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "1.4rem", margin: 0 }}>{t('provider_offer_title')}</h3>
               <button type="button" onClick={() => setOfferOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><X className="w-5 h-5" /></button>
             </div>
             
             <div style={{ textAlign: 'center', marginBottom: 24 }}>
-              <p style={{ color: '#5f6a79', fontSize: '0.95rem', margin: '0 0 8px' }}>Se enviará tu precio de revisión configurado:</p>
+              <p style={{ color: '#5f6a79', fontSize: '0.95rem', margin: '0 0 8px' }}>{t('provider_offer_subtitle')}</p>
               <div style={{ fontSize: '2.5rem', fontWeight: 900, color: '#ff7665', margin: '16px 0' }}>${formatPrice(profile?.review_price)}</div>
               <div style={{ background: '#f7f3f1', borderRadius: 12, padding: '12px 14px', textAlign: 'left' }}>
-                <p style={{ fontSize: "0.8rem", color: "#5f6a79", margin: "0 0 4px", fontWeight: 700 }}>Para la solicitud:</p>
+                <p style={{ fontSize: "0.8rem", color: "#5f6a79", margin: "0 0 4px", fontWeight: 700 }}>{t('provider_offer_for')}</p>
                 <p style={{ fontSize: "0.9rem", color: "#1f2c45", margin: 0 }}>{selectedService?.description || selectedService?.category}</p>
               </div>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <button onClick={handleSendOffer} className="btn-primary" style={{ height: 60, borderRadius: 20, fontSize: '1.1rem' }}>
-                Confirmar y Enviar
+                {t('provider_offer_confirm')}
               </button>
               <button onClick={() => setOfferOpen(false)} className="btn-secondary" style={{ height: 56, borderRadius: 20 }}>
-                Cancelar
+                {t('common_cancel')}
               </button>
             </div>
             <p style={{ textAlign: "center", fontSize: 11, color: "#a4b1c6", marginTop: 12 }}>
-              Al enviar una oferta no se descuentan OPS hasta que el cliente la acepte.
+              {t('provider_offer_hint')}
             </p>
           </div>
         </div>

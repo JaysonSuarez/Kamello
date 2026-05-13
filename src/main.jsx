@@ -30,26 +30,30 @@ import Profile from "./Profile";
 import AdminDashboard from "./AdminDashboard";
 import "./styles.css";
 
+import { LanguageProvider } from "./lib/i18n";
+
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<SiteDesign />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/precios" element={<Pricing />} />
-        <Route path="/seguridad" element={<Security />} />
-        <Route path="/ayuda" element={<HelpCenter />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/perfil" element={<Profile />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/chat/:id" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <LanguageProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<SiteDesign />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/precios" element={<Pricing />} />
+          <Route path="/seguridad" element={<Security />} />
+          <Route path="/ayuda" element={<HelpCenter />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/perfil" element={<Profile />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/chat/:id" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </LanguageProvider>
   </React.StrictMode>
 );

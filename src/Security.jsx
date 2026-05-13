@@ -1,24 +1,28 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ShieldCheck, Lock, Eye, CheckCircle, ArrowLeft, UserCheck, ShieldAlert } from "lucide-react";
+import { ShieldCheck, Lock, CheckCircle, ArrowLeft, UserCheck, ShieldAlert } from "lucide-react";
+import { useLanguage } from "./lib/i18n";
+import LanguageSwitcher from "./components/LanguageSwitcher";
 
 const logoImageUrl = "/images/K-Editado.png";
 
 export default function Security() {
+  const { t } = useLanguage();
+  
   const pillars = [
     {
-      title: "Verificación de Identidad",
-      desc: "Cada Kamellador pasa por un proceso estricto de KYC (Know Your Customer) donde validamos su documento de identidad y antecedentes.",
+      title: t('security_kyc_title'),
+      desc: t('security_kyc_text'),
       icon: <UserCheck className="w-8 h-8 text-[#ff7665]" />
     },
     {
-      title: "Sistema de PIN Seguro",
-      desc: "Los trabajos solo comienzan cuando el cliente le entrega un código PIN de 4 dígitos al técnico. Así aseguramos que el profesional llegó al sitio.",
+      title: t('security_pin_title'),
+      desc: t('security_pin_text'),
       icon: <Lock className="w-8 h-8 text-[#ff7665]" />
     },
     {
-      title: "Calificaciones Reales",
-      desc: "Solo los clientes que han completado un servicio pueden calificar. Sin reseñas falsas, solo experiencias reales de la comunidad.",
+      title: t('security_reviews_title'),
+      desc: t('security_reviews_text'),
       icon: <ShieldCheck className="w-8 h-8 text-[#ff7665]" />
     }
   ];
@@ -31,10 +35,13 @@ export default function Security() {
             <img src={logoImageUrl} alt="Logo" className="h-8 w-auto transition-transform group-hover:scale-110" />
             <span className="text-2xl font-bold tracking-tight">Kamello</span>
           </Link>
-          <Link to="/" className="flex items-center gap-2 text-sm font-bold text-[#5f6a79] hover:text-[#ff7665] transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            Volver
-          </Link>
+          <div className="flex items-center gap-6">
+            <LanguageSwitcher />
+            <Link to="/" className="flex items-center gap-2 text-sm font-bold text-[#5f6a79] hover:text-[#ff7665] transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+              {t('common_back_home').split(' ')[0]}
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -43,8 +50,11 @@ export default function Security() {
           <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[#ff7665]/10 text-[#ff7665] mb-6">
             <ShieldCheck className="w-10 h-10" />
           </div>
-          <h1 className="font-serif text-5xl md:text-6xl mb-6">Tu seguridad es nuestra <span className="text-[#ff7665]">prioridad</span></h1>
-          <p className="text-[#5f6a79] text-xl max-w-2xl mx-auto">Construimos la red de servicios técnicos más confiable de Colombia a través de tecnología y verificación humana.</p>
+          <h1 className="font-serif text-5xl md:text-6xl mb-6">
+            {t('security_hero_1')}
+            <span className="text-[#ff7665]">{t('security_hero_2')}</span>
+          </h1>
+          <p className="text-[#5f6a79] text-xl max-w-2xl mx-auto">{t('security_hero_text')}</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 mb-24">
@@ -60,14 +70,14 @@ export default function Security() {
         <section className="bg-[#1f2c45] rounded-[48px] p-10 md:p-16 text-white overflow-hidden relative">
           <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl font-serif mb-6">Protección de Datos</h2>
+              <h2 className="text-3xl font-serif mb-6">{t('security_data_title')}</h2>
               <p className="text-[#a4b1c6] mb-8 leading-relaxed">
-                Tus datos personales y de ubicación están encriptados. Nunca compartimos tu teléfono con el Kamellador hasta que la solicitud es aceptada, y solo se usa para la coordinación del servicio.
+                {t('security_data_text')}
               </p>
               <ul className="space-y-4">
-                <li className="flex items-center gap-3"><CheckCircle className="w-5 h-5 text-[#00cba9]" /> Encriptación SSL de punto a punto</li>
-                <li className="flex items-center gap-3"><CheckCircle className="w-5 h-5 text-[#00cba9]" /> Cumplimiento con Ley de Habeas Data</li>
-                <li className="flex items-center gap-3"><CheckCircle className="w-5 h-5 text-[#00cba9]" /> Monitoreo de actividad 24/7</li>
+                <li className="flex items-center gap-3"><CheckCircle className="w-5 h-5 text-[#00cba9]" /> {t('security_data_list_1')}</li>
+                <li className="flex items-center gap-3"><CheckCircle className="w-5 h-5 text-[#00cba9]" /> {t('security_data_list_2')}</li>
+                <li className="flex items-center gap-3"><CheckCircle className="w-5 h-5 text-[#00cba9]" /> {t('security_data_list_3')}</li>
               </ul>
             </div>
             <div className="flex justify-center">

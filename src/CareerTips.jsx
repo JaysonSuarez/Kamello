@@ -1,14 +1,18 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, BookOpen, ChevronRight } from "lucide-react";
+import { useLanguage } from "./lib/i18n";
+import LanguageSwitcher from "./components/LanguageSwitcher";
 
 const logoImageUrl = "/images/K-Editado.png";
 
 export default function CareerTips() {
+  const { t } = useLanguage();
+  
   const tips = [
-    { title: "Cómo optimizar tu CV técnico", category: "Currículum", time: "5 min lectura" },
-    { title: "5 herramientas esenciales para electricistas", category: "Herramientas", time: "8 min lectura" },
-    { title: "Domina la entrevista de trabajo", category: "Entrevistas", time: "10 min lectura" },
+    { title: t('career_tip_1_title'), category: t('career_tip_1_cat'), time: t('career_tip_1_time') },
+    { title: t('career_tip_2_title'), category: t('career_tip_2_cat'), time: t('career_tip_2_time') },
+    { title: t('career_tip_3_title'), category: t('career_tip_3_cat'), time: t('career_tip_3_time') },
   ];
 
   return (
@@ -19,17 +23,20 @@ export default function CareerTips() {
             <img src={logoImageUrl} alt="Logo" className="h-8 w-auto transition-transform group-hover:scale-110" />
             <span className="text-2xl font-bold tracking-tight">Kamello</span>
           </Link>
-          <Link to="/" className="flex items-center gap-2 text-sm font-bold text-[#5f6a79] hover:text-[#ff7665] transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            Volver
-          </Link>
+          <div className="flex items-center gap-6">
+            <LanguageSwitcher />
+            <Link to="/" className="flex items-center gap-2 text-sm font-bold text-[#5f6a79] hover:text-[#ff7665] transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+              {t('common_back_home').split(' ')[0]}
+            </Link>
+          </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-[1000px] px-6 py-12">
         <div className="mb-16">
-          <h1 className="font-serif text-6xl mb-6">Consejos profesionales</h1>
-          <p className="text-[#5f6a79] text-xl max-w-2xl">Aprende nuevas habilidades y lleva tu carrera al siguiente nivel con nuestras guías expertas.</p>
+          <h1 className="font-serif text-6xl mb-6">{t('career_tips_title')}</h1>
+          <p className="text-[#5f6a79] text-xl max-w-2xl">{t('career_tips_subtitle')}</p>
         </div>
 
         <div className="grid gap-8">
