@@ -10,7 +10,7 @@ const DefaultIcon = L.icon({ iconUrl: markerIcon, shadowUrl: markerShadow, iconS
 L.Marker.prototype.options.icon = DefaultIcon;
 
 const DEFAULT_POSITION = [4.6097, -74.0817];
-const CARTO_KEY = import.meta.env.VITE_CARTO_API_KEY || "cb1_32op_1_b2e6b9fadede751874d503ffcb1_32op_1_b2e6b9fadede751874d503ff";
+const CARTO_KEY = import.meta.env.VITE_CARTO_API_KEY || "cb1_32op_1_b2e6b9fadede751874d503ff";
 
 function LocationPicker({ position, setPosition, isFixed }) {
   useMapEvents({ click(e) { if (!isFixed) setPosition([e.latlng.lat, e.latlng.lng]); } });
