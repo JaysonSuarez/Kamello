@@ -10,6 +10,7 @@ const DefaultIcon = L.icon({ iconUrl: markerIcon, shadowUrl: markerShadow, iconS
 L.Marker.prototype.options.icon = DefaultIcon;
 
 const DEFAULT_POSITION = [4.6097, -74.0817];
+const CARTO_KEY = import.meta.env.VITE_CARTO_API_KEY || "cb1_32op_1_b2e6b9fadede751874d503ffcb1_32op_1_b2e6b9fadede751874d503ff";
 
 function LocationPicker({ position, setPosition, isFixed }) {
   useMapEvents({ click(e) { if (!isFixed) setPosition([e.latlng.lat, e.latlng.lng]); } });
@@ -49,7 +50,7 @@ export default function MapView({ position, setPosition, isLocationFixed, active
     <div className="map-fullscreen">
       {position && (
         <MapContainer center={position} zoom={15} style={{ height: "100%", width: "100%" }} zoomControl={false}>
-          <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+          <TileLayer url={`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${CARTO_KEY}`} />
 
           {!activeRequest ? (
             <LocationPicker position={position} setPosition={setPosition} isFixed={isLocationFixed} />
